@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101010">
+<title>AFRO LIVE - Congo</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #101010;
+  color: white;
+}
+
+header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #191919;
+  border-bottom: 1px solid #333;
+}
+
+.logo {
+  font-size: 25px;
+  font-weight: bold;
+  color: #ff4d00;
+}
+
+.logo span {
+  color: white;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  margin-left: 15px;
+  font-size: 14px;
+}
+
+.hero {
+  text-align: center;
+  padding: 75px 20px;
+  background: linear-gradient(135deg, #241008, #101010);
+}
+
+.hero h1 {
+  font-size: 38px;
+  margin-bottom: 15px;
+}
+
+.hero h1 span {
+  color: #ff4d00;
+}
+
+.hero p {
+  color: #ccc;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+button {
+  background: #ff4d00;
+  color: white;
+  border: none;
+  padding: 14px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+section {
+  padding: 35px 20px;
+}
+
+section h2 {
+  margin-bottom: 20px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.card {
+  background: #202020;
+  padding: 22px;
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.card h3 {
+  margin-bottom: 12px;
+  color: #ff6a2b;
+}
+
+.card p {
+  color: #bbb;
+  line-height: 1.5;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  color: #888;
+  background: #191919;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">AFRO <span>LIVE</span></div>
+  <nav>
+    <a href="#accueil">Accueil</a>
+    <a href="#createurs">Créateurs</a>
+    <a href="#videos">Vidéos</a>
+  </nav>
+</header>
+
+<div class="hero" id="accueil">
+  <h1>Bienvenue sur <span>AFRO LIVE</span></h1>
+  <p>
+    La plateforme congolaise qui rapproche les créateurs
+    et leur public grâce aux lives et aux vidéos.
+  </p>
+  <button onclick="alert('Bienvenue sur AFRO LIVE !')">
+    Découvrir AFRO LIVE
+  </button>
+</div>
+
+<section id="createurs">
+  <h2>Espace créateurs</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Deviens créateur</h3>
+      <p>Crée ton espace, propose tes abonnements et partage tes lives.</p>
+    </div>
+    <div class="card">
+      <h3>Gagne de l'argent</h3>
+      <p>Reçois 70 % des paiements confirmés de tes abonnés.</p>
+    </div>
+  </div>
+</section>
+
+<section id="videos">
+  <h2>Découvre les vidéos</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Vidéos gratuites</h3>
+      <p>Les vidéos classiques publiées par les créateurs sont accessibles gratuitement.</p>
+    </div>
+    <div class="card">
+      <h3>Lives exclusifs</h3>
+      <p>Abonne-toi à tes créateurs préférés pour accéder à leurs lives.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  AFRO LIVE © 2026 — Congo-Brazzaville
+</footer>
+
+</body>
+</html>
