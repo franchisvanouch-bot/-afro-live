@@ -1,174 +1,289 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
-<title>AFRO LIVE - Congo</title>
-
+<title>AFRO LIVE — Congo</title>
 <style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: Arial, sans-serif;
-  background: #101010;
-  color: white;
-}
-
-header {
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #191919;
-  border-bottom: 1px solid #333;
-}
-
-.logo {
-  font-size: 25px;
-  font-weight: bold;
-  color: #ff4d00;
-}
-
-.logo span {
-  color: white;
-}
-
-nav a {
-  color: white;
-  text-decoration: none;
-  margin-left: 15px;
-  font-size: 14px;
-}
-
-.hero {
-  text-align: center;
-  padding: 75px 20px;
-  background: linear-gradient(135deg, #241008, #101010);
-}
-
-.hero h1 {
-  font-size: 38px;
-  margin-bottom: 15px;
-}
-
-.hero h1 span {
-  color: #ff4d00;
-}
-
-.hero p {
-  color: #ccc;
-  line-height: 1.6;
-  margin-bottom: 25px;
-}
-
-button {
-  background: #ff4d00;
-  color: white;
-  border: none;
-  padding: 14px 25px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-section {
-  padding: 35px 20px;
-}
-
-section h2 {
-  margin-bottom: 20px;
-}
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
-}
-
-.card {
-  background: #202020;
-  padding: 22px;
-  border-radius: 12px;
-  border: 1px solid #333;
-}
-
-.card h3 {
-  margin-bottom: 12px;
-  color: #ff6a2b;
-}
-
-.card p {
-  color: #bbb;
-  line-height: 1.5;
-}
-
-footer {
-  text-align: center;
-  padding: 25px;
-  color: #888;
-  background: #191919;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#101010;color:#fff;min-height:100vh}
+header{padding:18px 6%;display:flex;justify-content:space-between;align-items:center;background:#191919;border-bottom:1px solid #333}
+.logo{font-size:25px;font-weight:bold;color:#ff4d00}
+.logo span{color:white}
+header button{padding:10px 15px}
+button{background:#ff4d00;color:white;border:0;padding:14px 20px;border-radius:8px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
+.hero{text-align:center;padding:65px 20px;background:linear-gradient(135deg,#351607,#101010)}
+.hero h1{font-size:38px;margin-bottom:15px}
+.hero h1 span{color:#ff4d00}
+.hero p{color:#ccc;line-height:1.7;max-width:600px;margin:0 auto 25px}
+main{max-width:950px;margin:auto;padding:30px 18px}
+.panel{background:#1c1c1c;border:1px solid #333;border-radius:14px;padding:25px;margin-bottom:22px}
+.panel h2{margin-bottom:15px}
+.muted{color:#aaa;line-height:1.6}
+.tabs{display:flex;gap:10px;margin-bottom:20px}
+.tabs button{flex:1;background:#333}
+.tabs button.active{background:#ff4d00}
+label{display:block;margin:14px 0 7px;color:#ddd}
+input{width:100%;padding:14px;border:1px solid #444;background:#111;color:white;border-radius:8px;font-size:16px}
+form button{width:100%;margin-top:20px}
+#message{margin-top:15px;line-height:1.5;color:#ffb18e;overflow-wrap:anywhere}
+.hidden{display:none!important}
+.profile{border-left:4px solid #ff4d00}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:18px}
+.card{background:#252525;padding:20px;border-radius:10px}
+.card h3{color:#ff6a2b;margin-bottom:10px}
+footer{text-align:center;padding:25px;color:#888;background:#191919;margin-top:30px}
+@media(max-width:500px){.hero h1{font-size:30px}header{padding:15px}.panel{padding:19px}}
 </style>
 </head>
-
 <body>
 
 <header>
   <div class="logo">AFRO <span>LIVE</span></div>
-  <nav>
-    <a href="#accueil">Accueil</a>
-    <a href="#createurs">Créateurs</a>
-    <a href="#videos">Vidéos</a>
-  </nav>
+  <button id="headerButton" class="hidden">Mon compte</button>
 </header>
 
-<div class="hero" id="accueil">
+<section class="hero">
   <h1>Bienvenue sur <span>AFRO LIVE</span></h1>
-  <p>
-    La plateforme congolaise qui rapproche les créateurs
-    et leur public grâce aux lives et aux vidéos.
-  </p>
-  <button onclick="alert('Bienvenue sur AFRO LIVE !')">
-    Découvrir AFRO LIVE
-  </button>
-</div>
-
-<section id="createurs">
-  <h2>Espace créateurs</h2>
-  <div class="cards">
-    <div class="card">
-      <h3>Deviens créateur</h3>
-      <p>Crée ton espace, propose tes abonnements et partage tes lives.</p>
-    </div>
-    <div class="card">
-      <h3>Gagne de l'argent</h3>
-      <p>Reçois 70 % des paiements confirmés de tes abonnés.</p>
-    </div>
-  </div>
+  <p>La plateforme congolaise qui rapproche les créateurs et leur public grâce aux lives et aux vidéos.</p>
+  <button id="startButton">Créer mon compte</button>
 </section>
 
-<section id="videos">
-  <h2>Découvre les vidéos</h2>
-  <div class="cards">
-    <div class="card">
-      <h3>Vidéos gratuites</h3>
-      <p>Les vidéos classiques publiées par les créateurs sont accessibles gratuitement.</p>
-    </div>
-    <div class="card">
-      <h3>Lives exclusifs</h3>
-      <p>Abonne-toi à tes créateurs préférés pour accéder à leurs lives.</p>
-    </div>
-  </div>
-</section>
+<main>
+  <section id="authPanel" class="panel">
+    <h2>Rejoins AFRO LIVE</h2>
+    <p class="muted">Crée ton compte ou connecte-toi pour découvrir la plateforme.</p>
 
-<footer>
-  AFRO LIVE © 2026 — Congo-Brazzaville
-</footer>
+    <div class="tabs">
+      <button id="registerTab" class="active" type="button">Inscription</button>
+      <button id="loginTab" type="button">Connexion</button>
+    </div>
 
+    <form id="authForm">
+      <div id="nameFields">
+        <label for="displayName">Ton nom</label>
+        <input id="displayName" type="text" maxlength="80" autocomplete="name" placeholder="Ex : Franchis">
+
+        <label for="username">Nom d'utilisateur</label>
+        <input id="username" type="text" minlength="3" maxlength="30" autocomplete="username" placeholder="Ex : franchis123">
+      </div>
+
+      <label for="email">Adresse e-mail</label>
+      <input id="email" type="email" required autocomplete="email" placeholder="ton@email.com">
+
+      <label for="password">Mot de passe</label>
+      <input id="password" type="password" required minlength="6" autocomplete="current-password" placeholder="6 caractères minimum">
+
+      <button id="submitButton" type="submit">Créer mon compte</button>
+    </form>
+    <p id="message" role="status" aria-live="polite"></p>
+  </section>
+
+  <section id="accountPanel" class="panel profile hidden">
+    <h2>Mon compte AFRO LIVE</h2>
+    <p class="muted">Bienvenue ! Ton compte est connecté.</p>
+    <div class="cards">
+      <div class="card">
+        <h3>Nom</h3>
+        <p id="accountName">—</p>
+      </div>
+      <div class="card">
+        <h3>Nom d'utilisateur</h3>
+        <p id="accountUsername">—</p>
+      </div>
+      <div class="card">
+        <h3>Mon espace</h3>
+        <p id="accountRole">Spectateur</p>
+      </div>
+    </div>
+    <p id="accountEmail" class="muted" style="margin-top:18px"></p>
+    <p id="profileMessage" class="muted" style="margin-top:10px"></p>
+    <button id="logoutButton" style="margin-top:20px">Déconnexion</button>
+  </section>
+
+  <section class="panel">
+    <h2>Découvre AFRO LIVE</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Espace créateurs</h3>
+        <p class="muted">Crée ton espace et propose tes propres abonnements.</p>
+      </div>
+      <div class="card">
+        <h3>Gagne de l'argent</h3>
+        <p class="muted">Les créateurs reçoivent 70 % des paiements confirmés.</p>
+      </div>
+      <div class="card">
+        <h3>Vidéos gratuites</h3>
+        <p class="muted">Les vidéos classiques publiées sont accessibles gratuitement.</p>
+      </div>
+      <div class="card">
+        <h3>Lives exclusifs</h3>
+        <p class="muted">Les abonnés peuvent accéder aux lives de leurs créateurs préférés.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>AFRO LIVE © 2026 — Congo-Brazzaville</footer>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const SUPABASE_URL = "https://imhlbguhcafbxjszmjag.supabase.co";
+const SUPABASE_KEY = "sb_publishable_FGSth0t3t-gbyqNeV4Nj-g_69kDOar7";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const $ = id => document.getElementById(id);
+let mode = "register";
+
+function showMessage(message) {
+  $("message").textContent = message;
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+  const registering = mode === "register";
+  $("nameFields").classList.toggle("hidden", !registering);
+  $("registerTab").classList.toggle("active", registering);
+  $("loginTab").classList.toggle("active", !registering);
+  $("submitButton").textContent = registering ? "Créer mon compte" : "Se connecter";
+  $("startButton").textContent = registering ? "Créer mon compte" : "Se connecter";
+  $("password").autocomplete = registering ? "new-password" : "current-password";
+  showMessage("");
+}
+
+$("registerTab").addEventListener("click", () => setMode("register"));
+$("loginTab").addEventListener("click", () => setMode("login"));
+
+$("startButton").addEventListener("click", () => {
+  $("authPanel").scrollIntoView({behavior:"smooth"});
+});
+
+$("headerButton").addEventListener("click", () => {
+  $("accountPanel").scrollIntoView({behavior:"smooth"});
+});
+
+$("authForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  const button = $("submitButton");
+
+  button.disabled = true;
+  showMessage("Traitement en cours...");
+
+  try {
+    if (mode === "register") {
+      const displayName = $("displayName").value.trim();
+      const username = $("username").value.trim().toLowerCase();
+
+      if (!displayName || !/^[a-z0-9_]{3,30}$/.test(username)) {
+        showMessage("Entre ton nom et un nom d'utilisateur de 3 à 30 caractères (lettres, chiffres ou _).");
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username,
+            display_name: displayName
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.session) {
+        showMessage("Compte créé avec succès !");
+        await loadAccount(data.user);
+      } else {
+        showMessage("Inscription enregistrée ! Vérifie ta boîte e-mail pour confirmer ton adresse, puis connecte-toi.");
+      }
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      showMessage("Connexion réussie !");
+      await loadAccount(data.user);
+    }
+  } catch (error) {
+    showMessage("Erreur : " + error.message);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+async function loadAccount(user) {
+  if (!user) return;
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("username, display_name, role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  $("authPanel").classList.add("hidden");
+  $("accountPanel").classList.remove("hidden");
+  $("headerButton").classList.remove("hidden");
+
+  $("accountEmail").textContent = user.email || "";
+
+  if (error || !profile) {
+    $("accountName").textContent = "Profil en attente";
+    $("accountUsername").textContent = "—";
+    $("accountRole").textContent = "Spectateur";
+    $("profileMessage").textContent = "Le compte est connecté, mais le profil n'est pas encore disponible. Contacte le support.";
+    return;
+  }
+
+  $("accountName").textContent = profile.display_name;
+  $("accountUsername").textContent = "@" + profile.username;
+  $("accountRole").textContent =
+    profile.role === "creator" ? "Créateur" :
+    profile.role === "admin" ? "Administrateur" : "Spectateur";
+
+  $("profileMessage").textContent = "Ton compte est prêt. Les autres fonctionnalités arrivent progressivement.";
+}
+
+$("logoutButton").addEventListener("click", async () => {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    $("profileMessage").textContent = error.message;
+    return;
+  }
+  $("accountPanel").classList.add("hidden");
+  $("headerButton").classList.add("hidden");
+  $("authPanel").classList.remove("hidden");
+  setMode("login");
+  showMessage("Tu es déconnecté.");
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+
+supabase.auth.onAuthStateChange((event, session) => {
+  if (session?.user) {
+    loadAccount(session.user);
+  } else if (event === "SIGNED_OUT") {
+    $("accountPanel").classList.add("hidden");
+    $("headerButton").classList.add("hidden");
+    $("authPanel").classList.remove("hidden");
+  }
+});
+
+const { data: { session } } = await supabase.auth.getSession();
+if (session?.user) {
+  await loadAccount(session.user);
+}
+</script>
 </body>
 </html>
