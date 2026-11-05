@@ -3,287 +3,492 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101010">
 <title>AFRO LIVE — Congo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;background:#101010;color:#fff;min-height:100vh}
-header{padding:18px 6%;display:flex;justify-content:space-between;align-items:center;background:#191919;border-bottom:1px solid #333}
-.logo{font-size:25px;font-weight:bold;color:#ff4d00}
+:root{--bg:#101010;--panel:#1b1b1b;--orange:#ff6a00;--muted:#aaa;--line:#303030}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif}
+header{background:#171717;border-bottom:1px solid var(--line);padding:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:5}
+.logo{font-size:23px;font-weight:900;color:var(--orange)}
 .logo span{color:white}
-header button{padding:10px 15px}
-button{background:#ff4d00;color:white;border:0;padding:14px 20px;border-radius:8px;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.5}
-.hero{text-align:center;padding:65px 20px;background:linear-gradient(135deg,#351607,#101010)}
-.hero h1{font-size:38px;margin-bottom:15px}
-.hero h1 span{color:#ff4d00}
-.hero p{color:#ccc;line-height:1.7;max-width:600px;margin:0 auto 25px}
-main{max-width:950px;margin:auto;padding:30px 18px}
-.panel{background:#1c1c1c;border:1px solid #333;border-radius:14px;padding:25px;margin-bottom:22px}
-.panel h2{margin-bottom:15px}
-.muted{color:#aaa;line-height:1.6}
-.tabs{display:flex;gap:10px;margin-bottom:20px}
-.tabs button{flex:1;background:#333}
-.tabs button.active{background:#ff4d00}
-label{display:block;margin:14px 0 7px;color:#ddd}
-input{width:100%;padding:14px;border:1px solid #444;background:#111;color:white;border-radius:8px;font-size:16px}
-form button{width:100%;margin-top:20px}
-#message{margin-top:15px;line-height:1.5;color:#ffb18e;overflow-wrap:anywhere}
+button,.btn{background:var(--orange);color:#fff;border:0;border-radius:8px;padding:12px 16px;font-weight:bold;cursor:pointer}
+button.secondary{background:#333}
+button:disabled{opacity:.5;cursor:not-allowed}
+main{max-width:1000px;margin:auto;padding:18px}
+h1{font-size:28px;margin:12px 0}
+h2{font-size:21px;margin-top:26px}
+p{color:#ccc;line-height:1.5}
+.card{background:var(--panel);border:1px solid var(--line);padding:17px;border-radius:13px;margin:13px 0}
+input,textarea,select{width:100%;padding:13px;background:#111;color:white;border:1px solid #444;border-radius:8px;margin:7px 0 13px;font-size:16px}
+label{font-size:14px;color:#ddd}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+nav button{background:#292929}
+nav button.active{background:var(--orange)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.small{font-size:13px;color:var(--muted)}
+.orange{color:var(--orange)}
 .hidden{display:none!important}
-.profile{border-left:4px solid #ff4d00}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:18px}
-.card{background:#252525;padding:20px;border-radius:10px}
-.card h3{color:#ff6a2b;margin-bottom:10px}
-footer{text-align:center;padding:25px;color:#888;background:#191919;margin-top:30px}
-@media(max-width:500px){.hero h1{font-size:30px}header{padding:15px}.panel{padding:19px}}
+.notice{padding:12px;border-radius:8px;background:#292015;color:#ffd2ad;margin:12px 0}
+.success{background:#14271b;color:#b8f5c9}
+.item{background:#222;padding:14px;border-radius:10px;border:1px solid #333}
+.item h3{margin:5px 0}
+footer{text-align:center;padding:30px;color:#777;font-size:13px}
+#status{color:#ffb47c;font-size:14px;min-height:22px}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">AFRO <span>LIVE</span></div>
-  <button id="headerButton" class="hidden">Mon compte</button>
+  <button id="logout" class="secondary hidden">Déconnexion</button>
 </header>
 
-<section class="hero">
-  <h1>Bienvenue sur <span>AFRO LIVE</span></h1>
-  <p>La plateforme congolaise qui rapproche les créateurs et leur public grâce aux lives et aux vidéos.</p>
-  <button id="startButton">Créer mon compte</button>
-</section>
-
 <main>
-  <section id="authPanel" class="panel">
-    <h2>Rejoins AFRO LIVE</h2>
-    <p class="muted">Crée ton compte ou connecte-toi pour découvrir la plateforme.</p>
+  <section id="auth">
+    <h1>Bienvenue sur <span class="orange">AFRO LIVE</span></h1>
+    <p>La plateforme congolaise qui rapproche les créateurs et leur public grâce aux vidéos et aux directs.</p>
 
-    <div class="tabs">
-      <button id="registerTab" class="active" type="button">Inscription</button>
-      <button id="loginTab" type="button">Connexion</button>
+    <div class="card">
+      <h2>Créer un compte</h2>
+      <label>Nom affiché</label>
+      <input id="signupName" placeholder="Ton nom">
+      <label>Nom d'utilisateur</label>
+      <input id="signupUsername" placeholder="Exemple : vanouch123">
+      <label>Adresse e-mail</label>
+      <input id="signupEmail" type="email" placeholder="ton@email.com">
+      <label>Mot de passe</label>
+      <input id="signupPassword" type="password" placeholder="Au moins 6 caractères">
+      <button id="signup" style="width:100%">Créer mon compte</button>
     </div>
 
-    <form id="authForm">
-      <div id="nameFields">
-        <label for="displayName">Ton nom</label>
-        <input id="displayName" type="text" maxlength="80" autocomplete="name" placeholder="Ex : Franchis">
-
-        <label for="username">Nom d'utilisateur</label>
-        <input id="username" type="text" minlength="3" maxlength="30" autocomplete="username" placeholder="Ex : franchis123">
-      </div>
-
-      <label for="email">Adresse e-mail</label>
-      <input id="email" type="email" required autocomplete="email" placeholder="ton@email.com">
-
-      <label for="password">Mot de passe</label>
-      <input id="password" type="password" required minlength="6" autocomplete="current-password" placeholder="6 caractères minimum">
-
-      <button id="submitButton" type="submit">Créer mon compte</button>
-    </form>
-    <p id="message" role="status" aria-live="polite"></p>
+    <div class="card">
+      <h2>J'ai déjà un compte</h2>
+      <label>E-mail</label>
+      <input id="loginEmail" type="email" placeholder="Ton e-mail">
+      <label>Mot de passe</label>
+      <input id="loginPassword" type="password" placeholder="Ton mot de passe">
+      <button id="login" style="width:100%">Se connecter</button>
+    </div>
+    <div id="authMessage" class="notice hidden"></div>
   </section>
 
-  <section id="accountPanel" class="panel profile hidden">
-    <h2>Mon compte AFRO LIVE</h2>
-    <p class="muted">Bienvenue ! Ton compte est connecté.</p>
-    <div class="cards">
-      <div class="card">
-        <h3>Nom</h3>
-        <p id="accountName">—</p>
-      </div>
-      <div class="card">
-        <h3>Nom d'utilisateur</h3>
-        <p id="accountUsername">—</p>
-      </div>
-      <div class="card">
-        <h3>Mon espace</h3>
-        <p id="accountRole">Spectateur</p>
-      </div>
-    </div>
-    <p id="accountEmail" class="muted" style="margin-top:18px"></p>
-    <p id="profileMessage" class="muted" style="margin-top:10px"></p>
-    <button id="logoutButton" style="margin-top:20px">Déconnexion</button>
-  </section>
+  <section id="app" class="hidden">
+    <h1>Bonjour, <span id="displayName" class="orange"></span> 👋</h1>
+    <p id="accountInfo"></p>
+    <div id="status"></div>
 
-  <section class="panel">
-    <h2>Découvre AFRO LIVE</h2>
-    <div class="cards">
-      <div class="card">
-        <h3>Espace créateurs</h3>
-        <p class="muted">Crée ton espace et propose tes propres abonnements.</p>
+    <nav id="navigation"></nav>
+
+    <section id="spectator">
+      <div id="discoverPage">
+        <h2>Découvrir les créateurs</h2>
+        <p>Retrouve les créateurs présents sur AFRO LIVE.</p>
+        <div id="creators" class="grid"></div>
+
+        <h2>Vidéos gratuites</h2>
+        <div id="freeVideos" class="grid"></div>
       </div>
-      <div class="card">
-        <h3>Gagne de l'argent</h3>
-        <p class="muted">Les créateurs reçoivent 70 % des paiements confirmés.</p>
+
+      <div id="subscriptionsPage" class="hidden">
+        <h2>Mes abonnements</h2>
+        <p>Les abonnements durent 30 jours. Le renouvellement est manuel.</p>
+        <div id="mySubscriptions"></div>
       </div>
-      <div class="card">
-        <h3>Vidéos gratuites</h3>
-        <p class="muted">Les vidéos classiques publiées sont accessibles gratuitement.</p>
+
+      <div id="livesPage" class="hidden">
+        <h2>Directs</h2>
+        <div id="liveList"></div>
+        <div class="notice">Les directs vidéo et leur contrôle d'accès seront activés après la configuration du service de streaming sécurisé.</div>
       </div>
-      <div class="card">
-        <h3>Lives exclusifs</h3>
-        <p class="muted">Les abonnés peuvent accéder aux lives de leurs créateurs préférés.</p>
+
+      <div id="profilePage" class="hidden">
+        <h2>Mon profil</h2>
+        <div class="card">
+          <p id="myProfile"></p>
+          <button class="secondary" onclick="showPage('discover')">Retour à l'accueil</button>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <section id="creator" class="hidden">
+      <h2>Espace Créateur</h2>
+      <p>Gère ton activité et prépare ta communauté.</p>
+
+      <nav>
+        <button onclick="creatorPage('overview')">Tableau de bord</button>
+        <button onclick="creatorPage('price')">Mon tarif</button>
+        <button onclick="creatorPage('videos')">Mes vidéos</button>
+        <button onclick="creatorPage('live')">Mes directs</button>
+        <button onclick="creatorPage('subscribers')">Abonnés</button>
+        <button onclick="creatorPage('earnings')">Revenus</button>
+      </nav>
+
+      <div id="creatorOverview">
+        <div class="card">
+          <h3>Bienvenue dans ton espace créateur</h3>
+          <p>Publie du contenu, développe ton audience et prépare tes abonnements.</p>
+          <p>Commission de la plateforme : 30 %.</p>
+          <p>Part du créateur : 70 % après confirmation du paiement.</p>
+        </div>
+      </div>
+
+      <div id="creatorPrice" class="hidden">
+        <div class="card">
+          <h3>Choisir mon prix mensuel</h3>
+          <p>Tu choisis librement ton prix entre 100 et 1 000 000 FCFA.</p>
+          <label>Prix en FCFA pour 30 jours</label>
+          <input id="creatorPriceInput" type="number" min="100" max="1000000" placeholder="Exemple : 2000">
+          <button id="savePrice">Enregistrer mon tarif</button>
+        </div>
+      </div>
+
+      <div id="creatorVideos" class="hidden">
+        <h3>Mes vidéos</h3>
+        <p>Les vidéos publiées seront gratuites pour tous les visiteurs.</p>
+        <div id="creatorVideoList"></div>
+        <div class="notice">La publication de fichiers vidéo nécessite encore la configuration sécurisée du stockage.</div>
+      </div>
+
+      <div id="creatorLive" class="hidden">
+        <h3>Mes directs</h3>
+        <div class="notice">Le service de diffusion en direct doit encore être connecté. Aucun faux direct ne sera affiché.</div>
+      </div>
+
+      <div id="creatorSubscribers" class="hidden">
+        <h3>Mes abonnés</h3>
+        <div id="subscriberList"></div>
+      </div>
+
+      <div id="creatorEarnings" class="hidden">
+        <h3>Revenus et retraits</h3>
+        <p>Les revenus seront calculés à partir des paiements réellement confirmés.</p>
+        <div class="notice">Les paiements MTN Mobile Money, Airtel Money et les retraits nécessitent une intégration serveur avant toute opération financière.</div>
+      </div>
+    </section>
   </section>
 </main>
 
-<footer>AFRO LIVE © 2026 — Congo-Brazzaville</footer>
+<footer>AFRO LIVE Congo · Le numérique, c'est le futur.</footer>
 
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
+<script>
 const SUPABASE_URL = "https://imhlbguhcafbxjszmjag.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FGSth0t3t-gbyqNeV4Nj-g_69kDOar7";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentProfile = null;
 
 const $ = id => document.getElementById(id);
-let mode = "register";
 
-function showMessage(message) {
-  $("message").textContent = message;
+function message(text, success=false) {
+  const box = $("status");
+  box.textContent = text;
+  box.className = success ? "success" : "";
 }
 
-function setMode(nextMode) {
-  mode = nextMode;
-  const registering = mode === "register";
-  $("nameFields").classList.toggle("hidden", !registering);
-  $("registerTab").classList.toggle("active", registering);
-  $("loginTab").classList.toggle("active", !registering);
-  $("submitButton").textContent = registering ? "Créer mon compte" : "Se connecter";
-  $("startButton").textContent = registering ? "Créer mon compte" : "Se connecter";
-  $("password").autocomplete = registering ? "new-password" : "current-password";
-  showMessage("");
+function authMessage(text) {
+  $("authMessage").textContent = text;
+  $("authMessage").classList.remove("hidden");
 }
 
-$("registerTab").addEventListener("click", () => setMode("register"));
-$("loginTab").addEventListener("click", () => setMode("login"));
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
 
-$("startButton").addEventListener("click", () => {
-  $("authPanel").scrollIntoView({behavior:"smooth"});
-});
+async function signUp() {
+  const name = $("signupName").value.trim();
+  const username = $("signupUsername").value.trim().toLowerCase();
+  const email = $("signupEmail").value.trim();
+  const password = $("signupPassword").value;
 
-$("headerButton").addEventListener("click", () => {
-  $("accountPanel").scrollIntoView({behavior:"smooth"});
-});
-
-$("authForm").addEventListener("submit", async event => {
-  event.preventDefault();
-
-  const email = $("email").value.trim();
-  const password = $("password").value;
-  const button = $("submitButton");
-
-  button.disabled = true;
-  showMessage("Traitement en cours...");
-
-  try {
-    if (mode === "register") {
-      const displayName = $("displayName").value.trim();
-      const username = $("username").value.trim().toLowerCase();
-
-      if (!displayName || !/^[a-z0-9_]{3,30}$/.test(username)) {
-        showMessage("Entre ton nom et un nom d'utilisateur de 3 à 30 caractères (lettres, chiffres ou _).");
-        return;
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username,
-            display_name: displayName
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      if (data.session) {
-        showMessage("Compte créé avec succès !");
-        await loadAccount(data.user);
-      } else {
-        showMessage("Inscription enregistrée ! Vérifie ta boîte e-mail pour confirmer ton adresse, puis connecte-toi.");
-      }
-    } else {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) throw error;
-
-      showMessage("Connexion réussie !");
-      await loadAccount(data.user);
-    }
-  } catch (error) {
-    showMessage("Erreur : " + error.message);
-  } finally {
-    button.disabled = false;
+  if (!name || !username || !email || password.length < 6) {
+    return authMessage("Remplis tous les champs. Le mot de passe doit contenir au moins 6 caractères.");
   }
-});
 
-async function loadAccount(user) {
-  if (!user) return;
+  if (!/^[a-z0-9_]{3,30}$/.test(username)) {
+    return authMessage("Le nom d'utilisateur doit contenir 3 à 30 caractères : lettres, chiffres ou _.");
+  }
 
-  const { data: profile, error } = await supabase
+  const {data,error} = await db.auth.signUp({
+    email,password,
+    options:{data:{display_name:name,username}}
+  });
+
+  if(error) return authMessage(error.message);
+
+  if(!data.session) {
+    authMessage("Compte créé. Vérifie ton e-mail pour confirmer ton inscription, puis connecte-toi.");
+  } else {
+    authMessage("Compte créé avec succès.");
+    await loadAccount();
+  }
+}
+
+async function signIn() {
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+
+  const {error} = await db.auth.signInWithPassword({email,password});
+  if(error) return authMessage(error.message);
+  await loadAccount();
+}
+
+async function signOut() {
+  await db.auth.signOut();
+  currentUser = null;
+  currentProfile = null;
+  $("app").classList.add("hidden");
+  $("auth").classList.remove("hidden");
+  $("logout").classList.add("hidden");
+}
+
+async function loadAccount() {
+  const {data:{user},error:userError} = await db.auth.getUser();
+  if(userError || !user) return;
+
+  currentUser = user;
+
+  const {data:profile,error} = await db
     .from("profiles")
-    .select("username, display_name, role")
-    .eq("id", user.id)
+    .select("id,username,display_name,role,bio")
+    .eq("id",user.id)
     .maybeSingle();
 
-  $("authPanel").classList.add("hidden");
-  $("accountPanel").classList.remove("hidden");
-  $("headerButton").classList.remove("hidden");
-
-  $("accountEmail").textContent = user.email || "";
-
-  if (error || !profile) {
-    $("accountName").textContent = "Profil en attente";
-    $("accountUsername").textContent = "—";
-    $("accountRole").textContent = "Spectateur";
-    $("profileMessage").textContent = "Le compte est connecté, mais le profil n'est pas encore disponible. Contacte le support.";
+  if(error) {
+    authMessage("Impossible de charger ton profil : " + error.message);
     return;
   }
 
-  $("accountName").textContent = profile.display_name;
-  $("accountUsername").textContent = "@" + profile.username;
-  $("accountRole").textContent =
-    profile.role === "creator" ? "Créateur" :
-    profile.role === "admin" ? "Administrateur" : "Spectateur";
-
-  $("profileMessage").textContent = "Ton compte est prêt. Les autres fonctionnalités arrivent progressivement.";
-}
-
-$("logoutButton").addEventListener("click", async () => {
-  const { error } = await supabase.auth.signOut();
-  if (error) {
-    $("profileMessage").textContent = error.message;
+  if(!profile) {
+    authMessage("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");
     return;
   }
-  $("accountPanel").classList.add("hidden");
-  $("headerButton").classList.add("hidden");
-  $("authPanel").classList.remove("hidden");
-  setMode("login");
-  showMessage("Tu es déconnecté.");
-  window.scrollTo({top:0, behavior:"smooth"});
+
+  currentProfile = profile;
+  $("auth").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("logout").classList.remove("hidden");
+  $("displayName").textContent = profile.display_name || profile.username;
+  $("accountInfo").textContent = "@" + profile.username + " · " + profile.role;
+  $("myProfile").textContent = profile.display_name + " · @" + profile.username + " · " + user.email;
+
+  if(profile.role === "creator") {
+    $("spectator").classList.add("hidden");
+    $("creator").classList.remove("hidden");
+    $("navigation").innerHTML = '<button class="active" onclick="switchRolePage()">Espace Créateur</button>';
+    loadCreator();
+  } else {
+    $("creator").classList.add("hidden");
+    $("spectator").classList.remove("hidden");
+    $("navigation").innerHTML = `
+      <button class="active" onclick="showPage('discover')">Découvrir</button>
+      <button onclick="showPage('subscriptions')">Abonnements</button>
+      <button onclick="showPage('lives')">Directs</button>
+      <button onclick="showPage('profile')">Mon profil</button>`;
+    loadDiscover();
+    loadSubscriptions();
+    loadLives();
+  }
+}
+
+function showPage(page) {
+  ["discover","subscriptions","lives","profile"].forEach(p => {
+    $(p+"Page").classList.toggle("hidden",p!==page);
+  });
+  document.querySelectorAll("#navigation button").forEach(b=>b.classList.remove("active"));
+  const buttons = [...document.querySelectorAll("#navigation button")];
+  const index = ["discover","subscriptions","lives","profile"].indexOf(page);
+  if(buttons[index]) buttons[index].classList.add("active");
+}
+
+async function loadDiscover() {
+  const box = $("creators");
+  box.innerHTML = '<p>Chargement...</p>';
+
+  const {data,error} = await db.from("profiles")
+    .select("id,username,display_name,bio")
+    .eq("role","creator")
+    .limit(30);
+
+  if(error) {
+    box.innerHTML = '<p>Impossible de charger les créateurs : '+escapeHTML(error.message)+'</p>';
+  } else if(!data.length) {
+    box.innerHTML = '<p>Aucun créateur pour le moment. Reviens bientôt !</p>';
+  } else {
+    box.innerHTML = data.map(c=>`
+      <div class="item">
+        <h3>${escapeHTML(c.display_name)}</h3>
+        <p class="small">@${escapeHTML(c.username)}</p>
+        <p>${escapeHTML(c.bio || "Créateur AFRO LIVE")}</p>
+        <button onclick="viewCreator('${c.id}')">Voir le profil</button>
+      </div>`).join("");
+  }
+
+  const videos = $("freeVideos");
+  const result = await db.from("videos")
+    .select("id,title,description,creator_id,created_at")
+    .eq("status","published")
+    .order("created_at",{ascending:false})
+    .limit(30);
+
+  if(result.error) {
+    videos.innerHTML = '<p>Chargement des vidéos indisponible.</p>';
+  } else if(!result.data.length) {
+    videos.innerHTML = '<p>Pas encore de vidéos publiées.</p>';
+  } else {
+    videos.innerHTML = result.data.map(v=>`
+      <div class="item">
+        <h3>${escapeHTML(v.title)}</h3>
+        <p>${escapeHTML(v.description || "")}</p>
+        <span class="small">Vidéo gratuite</span>
+        <p class="small">Le lecteur vidéo sera disponible après configuration du stockage.</p>
+      </div>`).join("");
+  }
+}
+
+async function viewCreator(id) {
+  const {data,error} = await db.from("creator_settings")
+    .select("monthly_price_fcfa,is_accepting_subscriptions")
+    .eq("creator_id",id).maybeSingle();
+
+  if(error) return message("Impossible de lire le tarif : "+error.message);
+
+  if(!data) return message("Ce créateur n'a pas encore défini son tarif.");
+
+  if(!data.is_accepting_subscriptions) return message("Ce créateur n'accepte pas de nouveaux abonnements.");
+
+  message("Tarif : "+Number(data.monthly_price_fcfa).toLocaleString("fr-FR")+" FCFA pour 30 jours. Le paiement sécurisé n'est pas encore connecté.");
+}
+
+async function loadSubscriptions() {
+  const box = $("mySubscriptions");
+  const {data,error} = await db.from("subscriptions")
+    .select("creator_id,starts_at,expires_at,status")
+    .eq("spectator_id",currentUser.id)
+    .order("expires_at",{ascending:false});
+
+  if(error) {
+    box.textContent = "Impossible de charger les abonnements : "+error.message;
+    return;
+  }
+
+  if(!data.length) {
+    box.innerHTML = "<p>Tu n'as pas encore d'abonnement.</p>";
+    return;
+  }
+
+  box.innerHTML = data.map(s=>`
+    <div class="item">
+      <p>Créateur : ${escapeHTML(s.creator_id)}</p>
+      <p>Statut : ${escapeHTML(s.status)}</p>
+      <p>Expire le : ${new Date(s.expires_at).toLocaleDateString("fr-FR")}</p>
+    </div>`).join("");
+}
+
+async function loadLives() {
+  const {data,error} = await db.from("live_sessions")
+    .select("id,title,status,creator_id")
+    .eq("status","live")
+    .limit(30);
+
+  const box = $("liveList");
+  if(error) {
+    box.textContent = "Impossible de charger les directs : "+error.message;
+  } else if(!data.length) {
+    box.innerHTML = "<p>Aucun direct en cours.</p>";
+  } else {
+    box.innerHTML = data.map(l=>`
+      <div class="item">
+        <h3>${escapeHTML(l.title)}</h3>
+        <p>Direct en cours</p>
+        <p class="small">L'accès vidéo sera activé avec le système d'abonnement sécurisé.</p>
+      </div>`).join("");
+  }
+}
+
+function creatorPage(page) {
+  const names = ["overview","price","videos","live","subscribers","earnings"];
+  names.forEach(n=>$("creator"+n[0].toUpperCase()+n.slice(1)).classList.toggle("hidden",n!==page));
+}
+
+function switchRolePage() {
+  creatorPage("overview");
+}
+
+async function loadCreator() {
+  const {data,error} = await db.from("creator_settings")
+    .select("monthly_price_fcfa")
+    .eq("creator_id",currentUser.id)
+    .maybeSingle();
+
+  if(error) message("Tarif non chargé : "+error.message);
+  if(data) $("creatorPriceInput").value = data.monthly_price_fcfa;
+
+  const {data:videos} = await db.from("videos")
+    .select("title,status,created_at")
+    .eq("creator_id",currentUser.id)
+    .order("created_at",{ascending:false});
+
+  $("creatorVideoList").innerHTML = videos?.length
+    ? videos.map(v=>`<div class="item">${escapeHTML(v.title)} · ${escapeHTML(v.status)}</div>`).join("")
+    : "<p>Tu n'as pas encore publié de vidéo.</p>";
+
+  const {data:subs,error:subError} = await db.from("subscriptions")
+    .select("spectator_id,expires_at,status")
+    .eq("creator_id",currentUser.id)
+    .eq("status","active");
+
+  $("subscriberList").innerHTML = subError
+    ? "Impossible de charger les abonnés."
+    : subs?.length
+      ? subs.map(s=>`<div class="item">Abonné · expiration ${new Date(s.expires_at).toLocaleDateString("fr-FR")}</div>`).join("")
+      : "<p>Aucun abonné pour le moment.</p>";
+}
+
+async function savePrice() {
+  const price = Number($("creatorPriceInput").value);
+
+  if(!Number.isInteger(price) || price<100 || price>1000000) {
+    return message("Choisis un prix entre 100 et 1 000 000 FCFA.");
+  }
+
+  const {error} = await db.from("creator_settings").upsert({
+    creator_id:currentUser.id,
+    monthly_price_fcfa:price,
+    is_accepting_subscriptions:true
+  },{onConflict:"creator_id"});
+
+  if(error) return message("Enregistrement refusé : "+error.message);
+  message("Tarif enregistré : "+price.toLocaleString("fr-FR")+" FCFA.",true);
+}
+
+$("signup").addEventListener("click",signUp);
+$("login").addEventListener("click",signIn);
+$("logout").addEventListener("click",signOut);
+$("savePrice").addEventListener("click",savePrice);
+
+db.auth.getSession().then(({data})=>{
+  if(data.session) loadAccount();
 });
 
-supabase.auth.onAuthStateChange((event, session) => {
-  if (session?.user) {
-    loadAccount(session.user);
-  } else if (event === "SIGNED_OUT") {
-    $("accountPanel").classList.add("hidden");
-    $("headerButton").classList.add("hidden");
-    $("authPanel").classList.remove("hidden");
+db.auth.onAuthStateChange((event,session)=>{
+  if(session && !currentUser) {
+    setTimeout(loadAccount,0);
+  }
+  if(!session && currentUser) {
+    currentUser=null;
+    currentProfile=null;
+    $("app").classList.add("hidden");
+    $("auth").classList.remove("hidden");
+    $("logout").classList.add("hidden");
   }
 });
-
-const { data: { session } } = await supabase.auth.getSession();
-if (session?.user) {
-  await loadAccount(session.user);
-}
 </script>
 </body>
 </html>
