@@ -38,18 +38,19 @@ label{font-size:14px;color:#ddd}nav{display:flex;gap:8px;flex-wrap:wrap;margin:1
 .live-chat-message strong{color:#ff9b55}.live-chat-form{display:flex;gap:7px}
 .live-chat-form input{margin:0;min-width:0;flex:1}.live-chat-form button{padding:10px 13px}
 
-/* Plein écran mobile, chat en bas et commandes superposées */
+/* Commandes et chat superposés sans masquer la vidéo */
 .live-overlay-tools{
  position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;
  justify-content:space-between;pointer-events:none;
- background:linear-gradient(to bottom,rgba(0,0,0,.42),transparent 24%,transparent 58%,rgba(0,0,0,.68));
+ background:linear-gradient(to bottom,rgba(0,0,0,.18),transparent 20%,transparent 65%,rgba(0,0,0,.12))!important;
 }
-.live-tools,.live-chat{pointer-events:auto;background:rgba(15,15,15,.76)!important}
-.live-tools{display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap;padding:10px}
+.live-tools{pointer-events:auto;background:rgba(0,0,0,.16)!important;display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap;padding:10px}
 .live-tools button{padding:9px 11px;font-size:13px}
-.live-chat{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.15)}
-.live-chat-messages{height:120px;max-height:22vh;overflow-y:auto;background:rgba(0,0,0,.55)}
-.live-chat-form input{background:rgba(0,0,0,.85)}
+.live-chat{pointer-events:auto;margin-top:auto;padding:10px!important;background:transparent!important;border:0!important}
+.live-chat-title{color:rgba(255,255,255,.75);text-shadow:0 1px 3px #000}
+.live-chat-messages{height:auto!important;max-height:22vh;overflow:hidden!important;background:transparent!important;padding:5px!important;margin-bottom:8px}
+.live-chat-message{width:fit-content;max-width:90%;padding:4px 8px;margin:4px 0;border-radius:7px;background:rgba(0,0,0,.28);color:white;text-shadow:0 1px 2px #000}
+.live-chat-form input{background:rgba(0,0,0,.35)!important;border:1px solid rgba(255,255,255,.25)}
 .live-fullscreen{
  position:fixed!important;inset:0!important;z-index:99999!important;
  width:100vw!important;height:100vh!important;height:100dvh!important;
@@ -277,18 +278,42 @@ async function getLiveToken(sessionId){
  if(!data?.token||!data?.livekit_url)throw new Error(data?.error||"Réponse invalide du serveur LiveKit.");return data
 }
 function attachLiveTrack(track,container){
- const el=track.attach();if(track.kind===LivekitClient.Track.Kind.Video){el.style.width="100%";el.style.height="100%";el.style.maxHeight="none";el.style.objectFit="contain";el.style.background="#000"}
- if(track.kind===LivekitClient.Track.Kind.Audio)el.autoplay=true;container.appendChild(el)
+ if(!track||!container)return;
+ if(track.kind===LivekitClient.Track.Kind.Video){
+  let video=container.querySelector("video.live-video");
+  if(!video){
+   video=document.createElement("video");
+   video.className="live-video";
+   video.autoplay=true;
+   video.playsInline=true;
+   container.prepend(video);
+  }
+  if(track.attachedElements?.includes(video))return;
+  track.attach(video);
+  return;
+ }
+ if(track.kind===LivekitClient.Track.Kind.Audio){
+  if(track.attachedElements?.length)return;
+  const audio=track.attach();
+  audio.autoplay=true;
+  audio.style.display="none";
+  container.appendChild(audio);
+ }
 }
 
 /* CHAT TEMPORAIRE LIVEKIT DATA PACKETS : aucun message n'est enregistré en base */
 function addChatMessage(list,name,text,isMine=false){
- const row=document.createElement("div");row.className="live-chat-message";
- const who=document.createElement("strong");who.textContent=(name||"Spectateur")+(isMine?" (toi)":"")+ " : ";
- const body=document.createElement("span");body.textContent=text;
- row.append(who,body);list.appendChild(row);
+ const row=document.createElement("div");
+ row.className="live-chat-message";
+ const who=document.createElement("strong");
+ who.textContent=(name||"Spectateur")+(isMine?" (toi)":"")+" : ";
+ const body=document.createElement("span");
+ body.textContent=text;
+ row.append(who,body);
+ list.appendChild(row);
  while(list.children.length>100)list.removeChild(list.firstChild);
- list.scrollTop=list.scrollHeight
+ list.scrollTop=list.scrollHeight;
+ setTimeout(()=>row.remove(),3000);
 }
 function installLiveInterface(stage,room,mode){
  if(!stage||!room)return;
@@ -438,16 +463,30 @@ async function joinLive(sessionId){
  try{
   const credentials=await getLiveToken(sessionId);room=createLiveRoom();liveRoom=room;currentLiveSessionId=sessionId;liveMode="spectator";
   box.innerHTML="";
-  const stage=document.createElement("div");stage.className="live-stage";stage.id="liveStage_"+sessionId;box.appendChild(stage);
+  const stage=document.createElement("div");stage.className="live-stage";stage.id="liveStage_"+sessionId;
+  const video=document.createElement("video");video.className="live-video";video.autoplay=true;video.playsInline=true;
+  stage.appendChild(video);box.appendChild(stage);
   room.on(LivekitClient.RoomEvent.TrackSubscribed,track=>attachLiveTrack(track,stage));
-  room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>track.detach().forEach(el=>el.remove()));
+  room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>{
+   if(track.kind===LivekitClient.Track.Kind.Video){
+    const currentVideo=stage.querySelector("video.live-video");
+    if(currentVideo){track.detach(currentVideo);currentVideo.srcObject=null;}
+   }else{track.detach().forEach(el=>el.remove());}
+  });
   room.on(LivekitClient.RoomEvent.Disconnected,()=>{
-   if(liveMode==="spectator"&&liveRoom===room){cleanLiveInterface(stage);box.innerHTML="<p>Tu as quitté ce direct.</p>";liveRoom=null;currentLiveSessionId=null;liveMode=null}
+   if(liveMode==="spectator"&&liveRoom===room){
+    cleanLiveInterface(stage);
+    box.innerHTML="<p>Tu as quitté ce direct.</p>";
+    liveRoom=null;currentLiveSessionId=null;liveMode=null;
+   }
   });
   await room.connect(credentials.livekit_url,credentials.token);
   try{await room.startAudio()}catch(error){console.log("Activation audio différée par le navigateur.",error)}
-  for(const participant of room.remoteParticipants.values())for(const publication of participant.trackPublications.values())if(publication.track)attachLiveTrack(publication.track,stage);
-  if(!stage.querySelector("video")){const waiting=document.createElement("p");waiting.textContent="Connecté. En attente de l'image du créateur...";stage.appendChild(waiting)}
+  for(const participant of room.remoteParticipants.values()){
+   for(const publication of participant.trackPublications.values()){
+    if(publication.track)attachLiveTrack(publication.track,stage);
+   }
+  }
   installLiveInterface(stage,room,"spectator");
   message("Tu es connecté au direct.",true)
  }catch(error){
