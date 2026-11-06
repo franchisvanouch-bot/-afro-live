@@ -43,6 +43,10 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 .admin-actions{display:flex;gap:8px;flex-wrap:wrap}
 .admin-actions button{flex:1}
 .tag{display:inline-block;padding:5px 9px;border-radius:6px;background:#333;color:#ddd;font-size:12px}
+.live-video{width:100%;max-height:65vh;background:#000;border-radius:10px;object-fit:contain}
+.live-player{background:#080808;border-radius:10px;overflow:hidden;min-height:100px}
+.live-player video{width:100%;max-height:65vh;object-fit:contain;background:#000}
+.live-player audio{display:none}
 </style>
 </head>
 
@@ -116,9 +120,9 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
     </div>
 
     <div id="livesPage" class="hidden">
-      <h2>Directs</h2>
+      <h2>Directs en cours</h2>
+      <p>Retrouve les créateurs actuellement en direct.</p>
       <div id="liveList"></div>
-      <div class="notice">Les directs vidéo et leur contrôle d'accès seront activés après la configuration du lecteur de streaming.</div>
     </div>
 
     <div id="profilePage" class="hidden">
@@ -222,7 +226,36 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 
     <div id="creatorLive" class="hidden">
       <h3>Mes directs</h3>
-      <div class="notice">La connexion LiveKit est préparée. La fonction de démarrage et d'arrêt des directs sera ajoutée à l'étape suivante.</div>
+
+      <div class="card" id="createLiveCard">
+        <h3>Créer un direct</h3>
+
+        <label>Titre du direct</label>
+        <input id="liveTitle" maxlength="100" placeholder="Exemple : Discussion avec ma communauté">
+
+        <label>Description (facultatif)</label>
+        <textarea id="liveDescription" maxlength="500" rows="3" placeholder="Présente ton direct..."></textarea>
+
+        <button id="startLiveButton" onclick="startCreatorLive()" style="width:100%">
+          Démarrer un direct
+        </button>
+      </div>
+
+      <div id="creatorLiveStatus" class="notice">
+        Tu n'es pas actuellement en direct.
+      </div>
+
+      <div id="creatorLivePreview" class="card hidden">
+        <h3>Ton direct est en cours 🔴</h3>
+
+        <video id="localLiveVideo" class="live-video" autoplay playsinline muted></video>
+
+        <p id="liveParticipantCount">En attente de spectateurs...</p>
+
+        <button class="danger" onclick="stopCreatorLive()" style="width:100%">
+          Terminer le direct
+        </button>
+      </div>
     </div>
 
     <div id="creatorSubscribers" class="hidden">
@@ -277,6 +310,10 @@ const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let currentUser = null;
 let currentProfile = null;
+
+let liveRoom = null;
+let currentLiveSessionId = null;
+let liveMode = null;
 
 const $ = id => document.getElementById(id);
 
@@ -340,6 +377,13 @@ async function signIn(){
 
 /* DÉCONNEXION */
 async function signOut(){
+  if(liveRoom){
+    await liveRoom.disconnect().catch(()=>{});
+    liveRoom=null;
+    currentLiveSessionId=null;
+    liveMode=null;
+  }
+
   await db.auth.signOut();
 
   currentUser=null;
@@ -618,6 +662,7 @@ function showPage(page){
   if(buttons[index])buttons[index].classList.add("active");
 
   if(page==="application")loadApplication();
+  if(page==="lives")loadLives();
 }
 
 /* DEMANDE POUR DEVENIR CRÉATEUR */
@@ -837,27 +882,417 @@ async function loadSubscriptions(){
   `).join("");
 }
 
-/* DIRECTS CÔTÉ SPECTATEUR */
+/* ==================================
+   AFRO LIVE — CONNEXION LIVEKIT
+================================== */
+
+function createLiveRoom(){
+  if(!window.LivekitClient){
+    throw new Error("La bibliothèque LiveKit n'est pas chargée. Actualise la page.");
+  }
+
+  return new LivekitClient.Room({
+    adaptiveStream:true,
+    dynacast:true
+  });
+}
+
+/* OBTENIR UN JETON SÉCURISÉ */
+async function getLiveToken(sessionId){
+  const {data,error}=await db.functions.invoke("livekit-token",{
+    body:{session_id:sessionId}
+  });
+
+  if(error){
+    const detail=data?.error||error.message;
+    throw new Error(detail||"Impossible d'obtenir le jeton du direct.");
+  }
+
+  if(!data?.token||!data?.livekit_url){
+    throw new Error(data?.error||"Réponse invalide du serveur LiveKit.");
+  }
+
+  return data;
+}
+
+/* ATTACHER UNE PISTE VIDÉO OU AUDIO */
+function attachLiveTrack(track,container){
+  const element=track.attach();
+
+  if(track.kind===LivekitClient.Track.Kind.Video){
+    element.style.width="100%";
+    element.style.maxHeight="65vh";
+    element.style.objectFit="contain";
+    element.style.background="#000";
+  }
+
+  if(track.kind===LivekitClient.Track.Kind.Audio){
+    element.autoplay=true;
+  }
+
+  container.appendChild(element);
+}
+
+/* METTRE À JOUR LE NOMBRE DE SPECTATEURS */
+function updateLiveParticipantCount(){
+  if(!liveRoom||liveMode!=="creator")return;
+
+  const count=liveRoom.remoteParticipants.size;
+
+  $("liveParticipantCount").textContent=count===0
+    ?"En attente de spectateurs..."
+    :count+" spectateur(s) connecté(s).";
+}
+
+/* DÉMARRER UN DIRECT */
+async function startCreatorLive(){
+  if(!currentUser||currentProfile?.role!=="creator"){
+    return message("Seuls les créateurs peuvent démarrer un direct.");
+  }
+
+  if(liveRoom){
+    return message("Tu es déjà connecté à un direct.");
+  }
+
+  if(!window.isSecureContext){
+    return message("La caméra nécessite une connexion HTTPS.");
+  }
+
+  const title=$("liveTitle").value.trim();
+  const description=$("liveDescription").value.trim();
+  const button=$("startLiveButton");
+
+  if(title.length<3){
+    return message("Donne un titre d'au moins 3 caractères.");
+  }
+
+  button.disabled=true;
+  button.textContent="Préparation du direct...";
+  $("creatorLiveStatus").textContent="Création de ta salle...";
+
+  let sessionId=null;
+  let room=null;
+
+  try{
+    /* Créer la session dans Supabase */
+    const {data:session,error:insertError}=await db
+      .from("live_sessions")
+      .insert({
+        creator_id:currentUser.id,
+        title:title,
+        description:description,
+        status:"scheduled"
+      })
+      .select("id")
+      .single();
+
+    if(insertError)throw insertError;
+
+    sessionId=session.id;
+
+    /* Obtenir le jeton LiveKit depuis le serveur */
+    $("creatorLiveStatus").textContent="Connexion au serveur vidéo...";
+
+    const credentials=await getLiveToken(sessionId);
+
+    room=createLiveRoom();
+
+    liveRoom=room;
+    currentLiveSessionId=sessionId;
+    liveMode="creator";
+
+    room.on(
+      LivekitClient.RoomEvent.Disconnected,
+      ()=>{
+        if(liveMode==="creator"){
+          $("creatorLiveStatus").textContent="Connexion au direct interrompue.";
+        }
+      }
+    );
+
+    room.on(
+      LivekitClient.RoomEvent.ParticipantConnected,
+      updateLiveParticipantCount
+    );
+
+    room.on(
+      LivekitClient.RoomEvent.ParticipantDisconnected,
+      updateLiveParticipantCount
+    );
+
+    await room.connect(credentials.livekit_url,credentials.token);
+
+    /* Activer la caméra et le microphone */
+    $("creatorLiveStatus").textContent="Activation de la caméra et du microphone...";
+
+    await room.localParticipant.enableCameraAndMicrophone();
+
+    const videoPublications=[
+      ...room.localParticipant.videoTrackPublications.values()
+    ];
+
+    const cameraPublication=videoPublications.find(p=>p.track);
+
+    if(!cameraPublication){
+      throw new Error("La caméra n'a pas pu démarrer.");
+    }
+
+    const camera=cameraPublication.track;
+
+    camera.attach($("localLiveVideo"));
+
+    /* Publier le direct dans Supabase */
+    const {data:updated,error:updateError}=await db
+      .from("live_sessions")
+      .update({
+        status:"live",
+        started_at:new Date().toISOString()
+      })
+      .eq("id",sessionId)
+      .eq("creator_id",currentUser.id)
+      .select("id")
+      .maybeSingle();
+
+    if(updateError||!updated){
+      throw new Error(updateError?.message||"Impossible de publier le direct.");
+    }
+
+    $("creatorLivePreview").classList.remove("hidden");
+    $("startLiveButton").classList.add("hidden");
+
+    $("creatorLiveStatus").textContent="Tu es en direct !";
+    updateLiveParticipantCount();
+
+    message("Ton direct est maintenant en ligne.",true);
+
+  }catch(error){
+    console.error("Erreur LiveKit :",error);
+
+    if(room){
+      await room.disconnect().catch(()=>{});
+    }
+
+    liveRoom=null;
+    currentLiveSessionId=null;
+    liveMode=null;
+
+    if(sessionId){
+      await db.from("live_sessions")
+        .update({status:"cancelled"})
+        .eq("id",sessionId)
+        .eq("creator_id",currentUser.id);
+    }
+
+    $("creatorLiveStatus").textContent=
+      "Erreur : "+(error.message||"Impossible de démarrer le direct.");
+
+    message("Le direct n'a pas pu démarrer : "+(error.message||"Erreur inconnue."));
+
+  }finally{
+    button.disabled=false;
+    button.textContent="Démarrer un direct";
+  }
+}
+
+/* TERMINER UN DIRECT */
+async function stopCreatorLive(){
+  if(liveMode!=="creator"||!currentLiveSessionId){
+    return message("Aucun direct créateur en cours.");
+  }
+
+  const sessionId=currentLiveSessionId;
+
+  $("creatorLiveStatus").textContent="Fermeture du direct...";
+
+  const room=liveRoom;
+
+  liveRoom=null;
+  currentLiveSessionId=null;
+  liveMode=null;
+
+  if(room){
+    await room.disconnect().catch(()=>{});
+  }
+
+  const {data,error}=await db.from("live_sessions")
+    .update({
+      status:"ended",
+      ended_at:new Date().toISOString()
+    })
+    .eq("id",sessionId)
+    .eq("creator_id",currentUser.id)
+    .select("id")
+    .maybeSingle();
+
+  $("creatorLivePreview").classList.add("hidden");
+  $("startLiveButton").classList.remove("hidden");
+
+  $("localLiveVideo").srcObject=null;
+
+  $("creatorLiveStatus").textContent=error||!data
+    ?"Connexion terminée, mais le statut du direct n'a pas été actualisé."
+    :"Ton direct est terminé.";
+
+  $("liveTitle").value="";
+  $("liveDescription").value="";
+
+  if(error||!data){
+    message("Le direct est déconnecté, mais son statut n'a pas été actualisé.");
+  }else{
+    message("Direct terminé.",true);
+  }
+
+  loadLives();
+}
+
+/* REJOINDRE UN DIRECT COMME SPECTATEUR */
+async function joinLive(sessionId){
+  if(!currentUser){
+    return message("Connecte-toi pour regarder ce direct.");
+  }
+
+  if(liveRoom){
+    await liveRoom.disconnect().catch(()=>{});
+    liveRoom=null;
+    currentLiveSessionId=null;
+    liveMode=null;
+  }
+
+  const box=$("livePlayer_"+sessionId);
+
+  if(!box)return;
+
+  box.innerHTML="<p>Connexion au direct...</p>";
+
+  let room=null;
+
+  try{
+    const credentials=await getLiveToken(sessionId);
+
+    room=createLiveRoom();
+
+    liveRoom=room;
+    currentLiveSessionId=sessionId;
+    liveMode="spectator";
+
+    box.innerHTML="";
+
+    room.on(
+      LivekitClient.RoomEvent.TrackSubscribed,
+      (track)=>{
+        attachLiveTrack(track,box);
+      }
+    );
+
+    room.on(
+      LivekitClient.RoomEvent.TrackUnsubscribed,
+      (track)=>{
+        track.detach().forEach(element=>element.remove());
+      }
+    );
+
+    room.on(
+      LivekitClient.RoomEvent.Disconnected,
+      ()=>{
+        if(liveMode==="spectator"){
+          box.innerHTML="<p>Tu as quitté ce direct.</p>";
+          liveRoom=null;
+          currentLiveSessionId=null;
+          liveMode=null;
+        }
+      }
+    );
+
+    await room.connect(credentials.livekit_url,credentials.token);
+
+    /* Activer le son si le navigateur l'autorise */
+    try{
+      await room.startAudio();
+    }catch(error){
+      console.log("Activation audio différée par le navigateur.",error);
+    }
+
+    /* Ajouter les pistes déjà publiées */
+    for(const participant of room.remoteParticipants.values()){
+      for(const publication of participant.trackPublications.values()){
+        if(publication.track){
+          attachLiveTrack(publication.track,box);
+        }
+      }
+    }
+
+    if(!box.querySelector("video")){
+      box.insertAdjacentHTML(
+        "beforeend",
+        "<p>Connecté. En attente de l'image du créateur...</p>"
+      );
+    }
+
+    box.insertAdjacentHTML(
+      "beforeend",
+      '<button class="secondary" onclick="leaveSpectatorLive()" style="width:100%;margin-top:10px">Quitter le direct</button>'
+    );
+
+    message("Tu es connecté au direct.",true);
+
+  }catch(error){
+    console.error("Erreur spectateur LiveKit :",error);
+
+    if(room){
+      await room.disconnect().catch(()=>{});
+    }
+
+    liveRoom=null;
+    currentLiveSessionId=null;
+    liveMode=null;
+
+    box.innerHTML="<p>Impossible de rejoindre : "+
+      escapeHTML(error.message||"Erreur inconnue")+"</p>";
+  }
+}
+
+/* QUITTER UN DIRECT CÔTÉ SPECTATEUR */
+async function leaveSpectatorLive(){
+  if(liveMode!=="spectator"||!liveRoom)return;
+
+  const room=liveRoom;
+
+  liveRoom=null;
+  currentLiveSessionId=null;
+  liveMode=null;
+
+  await room.disconnect().catch(()=>{});
+
+  message("Tu as quitté le direct.");
+}
+
+/* CHARGER LES DIRECTS */
 async function loadLives(){
+  const box=$("liveList");
+
+  box.innerHTML="<p>Chargement des directs...</p>";
+
   const {data,error}=await db.from("live_sessions")
     .select("id,title,status,creator_id")
     .eq("status","live")
+    .order("started_at",{ascending:false})
     .limit(30);
-
-  const box=$("liveList");
 
   if(error){
     box.textContent="Impossible de charger les directs : "+error.message;
 
   }else if(!data.length){
-    box.innerHTML="<p>Aucun direct en cours.</p>";
+    box.innerHTML="<p>Aucun direct en cours. Reviens bientôt !</p>";
 
   }else{
     box.innerHTML=data.map(l=>`
-      <div class="item">
+      <div class="card">
         <h3>${escapeHTML(l.title)}</h3>
-        <p>Direct en cours</p>
-        <p class="small">Le lecteur vidéo sera activé lors de la prochaine étape.</p>
+        <span class="tag">🔴 EN DIRECT</span>
+        <div id="livePlayer_${l.id}" class="live-player" style="margin-top:12px"></div>
+        <button onclick="joinLive('${l.id}')" style="width:100%;margin-top:10px">
+          Regarder le direct
+        </button>
       </div>
     `).join("");
   }
@@ -944,6 +1379,13 @@ db.auth.onAuthStateChange((event,session)=>{
   }
 
   if(!session&&currentUser){
+    if(liveRoom){
+      liveRoom.disconnect().catch(()=>{});
+      liveRoom=null;
+      currentLiveSessionId=null;
+      liveMode=null;
+    }
+
     currentUser=null;
     currentProfile=null;
 
