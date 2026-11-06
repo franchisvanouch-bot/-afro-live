@@ -37,10 +37,37 @@ label{font-size:14px;color:#ddd}nav{display:flex;gap:8px;flex-wrap:wrap;margin:1
 .live-chat-message{font-size:13px;line-height:1.4;margin:5px 0;overflow-wrap:anywhere}
 .live-chat-message strong{color:#ff9b55}.live-chat-form{display:flex;gap:7px}
 .live-chat-form input{margin:0;min-width:0;flex:1}.live-chat-form button{padding:10px 13px}
-.live-fullscreen{position:fixed!important;inset:0!important;z-index:99999!important;width:100vw!important;height:100dvh!important;max-height:none!important;border-radius:0!important;overflow-y:auto!important;background:#080808!important}
-.live-fullscreen .live-video,.live-fullscreen video{max-height:55dvh}
-.live-fullscreen .live-chat-messages{height:22dvh}
-@media(max-width:600px){main{padding:12px}.live-chat-messages{height:115px}.live-tools button{padding:10px}}
+
+/* Plein écran mobile, chat en bas et commandes superposées */
+.live-overlay-tools{
+ position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;
+ justify-content:space-between;pointer-events:none;
+ background:linear-gradient(to bottom,rgba(0,0,0,.42),transparent 24%,transparent 58%,rgba(0,0,0,.68));
+}
+.live-tools,.live-chat{pointer-events:auto;background:rgba(15,15,15,.76)!important}
+.live-tools{display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap;padding:10px}
+.live-tools button{padding:9px 11px;font-size:13px}
+.live-chat{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.15)}
+.live-chat-messages{height:120px;max-height:22vh;overflow-y:auto;background:rgba(0,0,0,.55)}
+.live-chat-form input{background:rgba(0,0,0,.85)}
+.live-fullscreen{
+ position:fixed!important;inset:0!important;z-index:99999!important;
+ width:100vw!important;height:100vh!important;height:100dvh!important;
+ max-height:none!important;min-height:0!important;margin:0!important;
+ border-radius:0!important;overflow:hidden!important;background:#000!important;
+}
+.live-fullscreen>video{
+ display:block;width:100%!important;height:100%!important;
+ max-height:none!important;object-fit:contain!important;background:#000!important;
+}
+.live-fullscreen .live-overlay-tools{position:absolute!important;inset:0!important;height:100%!important;justify-content:space-between!important}
+.live-fullscreen .live-tools{padding-top:max(10px,env(safe-area-inset-top))}
+.live-fullscreen .live-chat{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.live-fullscreen .live-chat-messages{height:20dvh;max-height:180px}
+@media(max-width:600px){
+ main{padding:12px}.live-chat-messages{height:115px}.live-tools button{padding:9px}
+ .live-fullscreen .live-tools button{font-size:12px}
+}
 </style>
 </head>
 <body>
@@ -64,7 +91,6 @@ label{font-size:14px;color:#ddd}nav{display:flex;gap:8px;flex-wrap:wrap;margin:1
 
 <section id="app" class="hidden">
 <h1>Bonjour, <span id="displayName" class="orange"></span> 👋</h1><p id="accountInfo"></p><div id="status"></div><nav id="navigation"></nav>
-
 <section id="spectator">
 <div id="discoverPage"><h2>Découvrir les créateurs</h2><p>Retrouve les créateurs présents sur AFRO LIVE.</p><div id="creators" class="grid"></div>
 <h2>Vidéos gratuites</h2><div id="freeVideos" class="grid"></div></div>
@@ -251,7 +277,7 @@ async function getLiveToken(sessionId){
  if(!data?.token||!data?.livekit_url)throw new Error(data?.error||"Réponse invalide du serveur LiveKit.");return data
 }
 function attachLiveTrack(track,container){
- const el=track.attach();if(track.kind===LivekitClient.Track.Kind.Video){el.style.width="100%";el.style.maxHeight="70vh";el.style.objectFit="contain";el.style.background="#000"}
+ const el=track.attach();if(track.kind===LivekitClient.Track.Kind.Video){el.style.width="100%";el.style.height="100%";el.style.maxHeight="none";el.style.objectFit="contain";el.style.background="#000"}
  if(track.kind===LivekitClient.Track.Kind.Audio)el.autoplay=true;container.appendChild(el)
 }
 
@@ -267,43 +293,73 @@ function addChatMessage(list,name,text,isMine=false){
 function installLiveInterface(stage,room,mode){
  if(!stage||!room)return;
  const old=stage.querySelector(".live-overlay-tools");if(old)old.remove();
+
  const tools=document.createElement("div");tools.className="live-overlay-tools";
  const bar=document.createElement("div");bar.className="live-tools";
  const count=document.createElement("span");count.className="count";
- const full=document.createElement("button");full.className="secondary";full.type="button";full.textContent="⛶ Agrandir";
- full.addEventListener("click",async()=>{
-  const active=stage.classList.contains("live-fullscreen");
-  if(active){stage.classList.remove("live-fullscreen");if(document.fullscreenElement&&document.exitFullscreen)try{await document.exitFullscreen()}catch(e){}}
-  else{stage.classList.add("live-fullscreen");if(stage.requestFullscreen)try{await stage.requestFullscreen()}catch(e){}}
-  full.textContent=stage.classList.contains("live-fullscreen")?"✕ Réduire":"⛶ Agrandir"
+
+ const full=document.createElement("button");full.className="secondary";full.type="button";full.textContent="⛶ Plein écran";
+ full.addEventListener("click",()=>{
+  const active=stage.classList.toggle("live-fullscreen");
+  full.textContent=active?"✕ Réduire":"⛶ Plein écran";
  });
- bar.append(count,full);
+
+ bar.appendChild(count);
+
+ if(mode==="creator"){
+  let micEnabled=true;
+  const mic=document.createElement("button");mic.className="secondary";mic.type="button";mic.textContent="🎙️ Micro activé";
+  mic.addEventListener("click",async()=>{
+   mic.disabled=true;
+   try{
+    const nextState=!micEnabled;
+    await room.localParticipant.setMicrophoneEnabled(nextState);
+    micEnabled=nextState;
+    mic.textContent=micEnabled?"🎙️ Micro activé":"🔇 Micro coupé";
+    mic.classList.toggle("danger",!micEnabled);
+   }catch(error){message("Impossible de modifier le microphone : "+(error.message||"Erreur"))}
+   finally{mic.disabled=false}
+  });
+  bar.appendChild(mic);
+
+  const end=document.createElement("button");end.className="danger";end.type="button";end.textContent="Terminer";
+  end.addEventListener("click",()=>{if(confirm("Veux-tu vraiment terminer ce direct ?"))stopCreatorLive()});
+  bar.appendChild(end);
+ }
+
+ if(mode==="spectator"){
+  const leave=document.createElement("button");leave.className="danger";leave.type="button";leave.textContent="Quitter";
+  leave.addEventListener("click",leaveSpectatorLive);bar.appendChild(leave);
+ }
+
+ bar.appendChild(full);
+
  const chat=document.createElement("div");chat.className="live-chat";
  const title=document.createElement("div");title.className="live-chat-title";title.textContent="Discussion en direct";
  const list=document.createElement("div");list.className="live-chat-messages";list.setAttribute("aria-live","polite");
  const form=document.createElement("form");form.className="live-chat-form";
  const input=document.createElement("input");input.type="text";input.maxLength=300;input.placeholder="Écris un message...";input.autocomplete="off";input.setAttribute("aria-label","Message du chat");
- const send=document.createElement("button");send.type="submit";send.textContent="Envoyer";form.append(input,send);
- chat.append(title,list,form);tools.append(bar,chat);stage.appendChild(tools);
+ const send=document.createElement("button");send.type="submit";send.textContent="Envoyer";
+ form.append(input,send);chat.append(title,list,form);tools.append(bar,chat);stage.appendChild(tools);
+
  const update=()=>{
   const n=room.remoteParticipants.size;
-  /* côté créateur : tous les participants distants sont les spectateurs ;
-     côté spectateur : le créateur est aussi distant, donc on retire 1. */
   const viewers=mode==="spectator"?Math.max(0,n-1):n;
-  count.textContent=viewers+" spectateur(s) connecté(s)";
+  count.textContent=viewers+" spectateur(s)";
  };
  update();
- const refresh=()=>update();
- room.on(LivekitClient.RoomEvent.ParticipantConnected,refresh);
- room.on(LivekitClient.RoomEvent.ParticipantDisconnected,refresh);
+ room.on(LivekitClient.RoomEvent.ParticipantConnected,update);
+ room.on(LivekitClient.RoomEvent.ParticipantDisconnected,update);
+
  room.on(LivekitClient.RoomEvent.DataReceived,(payload,participant)=>{
   try{
    const decoded=new TextDecoder().decode(payload),data=JSON.parse(decoded);
    if(data?.type!=="afro_chat"||typeof data.text!=="string")return;
    const clean=data.text.trim().slice(0,300);if(!clean)return;
-   addChatMessage(list,String(data.name||"Spectateur").slice(0,40),clean,false)
+   addChatMessage(list,String(data.name||"Spectateur").slice(0,40),clean,false);
   }catch(e){console.warn("Message de chat ignoré.",e)}
  });
+
  let lastSent=0;
  form.addEventListener("submit",async event=>{
   event.preventDefault();const text=input.value.trim();if(!text)return;
@@ -313,7 +369,7 @@ function installLiveInterface(stage,room,mode){
    const packet=new TextEncoder().encode(JSON.stringify({type:"afro_chat",name:(currentProfile?.display_name||currentProfile?.username||"Spectateur").slice(0,40),text:text.slice(0,300)}));
    await room.localParticipant.publishData(packet,{reliable:true});
    addChatMessage(list,currentProfile?.display_name||currentProfile?.username||"Moi",text.slice(0,300),true);
-   input.value=""
+   input.value="";
   }catch(error){message("Impossible d'envoyer le message : "+(error.message||"erreur"))}
   finally{send.disabled=false;input.focus()}
  });
@@ -393,7 +449,6 @@ async function joinLive(sessionId){
   for(const participant of room.remoteParticipants.values())for(const publication of participant.trackPublications.values())if(publication.track)attachLiveTrack(publication.track,stage);
   if(!stage.querySelector("video")){const waiting=document.createElement("p");waiting.textContent="Connecté. En attente de l'image du créateur...";stage.appendChild(waiting)}
   installLiveInterface(stage,room,"spectator");
-  const leave=document.createElement("button");leave.className="secondary";leave.type="button";leave.style.width="100%";leave.style.marginTop="10px";leave.textContent="Quitter le direct";leave.addEventListener("click",leaveSpectatorLive);box.appendChild(leave);
   message("Tu es connecté au direct.",true)
  }catch(error){
   console.error("Erreur spectateur LiveKit :",error);if(room)await room.disconnect().catch(()=>{});
@@ -402,7 +457,10 @@ async function joinLive(sessionId){
 }
 async function leaveSpectatorLive(){
  if(liveMode!=="spectator"||!liveRoom)return;
- const room=liveRoom;liveRoom=null;currentLiveSessionId=null;liveMode=null;await room.disconnect().catch(()=>{});message("Tu as quitté le direct.")
+ const room=liveRoom;liveRoom=null;currentLiveSessionId=null;liveMode=null;await room.disconnect().catch(()=>{});
+ const stages=document.querySelectorAll(".live-stage");
+ stages.forEach(stage=>cleanLiveInterface(stage));
+ message("Tu as quitté le direct.")
 }
 async function loadLives(){
  const box=$("liveList");box.innerHTML="<p>Chargement des directs...</p>";
