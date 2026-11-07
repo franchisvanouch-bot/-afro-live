@@ -2,140 +2,267 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#101010">
 <title>AFRO LIVE — Congo</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/livekit-client@2.5.8/dist/livekit-client.umd.min.js"></script>
 <style>
-:root{--bg:#101010;--panel:#1b1b1b;--orange:#ff6a00;--muted:#aaa;--line:#303030}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif}
+:root{--bg:#101010;--panel:#1b1b1b;--orange:#ff6a00;--muted:#aaa;--line:#303030;--green:#22c55e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif}
 header{background:#171717;border-bottom:1px solid var(--line);padding:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:5}
-.logo{font-size:23px;font-weight:900;color:var(--orange)}.logo span{color:white}
+.logo{font-size:23px;font-weight:900;color:var(--orange)}.logo span{color:#fff}
 button,.btn{background:var(--orange);color:#fff;border:0;border-radius:8px;padding:12px 16px;font-weight:bold;cursor:pointer}
 button.secondary{background:#333}button.danger{background:#a52a2a}button:disabled{opacity:.5;cursor:not-allowed}
-main{max-width:1000px;margin:auto;padding:18px}h1{font-size:28px;margin:12px 0}h2{font-size:21px;margin-top:26px}
-p{color:#ccc;line-height:1.5}.card{background:var(--panel);border:1px solid var(--line);padding:17px;border-radius:13px;margin:13px 0}
-input,textarea,select{width:100%;padding:13px;background:#111;color:white;border:1px solid #444;border-radius:8px;margin:7px 0 13px;font-size:16px}
-label{font-size:14px;color:#ddd}nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}nav button{background:#292929}nav button.active{background:var(--orange)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.small{font-size:13px;color:var(--muted)}.orange{color:var(--orange)}
-.hidden{display:none!important}.notice{padding:12px;border-radius:8px;background:#292015;color:#ffd2ad;margin:12px 0}
-.success{background:#14271b;color:#b8f5c9}.item{background:#222;padding:14px;border-radius:10px;border:1px solid #333}
-.item h3{margin:5px 0}footer{text-align:center;padding:30px;color:#777;font-size:13px}
-#status{color:#ffb47c;font-size:14px;min-height:22px}.admin-actions{display:flex;gap:8px;flex-wrap:wrap}
-.admin-actions button{flex:1}.tag{display:inline-block;padding:5px 9px;border-radius:6px;background:#333;color:#ddd;font-size:12px}
+main{max-width:1000px;margin:auto;padding:18px}
+h1{font-size:28px;margin:12px 0}h2{font-size:21px;margin-top:26px}h3{margin:8px 0}
+p{color:#ccc;line-height:1.5}
+.card{background:var(--panel);border:1px solid var(--line);padding:17px;border-radius:13px;margin:13px 0}
+input,textarea,select{width:100%;padding:13px;background:#111;color:#fff;border:1px solid #444;border-radius:8px;margin:7px 0 13px;font-size:16px}
+label{font-size:14px;color:#ddd}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}nav button{background:#292929}nav button.active{background:var(--orange)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.small{font-size:13px;color:var(--muted)}.orange{color:var(--orange)}
+.hidden{display:none!important}
+.notice{padding:12px;border-radius:8px;background:#292015;color:#ffd2ad;margin:12px 0}
+.success{background:#14271b;color:#b8f5c9}
+.item{background:#222;padding:14px;border-radius:10px;border:1px solid #333}
+.item h3{margin:5px 0}
+footer{text-align:center;padding:30px;color:#777;font-size:13px}
+#status{color:#ffb47c;font-size:14px;min-height:22px}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-actions button{flex:1}
+.tag{display:inline-block;padding:5px 9px;border-radius:6px;background:#333;color:#ddd;font-size:12px}
+.follow-tag{display:inline-block;background:#14271b;color:#b8f5c9;font-size:12px;padding:4px 8px;border-radius:6px;margin-left:6px}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+/* Avatars, point vert, statut */
+.avatar-wrap{position:relative;display:inline-block;flex:0 0 auto}
+.avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;background:#333;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:bold}
+.profile-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.profile-info{flex:1;min-width:220px}
+.creator-card{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.creator-card>div:nth-child(2){flex:1;min-width:160px}
+.live-head{display:flex;gap:12px;align-items:center}
+.stats{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0;color:#ddd}
+.status{color:#ffb47c;font-style:italic}
+.dot-live{position:absolute;right:2px;bottom:2px;width:16px;height:16px;border-radius:50%;background:var(--green);border:3px solid #1b1b1b;animation:pulse 1.6s infinite}
+.dot-inline{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);vertical-align:middle}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.7)}70%{box-shadow:0 0 0 10px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.post-item video,.post-item img,.item video,.item img{width:100%;border-radius:10px;max-height:60vh;object-fit:contain;background:#000}
+
+/* Direct */
 .live-video{width:100%;max-height:65vh;background:#000;border-radius:10px;object-fit:contain}
 .live-player{background:#080808;border-radius:10px;overflow:hidden;min-height:100px}
-.live-player video{width:100%;max-height:65vh;object-fit:contain;background:#000}.live-player audio{display:none}
+.live-preview{margin-top:12px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
+.live-player video{width:100%;max-height:65vh;object-fit:contain;background:#000}
+.live-player audio{display:none}
 .live-stage{position:relative;background:#050505;border-radius:12px;overflow:hidden;min-height:170px}
 .live-stage video{display:block;width:100%;max-height:70vh;object-fit:contain;background:#000}
-.live-tools{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:9px;background:#171717}
-.live-tools .count{font-size:14px;font-weight:bold;color:#fff;background:#e0262b;padding:6px 10px;border-radius:6px}
-.live-chat{background:#171717;border-top:1px solid #333;padding:10px}
-.live-chat-title{font-weight:bold;color:#ff9b55;margin-bottom:7px}
-.live-chat-messages{height:125px;overflow-y:auto;background:#101010;border-radius:8px;padding:8px;margin-bottom:8px}
-.live-chat-message{font-size:13px;line-height:1.4;margin:5px 0;overflow-wrap:anywhere}
-.live-chat-message strong{color:#ff9b55}.live-chat-form{display:flex;gap:7px}
-.live-chat-form input{margin:0;min-width:0;flex:1}.live-chat-form button{padding:10px 13px}
-.live-badge{display:inline-block;background:#e0262b;color:#fff;font-weight:bold;font-size:12px;padding:4px 8px;border-radius:6px}
-.follow-tag{display:inline-block;background:#14271b;color:#b8f5c9;font-size:12px;padding:4px 8px;border-radius:6px;margin-left:6px}
-
-/* Commandes et chat superposés sans masquer la vidéo */
-.live-overlay-tools{
- position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;
- justify-content:space-between;pointer-events:none;
- background:linear-gradient(to bottom,rgba(0,0,0,.18),transparent 20%,transparent 65%,rgba(0,0,0,.12))!important;
-}
-.live-tools{pointer-events:auto;background:rgba(0,0,0,.16)!important;display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap;padding:10px}
+.live-tools{display:flex;justify-content:space-between;align-items:center;gap:7px;flex-wrap:wrap;padding:10px;background:rgba(0,0,0,.16);pointer-events:auto}
 .live-tools button{padding:9px 11px;font-size:13px}
-.live-chat{pointer-events:auto;margin-top:auto;padding:10px!important;background:transparent!important;border:0!important}
-.live-chat-title{color:rgba(255,255,255,.75);text-shadow:0 1px 3px #000}
-.live-chat-messages{height:auto!important;max-height:22vh;overflow:hidden!important;background:transparent!important;padding:5px!important;margin-bottom:8px}
-.live-chat-message{width:fit-content;max-width:90%;padding:4px 8px;margin:4px 0;border-radius:7px;background:rgba(0,0,0,.28);color:white;text-shadow:0 1px 2px #000}
-.live-chat-form input{background:rgba(0,0,0,.35)!important;border:1px solid rgba(255,255,255,.25)}
-.live-fullscreen{
- position:fixed!important;inset:0!important;z-index:99999!important;
- width:100vw!important;height:100vh!important;height:100dvh!important;
- max-height:none!important;min-height:0!important;margin:0!important;
- border-radius:0!important;overflow:hidden!important;background:#000!important;
-}
-.live-fullscreen>video{
- display:block;width:100%!important;height:100%!important;
- max-height:none!important;object-fit:contain!important;background:#000!important;
-}
-.live-fullscreen .live-overlay-tools{position:absolute!important;inset:0!important;height:100%!important;justify-content:space-between!important}
+.live-tools .count{font-size:14px;font-weight:bold;color:#fff;background:#e0262b;padding:6px 10px;border-radius:6px}
+.live-overlay-tools{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.18),transparent 20%,transparent 65%,rgba(0,0,0,.12))}
+.live-chat{pointer-events:auto;margin-top:auto;padding:10px}
+.live-chat-title{color:rgba(255,255,255,.75);text-shadow:0 1px 3px #000;font-size:13px;margin-bottom:6px}
+.live-chat-messages{height:auto;max-height:22vh;overflow:hidden;padding:5px;margin-bottom:8px}
+.live-chat-message{width:fit-content;max-width:90%;font-size:13px;line-height:1.4;padding:4px 8px;margin:4px 0;border-radius:7px;background:rgba(0,0,0,.28);color:#fff;text-shadow:0 1px 2px #000;overflow-wrap:anywhere}
+.live-chat-message strong{color:#ff9b55}
+.live-chat-form{display:flex;gap:7px}
+.live-chat-form input{margin:0;min-width:0;flex:1;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25)}
+.live-chat-form button{padding:10px 13px}
+.live-fullscreen{position:fixed!important;inset:0!important;z-index:99999!important;width:100vw!important;height:100vh!important;height:100dvh!important;max-height:none!important;margin:0!important;border-radius:0!important;background:#000!important}
+.live-fullscreen>video{display:block;width:100%!important;height:100%!important;max-height:none!important;object-fit:contain!important}
+.live-fullscreen .live-overlay-tools{height:100%}
 .live-fullscreen .live-tools{padding-top:max(10px,env(safe-area-inset-top))}
 .live-fullscreen .live-chat{padding-bottom:max(12px,env(safe-area-inset-bottom))}
-.live-fullscreen .live-chat-messages{height:20dvh;max-height:180px}
-@media(max-width:600px){
- main{padding:12px}.live-chat-messages{height:115px}.live-tools button{padding:9px}
- .live-fullscreen .live-tools button{font-size:12px}
-}
+.live-fullscreen .live-chat-messages{max-height:20dvh}
+@media(max-width:600px){main{padding:12px}.live-tools button{padding:9px}}
 </style>
 </head>
 <body>
 <header><div class="logo">AFRO <span>LIVE</span></div><button id="logout" class="secondary hidden">Déconnexion</button></header>
 <main>
+
 <section id="auth">
-<h1>Bienvenue sur <span class="orange">AFRO LIVE</span></h1>
-<p>La plateforme congolaise qui rapproche les créateurs et leur public grâce aux vidéos et aux directs.</p>
-<div class="card"><h2>Créer un compte</h2>
-<label>Nom affiché</label><input id="signupName" placeholder="Ton nom">
-<label>Nom d'utilisateur</label><input id="signupUsername" placeholder="Exemple : vanouch123">
-<label>Adresse e-mail</label><input id="signupEmail" type="email" placeholder="ton@email.com">
-<label>Mot de passe</label><input id="signupPassword" type="password" placeholder="Au moins 6 caractères">
-<button id="signup" style="width:100%">Créer mon compte</button></div>
-<div class="card"><h2>J'ai déjà un compte</h2>
-<label>E-mail</label><input id="loginEmail" type="email" placeholder="Ton e-mail">
-<label>Mot de passe</label><input id="loginPassword" type="password" placeholder="Ton mot de passe">
-<button id="login" style="width:100%">Se connecter</button></div>
-<div id="authMessage" class="notice hidden"></div>
+ <h1>Bienvenue sur <span class="orange">AFRO LIVE</span></h1>
+ <p>La plateforme congolaise qui rapproche les créateurs et leur public grâce aux vidéos et aux directs.</p>
+ <div class="card"><h2>Créer un compte</h2>
+  <label for="signupName">Nom affiché</label><input id="signupName" placeholder="Ton nom">
+  <label for="signupUsername">Nom d'utilisateur</label><input id="signupUsername" placeholder="Exemple : vanouch123">
+  <label for="signupEmail">Adresse e-mail</label><input id="signupEmail" type="email" placeholder="ton@email.com">
+  <label for="signupPassword">Mot de passe</label><input id="signupPassword" type="password" placeholder="Au moins 6 caractères">
+  <button id="signup" style="width:100%">Créer mon compte</button></div>
+ <div class="card"><h2>J'ai déjà un compte</h2>
+  <label for="loginEmail">E-mail</label><input id="loginEmail" type="email" placeholder="Ton e-mail">
+  <label for="loginPassword">Mot de passe</label><input id="loginPassword" type="password" placeholder="Ton mot de passe">
+  <button id="login" style="width:100%">Se connecter</button></div>
+ <div id="authMessage" class="notice hidden"></div>
 </section>
 
 <section id="app" class="hidden">
-<h1>Bonjour, <span id="displayName" class="orange"></span> 👋</h1><p id="accountInfo"></p><div id="status"></div><nav id="navigation"></nav>
-<section id="spectator">
-<div id="discoverPage"><h2>Découvrir les créateurs</h2><p>Retrouve les créateurs présents sur AFRO LIVE.</p><div id="creators" class="grid"></div>
-<h2>Vidéos gratuites</h2><div id="freeVideos" class="grid"></div></div>
-<div id="subscriptionsPage" class="hidden"><h2>Mes abonnements</h2><p>Les abonnements durent 30 jours. Le renouvellement est manuel.</p><div id="mySubscriptions"></div></div>
-<div id="livesPage" class="hidden"><h2>Directs en cours</h2><p>Retrouve les créateurs actuellement en direct.</p><div id="liveList"></div></div>
-<div id="followsPage" class="hidden"><h2>Mes suivis</h2><p>Les créateurs que tu suis. Un badge apparaît quand l'un d'eux est en direct.</p><div id="followsList"></div></div>
-<div id="profilePage" class="hidden"><h2>Mon profil</h2><div class="card"><p id="myProfile"></p><button class="secondary" onclick="showPage('discover')">Retour à l'accueil</button></div></div>
-<div id="applicationPage" class="hidden"><h2>Devenir créateur AFRO LIVE</h2><p>Présente ta chaîne et explique au public le contenu que tu souhaites partager.</p>
-<div id="applicationStatus" class="notice">Tu peux envoyer une demande pour devenir créateur.</div>
-<form id="creatorApplicationForm" class="card"><h3>Informations de ta chaîne</h3>
-<label>Nom de ta chaîne</label><input id="channelName" maxlength="60" required placeholder="Exemple : Vanouch TV">
-<label>Présentation de ta chaîne</label><textarea id="creatorBio" maxlength="1000" rows="5" required placeholder="Présente-toi et explique les contenus que tu veux partager..."></textarea>
-<label>Catégorie de contenu</label><select id="creatorCategory" required><option value="">Choisir une catégorie</option><option>Musique</option><option>Humour</option><option>Sport</option><option>Culture</option><option>Éducation</option><option>Lifestyle</option><option>Cuisine</option><option>Discussion</option><option>Autre</option></select>
-<label>Pays</label><input id="creatorCountry" value="Congo-Brazzaville" required>
-<label>Lien vers ton réseau social (facultatif)</label><input id="creatorSocial" type="url" placeholder="https://...">
-<button id="submitApplication" type="submit" style="width:100%">Envoyer ma demande</button></form>
-<div class="card"><h3>Comment ça marche ?</h3><p>1. Tu remplis le formulaire.</p><p>2. AFRO LIVE reçoit ta demande.</p><p>3. Un administrateur examine ta candidature.</p><p>4. Si elle est acceptée, ton espace créateur devient accessible.</p><p class="small">L'envoi d'une demande ne garantit pas son acceptation.</p></div></div>
+ <h1>Bonjour, <span id="displayName" class="orange"></span> 👋</h1>
+ <p id="accountInfo"></p>
+ <div id="status"></div>
+ <nav id="navigation"></nav>
+
+ <section id="spectator">
+  <div id="discoverPage">
+   <h2>Découvrir les créateurs</h2>
+   <div id="creators" class="grid"></div>
+   <h2>Dernières publications</h2>
+   <div id="freeVideos" class="grid"></div>
+  </div>
+
+  <div id="subscriptionsPage" class="hidden">
+   <h2>Mes abonnements</h2>
+   <p>Les abonnements durent 30 jours. Le renouvellement est manuel.</p>
+   <div id="mySubscriptions"></div>
+  </div>
+
+  <div id="livesPage" class="hidden">
+   <h2>Directs en cours</h2>
+   <p>Retrouve les créateurs actuellement en direct.</p>
+   <div id="liveList"></div>
+  </div>
+
+  <div id="followsPage" class="hidden">
+   <h2>Mes suivis</h2>
+   <p>Les créateurs que tu suis. Le point vert apparaît quand l'un d'eux est en direct.</p>
+   <div id="followsList"></div>
+  </div>
+
+  <div id="profilePage" class="hidden">
+   <h2>Mon profil</h2>
+   <div class="card">
+    <p id="myProfile"></p>
+    <div class="card-actions">
+     <button id="openMyProfile">Voir mon profil public</button>
+     <button class="secondary" onclick="showPage('discover')">Retour à l'accueil</button>
+    </div>
+   </div>
+  </div>
+
+  <div id="applicationPage" class="hidden">
+   <h2>Devenir créateur AFRO LIVE</h2>
+   <p>Présente ta chaîne et explique au public le contenu que tu souhaites partager.</p>
+   <div id="applicationStatus" class="notice">Tu peux envoyer une demande pour devenir créateur.</div>
+   <form id="creatorApplicationForm" class="card">
+    <h3>Informations de ta chaîne</h3>
+    <label for="channelName">Nom de ta chaîne</label><input id="channelName" maxlength="60" required placeholder="Exemple : Vanouch TV">
+    <label for="creatorBio">Présentation de ta chaîne</label><textarea id="creatorBio" maxlength="1000" rows="5" required placeholder="Présente-toi et explique les contenus que tu veux partager..."></textarea>
+    <label for="creatorCategory">Catégorie de contenu</label>
+    <select id="creatorCategory" required>
+     <option value="">Choisir une catégorie</option><option>Musique</option><option>Humour</option><option>Sport</option><option>Culture</option><option>Éducation</option><option>Lifestyle</option><option>Cuisine</option><option>Discussion</option><option>Autre</option>
+    </select>
+    <label for="creatorCountry">Pays</label><input id="creatorCountry" value="Congo-Brazzaville" required>
+    <label for="creatorSocial">Lien vers ton réseau social (facultatif)</label><input id="creatorSocial" type="url" placeholder="https://...">
+    <button id="submitApplication" type="submit" style="width:100%">Envoyer ma demande</button>
+   </form>
+   <div class="card"><h3>Comment ça marche ?</h3>
+    <p>1. Tu remplis le formulaire.</p><p>2. AFRO LIVE reçoit ta demande.</p><p>3. Un administrateur examine ta candidature.</p><p>4. Si elle est acceptée, ton espace créateur devient accessible.</p>
+    <p class="small">L'envoi d'une demande ne garantit pas son acceptation.</p></div>
+  </div>
+ </section>
+
+ <section id="creator" class="hidden">
+  <h2>Espace Créateur</h2>
+  <p>Gère ton activité et prépare ta communauté.</p>
+  <nav>
+   <button onclick="creatorPage('overview')">Tableau de bord</button>
+   <button onclick="creatorPage('price')">Mon tarif</button>
+   <button onclick="creatorPage('posts')">Publications</button>
+   <button onclick="creatorPage('live')">Mes directs</button>
+   <button onclick="creatorPage('subscribers')">Abonnés</button>
+   <button onclick="creatorPage('earnings')">Revenus</button>
+  </nav>
+
+  <div id="creatorOverview">
+   <div class="card">
+    <h3>Bienvenue dans ton espace créateur</h3>
+    <p>Publie du contenu, développe ton audience et prépare tes abonnements.</p>
+    <p>Commission de la plateforme : 30 %. Part du créateur : 70 % après confirmation du paiement.</p>
+    <div id="creatorStats"></div>
+   </div>
+  </div>
+
+  <div id="creatorPrice" class="hidden">
+   <div class="card">
+    <h3>Choisir mon prix mensuel</h3>
+    <p>Tu choisis librement ton prix entre 100 et 1 000 000 FCFA.</p>
+    <label for="creatorPriceInput">Prix en FCFA pour 30 jours</label>
+    <input id="creatorPriceInput" type="number" min="100" max="1000000" placeholder="Exemple : 2000">
+    <button id="savePrice">Enregistrer mon tarif</button>
+   </div>
+  </div>
+
+  <div id="creatorPosts" class="hidden">
+   <div class="card">
+    <h3>Publier une vidéo ou une photo</h3>
+    <input id="postFile" type="file" accept="image/*,video/*">
+    <textarea id="postCaption" maxlength="500" rows="2" placeholder="Légende (facultatif)"></textarea>
+    <button id="postPublish" style="width:100%">Publier</button>
+   </div>
+   <div class="card">
+    <h3>Mon statut</h3>
+    <p class="small">Visible sur ton profil public (140 caractères max).</p>
+    <input id="statusInput" maxlength="140" placeholder="Ton statut">
+    <button id="statusSave">Enregistrer le statut</button>
+   </div>
+   <div class="card">
+    <h3>Photo de profil</h3>
+    <label for="avatarInput">Choisir une image</label>
+    <input id="avatarInput" type="file" accept="image/*">
+   </div>
+   <h3>Mes publications</h3>
+   <div id="creatorPostList" class="grid"></div>
+  </div>
+
+  <div id="creatorLive" class="hidden">
+   <h3>Mes directs</h3>
+   <div class="card" id="createLiveCard">
+    <h3>Créer un direct</h3>
+    <label for="liveTitle">Titre du direct</label>
+    <input id="liveTitle" maxlength="100" placeholder="Exemple : Discussion avec ma communauté">
+    <label for="liveDescription">Description (facultatif)</label>
+    <textarea id="liveDescription" maxlength="500" rows="3" placeholder="Présente ton direct..."></textarea>
+    <button id="startLiveButton" style="width:100%">Démarrer un direct</button>
+   </div>
+   <div id="creatorLiveStatus" class="notice">Tu n'es pas actuellement en direct.</div>
+   <div id="creatorLivePreview" class="card hidden">
+    <h3>Ton direct est en cours <span class="dot-inline"></span></h3>
+    <div id="creatorLiveStage" class="live-stage"><video id="localLiveVideo" class="live-video" autoplay playsinline muted></video></div>
+    <p id="liveParticipantCount">En attente de spectateurs...</p>
+    <button class="danger" onclick="stopCreatorLive()" style="width:100%">Terminer le direct</button>
+   </div>
+  </div>
+
+  <div id="creatorSubscribers" class="hidden">
+   <h3>Mes abonnés</h3>
+   <p class="small">Cette liste est privée : seul toi peux la voir.</p>
+   <div id="subscriberList"></div>
+  </div>
+
+  <div id="creatorEarnings" class="hidden">
+   <h3>Revenus et retraits</h3>
+   <p>Les revenus seront calculés à partir des paiements réellement confirmés.</p>
+   <div class="notice">Les paiements MTN Mobile Money, Airtel Money et les retraits nécessitent une intégration serveur avant toute opération financière.</div>
+  </div>
+ </section>
+
+ <section id="admin" class="hidden">
+  <h2>Administration AFRO LIVE</h2>
+  <p>Gestion des candidatures pour devenir créateur.</p>
+  <div class="grid">
+   <div class="card"><p class="small">Candidatures en attente</p><h1 id="pendingCount" class="orange">0</h1></div>
+   <div class="card"><p class="small">Candidatures examinées</p><h1 id="reviewedCount" class="orange">0</h1></div>
+  </div>
+  <div class="admin-actions"><button id="refreshAdmin">Actualiser les demandes</button></div>
+  <div id="adminApplications"><p>Chargement des candidatures...</p></div>
+ </section>
 </section>
 
-<section id="creator" class="hidden"><h2>Espace Créateur</h2><p>Gère ton activité et prépare ta communauté.</p>
-<nav><button onclick="creatorPage('overview')">Tableau de bord</button><button onclick="creatorPage('price')">Mon tarif</button><button onclick="creatorPage('videos')">Mes vidéos</button><button onclick="creatorPage('live')">Mes directs</button><button onclick="creatorPage('subscribers')">Abonnés</button><button onclick="creatorPage('earnings')">Revenus</button></nav>
-<div id="creatorOverview"><div class="card"><h3>Bienvenue dans ton espace créateur</h3><p>Publie du contenu, développe ton audience et prépare tes abonnements.</p><p>Commission de la plateforme : 30 %.</p><p>Part du créateur : 70 % après confirmation du paiement.</p><p id="creatorFollowerCount" class="orange"></p></div></div>
-<div id="creatorPrice" class="hidden"><div class="card"><h3>Choisir mon prix mensuel</h3><p>Tu choisis librement ton prix entre 100 et 1 000 000 FCFA.</p><label>Prix en FCFA pour 30 jours</label><input id="creatorPriceInput" type="number" min="100" max="1000000" placeholder="Exemple : 2000"><button id="savePrice">Enregistrer mon tarif</button></div></div>
-<div id="creatorVideos" class="hidden"><h3>Mes vidéos</h3><p>Les vidéos publiées seront gratuites pour tous les visiteurs.</p><div id="creatorVideoList"></div><div class="notice">La publication de fichiers vidéo nécessite encore la configuration sécurisée du stockage.</div></div>
-<div id="creatorLive" class="hidden"><h3>Mes directs</h3>
-<div class="card" id="createLiveCard"><h3>Créer un direct</h3><label>Titre du direct</label><input id="liveTitle" maxlength="100" placeholder="Exemple : Discussion avec ma communauté">
-<label>Description (facultatif)</label><textarea id="liveDescription" maxlength="500" rows="3" placeholder="Présente ton direct..."></textarea>
-<button id="startLiveButton" onclick="startCreatorLive()" style="width:100%">Démarrer un direct</button></div>
-<div id="creatorLiveStatus" class="notice">Tu n'es pas actuellement en direct.</div>
-<div id="creatorLivePreview" class="card hidden"><h3>Ton direct est en cours 🔴</h3>
-<div id="creatorLiveStage" class="live-stage"><video id="localLiveVideo" class="live-video" autoplay playsinline muted></video></div>
-<p id="liveParticipantCount">En attente de spectateurs...</p>
-<button class="danger" onclick="stopCreatorLive()" style="width:100%">Terminer le direct</button></div>
-</div>
-<div id="creatorSubscribers" class="hidden"><h3>Mes abonnés</h3><p class="small">Cette liste est privée : seul toi peux la voir.</p><div id="subscriberList"></div></div>
-<div id="creatorEarnings" class="hidden"><h3>Revenus et retraits</h3><p>Les revenus seront calculés à partir des paiements réellement confirmés.</p><div class="notice">Les paiements MTN Mobile Money, Airtel Money et les retraits nécessitent une intégration serveur avant toute opération financière.</div></div>
-</section>
-
-<section id="admin" class="hidden"><h2>Administration AFRO LIVE</h2><p>Gestion des candidatures pour devenir créateur.</p>
-<div class="grid"><div class="card"><p class="small">Candidatures en attente</p><h1 id="pendingCount" class="orange">0</h1></div><div class="card"><p class="small">Candidatures examinées</p><h1 id="reviewedCount" class="orange">0</h1></div></div>
-<div class="admin-actions"><button onclick="loadAdminApplications()">Actualiser les demandes</button></div><div id="adminApplications"><p>Chargement des candidatures...</p></div></section>
-</section>
+<section id="publicProfile" class="hidden"></section>
 </main>
 <footer>AFRO LIVE Congo · Le numérique, c'est le futur.</footer>
 
@@ -143,14 +270,34 @@ label{font-size:14px;color:#ddd}nav{display:flex;gap:8px;flex-wrap:wrap;margin:1
 const SUPABASE_URL="https://imhlbguhcafbxjszmjag.supabase.co";
 const SUPABASE_KEY="sb_publishable_FGSth0t3t-gbyqNeV4Nj-g_69kDOar7";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentUser=null,currentProfile=null,liveRoom=null,currentLiveSessionId=null,liveMode=null,viewMode=null;
-let myFollows=new Set(),followsReady=false,facingMode="user";
-const $=id=>document.getElementById(id);
 
+let currentUser=null,currentProfile=null,liveRoom=null,currentLiveSessionId=null,liveMode=null,viewMode=null;
+let myFollows=new Set(),followsReady=false,facingMode="user",accountLoading=false,applicationFilled=false;
+let liveCreatorIds=new Set();
+
+const $=id=>document.getElementById(id);
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+
+/* UTILITAIRES */
 function message(text,success=false){const box=$("status");box.textContent=text;box.className=success?"success":""}
 function authMessage(text){$("authMessage").textContent=text;$("authMessage").classList.remove("hidden")}
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function safeHttpUrl(value){try{const u=new URL(value);return["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}}
+function mediaUrl(path){return db.storage.from("creator-media").getPublicUrl(path).data.publicUrl}
+function renderMedia(p){
+ const url=escapeHTML(mediaUrl(p.media_path));
+ return p.kind==="video"
+  ? `<video src="${url}" controls playsinline preload="metadata"></video>`
+  : `<img src="${url}" alt="" loading="lazy">`;
+}
+function postHTML(p){return `<div class="item post-item">${renderMedia(p)}${p.caption?`<p class="small">${escapeHTML(p.caption)}</p>`:""}</div>`}
+function avatarHTML(p,live=false){
+ const initial=escapeHTML(((p.display_name||p.username||"?")[0]||"?").toUpperCase());
+ const img=safeHttpUrl(p.avatar_url);
+ return `<div class="avatar-wrap">${img?`<img class="avatar" src="${escapeHTML(img)}" alt="">`:`<div class="avatar avatar-empty">${initial}</div>`}${live?'<span class="dot-live" title="En direct"></span>':""}</div>`;
+}
 
+/* AUTHENTIFICATION */
 async function signUp(){
  const name=$("signupName").value.trim(),username=$("signupUsername").value.trim().toLowerCase(),email=$("signupEmail").value.trim(),password=$("signupPassword").value;
  if(!name||!username||!email||password.length<6)return authMessage("Remplis tous les champs. Le mot de passe doit contenir au moins 6 caractères.");
@@ -160,26 +307,44 @@ async function signUp(){
  if(!data.session)authMessage("Compte créé. Vérifie ton e-mail pour confirmer ton inscription, puis connecte-toi.");
  else{authMessage("Compte créé avec succès.");await loadAccount()}
 }
-async function signIn(){const email=$("loginEmail").value.trim(),password=$("loginPassword").value;const {error}=await db.auth.signInWithPassword({email,password});if(error)return authMessage(error.message);await loadAccount()}
+async function signIn(){
+ const email=$("loginEmail").value.trim(),password=$("loginPassword").value;
+ const {error}=await db.auth.signInWithPassword({email,password});
+ if(error)return authMessage(error.message);
+ await loadAccount();
+}
 async function signOut(){
  stopAllPreviews();
  if(liveRoom){const r=liveRoom;liveRoom=null;currentLiveSessionId=null;liveMode=null;await r.disconnect().catch(()=>{})}
- await db.auth.signOut();currentUser=null;currentProfile=null;viewMode=null;myFollows=new Set();followsReady=false;
- $("app").classList.add("hidden");$("auth").classList.remove("hidden");$("logout").classList.add("hidden")
+ await db.auth.signOut();
+ resetSession();
+}
+function resetSession(){
+ currentUser=null;currentProfile=null;viewMode=null;myFollows=new Set();followsReady=false;liveCreatorIds=new Set();applicationFilled=false;
+ $("app").classList.add("hidden");$("auth").classList.remove("hidden");$("logout").classList.add("hidden");
+ $("publicProfile").classList.add("hidden");
 }
 
 async function loadAccount(){
- const {data:{user},error:userError}=await db.auth.getUser();if(userError||!user)return;currentUser=user;
- const {data:profile,error}=await db.from("profiles").select("id,username,display_name,role,bio").eq("id",user.id).maybeSingle();
- if(error){authMessage("Impossible de charger ton profil : "+error.message);return}
- if(!profile){authMessage("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");return}
- currentProfile=profile;$("auth").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");
- $("displayName").textContent=profile.display_name||profile.username;$("accountInfo").textContent="@"+profile.username+" · "+profile.role;
- $("myProfile").textContent=(profile.display_name||profile.username)+" · @"+profile.username+" · "+user.email;
- renderView();
+ if(accountLoading)return;
+ accountLoading=true;
+ try{
+  const {data:{user},error:ue}=await db.auth.getUser();
+  if(ue||!user)return;
+  const {data:profile,error}=await db.from("profiles")
+   .select("id,username,display_name,role,bio,avatar_url,status_text").eq("id",user.id).maybeSingle();
+  if(error){authMessage("Impossible de charger ton profil : "+error.message);return}
+  if(!profile){authMessage("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");return}
+  currentUser=user;currentProfile=profile;
+  $("auth").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");
+  $("displayName").textContent=profile.display_name||profile.username;
+  $("accountInfo").textContent="@"+profile.username+" · "+profile.role;
+  $("myProfile").textContent=(profile.display_name||profile.username)+" · @"+profile.username+" · "+user.email;
+  renderView();
+ }finally{accountLoading=false}
 }
 
-/* AFFICHAGE SELON LE RÔLE ET LE MODE CHOISI */
+/* AFFICHAGE SELON LE RÔLE */
 function setViewMode(mode){viewMode=mode;renderView()}
 function renderView(){
  if(!currentProfile)return;
@@ -193,26 +358,52 @@ function renderView(){
   loadAdminApplications();
   return;
  }
-
  if(mode==="creator"){
   $("creator").classList.remove("hidden");
   $("navigation").innerHTML='<button class="active" onclick="setViewMode(\'creator\')">Espace Créateur</button><button onclick="setViewMode(\'spectator\')">Voir comme spectateur</button>';
+  creatorPage("overview");
   loadCreator();
   return;
  }
-
  $("spectator").classList.remove("hidden");
- $("navigation").innerHTML=`<button class="active" data-page="discover" onclick="showPage('discover')">Découvrir</button><button data-page="subscriptions" onclick="showPage('subscriptions')">Abonnements</button><button data-page="lives" onclick="showPage('lives')">Directs</button><button data-page="follows" onclick="showPage('follows')">Suivis</button><button data-page="profile" onclick="showPage('profile')">Mon profil</button><button data-page="application" onclick="showPage('application')">Devenir créateur</button>`+
+ $("navigation").innerHTML=
+  `<button class="active" data-page="discover" onclick="showPage('discover')">Découvrir</button>`+
+  `<button data-page="subscriptions" onclick="showPage('subscriptions')">Abonnements</button>`+
+  `<button data-page="lives" onclick="showPage('lives')">Directs</button>`+
+  `<button data-page="follows" onclick="showPage('follows')">Suivis</button>`+
+  `<button data-page="profile" onclick="showPage('profile')">Mon profil</button>`+
+  `<button data-page="application" onclick="showPage('application')">Devenir créateur</button>`+
   (role==="creator"?`<button onclick="setViewMode('creator')">Retour espace créateur</button>`:"");
  showPage("discover");
  loadSpectatorData();
 }
 async function loadSpectatorData(){
  await loadMyFollows();
- loadDiscover();loadSubscriptions();loadLives();loadApplication();
+ await refreshLiveIds();
+ loadDiscover();loadSubscriptions();
+ if(liveMode!=="spectator")loadLives();
 }
 
-/* SUIVIS (table follows) */
+/* NAVIGATION */
+function showPage(page){
+ ["discover","subscriptions","lives","follows","profile","application"].forEach(p=>{
+  const el=$(p+"Page");if(el)el.classList.toggle("hidden",p!==page);
+ });
+ document.querySelectorAll("#navigation button[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+ if(page!=="lives")stopAllPreviews();
+ if(page==="application")loadApplication();
+ if(page==="lives"&&liveMode!=="spectator")loadLives();
+ if(page==="follows")loadFollowsPage();
+ if(page==="subscriptions")loadSubscriptions();
+}
+
+/* LIVE IDS (point vert) */
+async function refreshLiveIds(){
+ const {data,error}=await db.from("live_sessions").select("creator_id").eq("status","live");
+ if(!error)liveCreatorIds=new Set((data||[]).map(l=>l.creator_id));
+}
+
+/* SUIVIS */
 async function loadMyFollows(){
  if(!currentUser)return;
  const {data,error}=await db.from("follows").select("creator_id").eq("spectator_id",currentUser.id);
@@ -220,6 +411,7 @@ async function loadMyFollows(){
  followsReady=true;myFollows=new Set(data.map(r=>r.creator_id));
 }
 async function toggleFollow(creatorId){
+ if(!currentUser)return message("Connecte-toi pour suivre un créateur.");
  if(!followsReady)return message("Les suivis ne sont pas encore activés sur la base.");
  if(myFollows.has(creatorId)){
   const {error}=await db.from("follows").delete().eq("spectator_id",currentUser.id).eq("creator_id",creatorId);
@@ -228,138 +420,157 @@ async function toggleFollow(creatorId){
   const {error}=await db.from("follows").insert({spectator_id:currentUser.id,creator_id:creatorId});
   if(error)return message("Impossible de suivre : "+error.message);
  }
- await loadMyFollows();loadDiscover();loadFollowsPage();
+ await loadMyFollows();
+ loadDiscover();loadFollowsPage();
+ if(!$("publicProfile").classList.contains("hidden"))openProfile(creatorId);
 }
 async function getFollowerCount(creatorId){
- const {data,error}=await db.rpc("creator_follower_count",{p_creator:creatorId});
- return error?null:data
-}
-async function loadFollowsPage(){
- const box=$("followsList");
- if(!followsReady){box.innerHTML="<div class='notice'>Les suivis ne sont pas encore activés sur la base.</div>";return}
- const ids=[...myFollows];
- if(!ids.length){box.innerHTML="<p>Tu ne suis encore aucun créateur.</p>";return}
- const [{data:profiles},{data:lives}]=await Promise.all([
-  db.from("profiles").select("id,username,display_name").in("id",ids),
-  db.from("live_sessions").select("creator_id,title").eq("status","live").in("creator_id",ids)
- ]);
- const liveMap={};(lives||[]).forEach(l=>liveMap[l.creator_id]=l);
- box.innerHTML=(profiles||[]).map(p=>{
-  const live=liveMap[p.id];
-  return `<div class="item"><h3>${escapeHTML(p.display_name||p.username)}${live?'<span class="follow-tag">🔴 En direct</span>':""}</h3><p class="small">@${escapeHTML(p.username)}</p>${live?`<p>${escapeHTML(live.title)}</p><button onclick="showPage('lives')">Voir les directs</button>`:""} <button class="secondary" onclick="toggleFollow('${p.id}')">Ne plus suivre</button></div>`
- }).join("")||"<p>Tu ne suis encore aucun créateur.</p>";
- const nav=document.querySelector('#navigation button[data-page="follows"]');
- if(nav)nav.textContent=lives&&lives.some(l=>myFollows.has(l.creator_id))?"Suivis 🔴":"Suivis";
+ const {data,error}=await db.rpc("public_profile",{p_id:creatorId});
+ return error||!data?.length?null:Number(data[0].follower_count);
 }
 
-async function loadAdminApplications(){
- if(!currentUser||currentProfile?.role!=="admin")return message("Accès administrateur nécessaire.");
- const box=$("adminApplications");box.innerHTML="<p>Chargement des candidatures...</p>";
- const {data:applications,error}=await db.from("creator_applications").select("id,user_id,channel_name,bio,category,country,social_link,status,admin_note,created_at").order("created_at",{ascending:false});
- if(error){box.innerHTML='<div class="notice">Erreur de chargement : '+escapeHTML(error.message)+'</div>';return}
- $("pendingCount").textContent=applications.filter(a=>a.status==="pending").length;$("reviewedCount").textContent=applications.filter(a=>a.status!=="pending").length;
- if(!applications.length){box.innerHTML="<div class='card'><p>Aucune candidature reçue pour le moment.</p></div>";return}
- const ids=[...new Set(applications.map(a=>a.user_id))],{data:profiles,error:pe}=await db.from("profiles").select("id,username,display_name,bio,role").in("id",ids);
- if(pe){box.innerHTML='<div class="notice">Impossible de charger les profils : '+escapeHTML(pe.message)+'</div>';return}
- const map={};(profiles||[]).forEach(p=>map[p.id]=p);
- box.innerHTML=applications.map(a=>{const p=map[a.user_id]||{},date=new Date(a.created_at).toLocaleString("fr-FR"),label=a.status==="pending"?"En attente":a.status==="approved"?"Acceptée":"Refusée",color=a.status==="pending"?"#ffd2ad":a.status==="approved"?"#9ce5ae":"#ffaaaa";
- return `<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3>${escapeHTML(a.channel_name)}</h3><span class="tag" style="color:${color}">${label}</span></div>
- <p><strong>Candidat :</strong> ${escapeHTML(p.display_name||"Nom non renseigné")}</p><p><strong>Identifiant :</strong> @${escapeHTML(p.username||"inconnu")}</p><p><strong>Rôle actuel :</strong> ${escapeHTML(p.role||"inconnu")}</p><p><strong>Catégorie :</strong> ${escapeHTML(a.category)}</p><p><strong>Pays :</strong> ${escapeHTML(a.country)}</p><p><strong>Présentation :</strong><br>${escapeHTML(a.bio)}</p>
- ${a.social_link?`<p><strong>Réseau social :</strong> <a href="${escapeHTML(a.social_link)}" target="_blank" rel="noopener" style="color:#ff9b55">Ouvrir le lien</a></p>`:""}<p class="small">Demande envoyée le ${escapeHTML(date)}</p>${a.admin_note?`<div class="notice">Note administrative : ${escapeHTML(a.admin_note)}</div>`:""}
- ${a.status==="pending"?`<label>Note ou motif (facultatif)</label><textarea id="adminNote_${a.id}" rows="2" maxlength="500" placeholder="Écris une note pour le candidat..."></textarea><div class="admin-actions"><button onclick="reviewApplication('${a.id}','${a.user_id}','approved')">Accepter et activer</button><button class="danger" onclick="reviewApplication('${a.id}','${a.user_id}','rejected')">Refuser</button></div>`:""}</div>`}).join("")
+/* DÉCOUVRIR */
+function creatorCard(c,followers){
+ const live=liveCreatorIds.has(c.id),isMe=currentUser?.id===c.id,following=myFollows.has(c.id);
+ const countText=followers===null?"":` · 👥 ${followers} abonné(s)`;
+ return `<div class="item creator-card">
+  ${avatarHTML(c,live)}
+  <div>
+   <h3>${escapeHTML(c.display_name||c.username)}${live?' <span class="follow-tag">En direct</span>':""}</h3>
+   <p class="small">@${escapeHTML(c.username)}${countText}</p>
+   ${c.status_text?`<p class="status">${escapeHTML(c.status_text)}</p>`:""}
+  </div>
+  <div class="card-actions">
+   <button onclick="openProfile('${c.id}')">Profil</button>
+   ${isMe?"":`<button class="secondary" onclick="toggleFollow('${c.id}')">${following?"Ne plus suivre":"Suivre"}</button>`}
+  </div>
+ </div>`;
 }
-async function reviewApplication(applicationId,userId,decision){
- if(!currentUser||currentProfile?.role!=="admin")return message("Action réservée à l'administrateur.");
- if(!["approved","rejected"].includes(decision))return;
- const note=$("adminNote_"+applicationId)?.value.trim()||"",label=decision==="approved"?"accepter cette candidature et activer le compte créateur":"refuser cette candidature";
- if(!confirm("Confirmer : "+label+" ?"))return;message("Traitement de la candidature...");
- if(decision==="approved"){
-  const {data:app,error:ae}=await db.from("creator_applications").select("id,bio,status").eq("id",applicationId).eq("user_id",userId).eq("status","pending").maybeSingle();
-  if(ae||!app){message("Cette candidature n'est plus en attente ou ne peut pas être lue.");await loadAdminApplications();return}
-  const {data:old,error:oe}=await db.from("profiles").select("id,bio,role").eq("id",userId).maybeSingle();
-  if(oe||!old){message("Impossible de vérifier le profil du candidat.");return}
-  const {data:updated,error:pe}=await db.from("profiles").update({role:"creator",bio:app.bio}).eq("id",userId).select("id").maybeSingle();
-  if(pe||!updated){message("Activation impossible : "+(pe?.message||"profil non modifié"));return}
-  const {error:ue}=await db.from("creator_applications").update({status:"approved",admin_note:note||null,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq("id",applicationId).eq("status","pending");
-  if(ue){await db.from("profiles").update({role:old.role,bio:old.bio}).eq("id",userId);message("La validation a échoué. Le profil a été remis dans son état précédent : "+ue.message);return}
-  message("Candidature acceptée. Le compte est maintenant créateur.",true);
- }else{
-  const {data:updated,error}=await db.from("creator_applications").update({status:"rejected",admin_note:note||null,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq("id",applicationId).eq("user_id",userId).eq("status","pending").select("id").maybeSingle();
-  if(error||!updated){message("Impossible de refuser cette candidature : "+(error?.message||"demande déjà traitée"));return}
-  message("Candidature refusée.",true)
+async function loadDiscover(){
+ const box=$("creators");box.innerHTML="<p>Chargement...</p>";
+ const {data,error}=await db.from("profiles").select("id,username,display_name,bio,avatar_url,status_text").eq("role","creator").limit(30);
+ if(error)box.innerHTML="<p>Impossible de charger les créateurs : "+escapeHTML(error.message)+"</p>";
+ else if(!data.length)box.innerHTML="<p>Aucun créateur pour le moment. Reviens bientôt !</p>";
+ else{
+  const counts=await Promise.all(data.map(c=>getFollowerCount(c.id)));
+  box.innerHTML=data.map((c,i)=>creatorCard(c,counts[i])).join("");
  }
- await loadAdminApplications()
+ loadFeed();
+}
+async function loadFeed(){
+ const box=$("freeVideos");
+ const {data,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id").order("created_at",{ascending:false}).limit(30);
+ if(error)box.innerHTML="<p>Chargement indisponible.</p>";
+ else box.innerHTML=data.length?data.map(postHTML).join(""):"<p>Pas encore de publications.</p>";
 }
 
-function showPage(page){
- ["discover","subscriptions","lives","follows","profile","application"].forEach(p=>{const el=$(p+"Page");if(el)el.classList.toggle("hidden",p!==page)});
- document.querySelectorAll("#navigation button[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
- if(page!=="lives")stopAllPreviews();
- if(page==="application")loadApplication();
- if(page==="lives")loadLives();
- if(page==="follows")loadFollowsPage();
+/* PROFIL PUBLIC */
+async function openProfile(id){
+ showPage(null);
+ const box=$("publicProfile");
+ box.classList.remove("hidden");
+ box.innerHTML="<p>Chargement...</p>";
+ const {data,error}=await db.rpc("public_profile",{p_id:id});
+ const p=data?.[0];
+ if(error||!p){box.innerHTML="<p>Profil introuvable.</p><button class='secondary' id='profileBack'>Retour</button>";$("profileBack").onclick=closeProfile;return}
+ const {data:posts}=await db.from("posts").select("id,kind,media_path,caption").eq("creator_id",id).order("created_at",{ascending:false});
+ const following=myFollows.has(id),isMe=currentUser?.id===id;
+
+ box.innerHTML=`
+  <div class="card profile-head">
+   ${avatarHTML(p,p.is_live)}
+   <div class="profile-info">
+    <h2>${escapeHTML(p.display_name||p.username)}${p.is_live?' <span class="follow-tag">En direct</span>':""}</h2>
+    <p class="small">@${escapeHTML(p.username)}</p>
+    ${p.status_text?`<p class="status">${escapeHTML(p.status_text)}</p>`:""}
+    ${p.bio?`<p>${escapeHTML(p.bio)}</p>`:""}
+    <div class="stats">
+     <span><b>${p.follower_count}</b> abonnés</span>
+     <span><b>${p.video_count}</b> vidéos</span>
+     <span><b>${p.photo_count}</b> photos</span>
+    </div>
+    <div class="card-actions" id="profileActions"></div>
+   </div>
+  </div>
+  <h3>Publications</h3>
+  <div class="grid" id="profilePosts"></div>
+  <div style="margin-top:14px"><button class="secondary" id="profileBack">Retour</button></div>`;
+
+ const actions=$("profileActions");
+ if(!isMe){
+  const f=document.createElement("button");
+  f.textContent=following?"Ne plus suivre":"Suivre";
+  if(following)f.className="secondary";
+  f.onclick=()=>toggleFollow(id);
+  actions.appendChild(f);
+ }
+ if(p.is_live){
+  const v=document.createElement("button");
+  v.textContent="Voir le direct";
+  v.onclick=()=>{$("publicProfile").classList.add("hidden");showPage("lives")};
+  actions.appendChild(v);
+ }
+ $("profilePosts").innerHTML=(posts||[]).length?posts.map(postHTML).join(""):"<p>Aucune publication.</p>";
+ $("profileBack").onclick=closeProfile;
 }
+function closeProfile(){$("publicProfile").classList.add("hidden");showPage("discover")}
+
+/* CANDIDATURE CRÉATEUR */
 async function loadApplication(){
- if(!currentUser)return;const box=$("applicationStatus"),form=$("creatorApplicationForm"),button=$("submitApplication");
- box.textContent="Vérification de ta demande...";form.classList.remove("hidden");button.disabled=false;button.textContent="Envoyer ma demande";
- const {data,error}=await db.from("creator_applications").select("id,channel_name,bio,category,country,social_link,status,admin_note,created_at").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
+ if(!currentUser)return;
+ const box=$("applicationStatus"),form=$("creatorApplicationForm"),button=$("submitApplication");
+ box.textContent="Vérification de ta demande...";
+ form.classList.remove("hidden");button.disabled=false;button.textContent="Envoyer ma demande";
+ const {data,error}=await db.from("creator_applications")
+  .select("id,channel_name,bio,category,country,social_link,status,admin_note,created_at")
+  .eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
  if(error){box.textContent="Impossible de vérifier ta demande : "+error.message;return}
  if(!data){box.textContent="Tu n'as pas encore envoyé de demande. Remplis le formulaire ci-dessous.";return}
- $("channelName").value=data.channel_name;$("creatorBio").value=data.bio;$("creatorCategory").value=data.category;$("creatorCountry").value=data.country;$("creatorSocial").value=data.social_link||"";
+ if(!applicationFilled){
+  $("channelName").value=data.channel_name;$("creatorBio").value=data.bio;
+  $("creatorCategory").value=data.category;$("creatorCountry").value=data.country;
+  $("creatorSocial").value=data.social_link||"";
+  applicationFilled=true;
+ }
  if(data.status==="pending"){box.textContent="⏳ Ta demande pour la chaîne « "+data.channel_name+" » est en attente d'examen.";button.disabled=true;button.textContent="Demande déjà envoyée"}
  else if(data.status==="approved"){box.textContent="✅ Ta demande a été acceptée. Ton espace créateur est activé.";button.disabled=true;button.textContent="Demande acceptée"}
  else{box.textContent="❌ Ta demande précédente a été refusée."+(data.admin_note?" Motif : "+data.admin_note:"")+" Tu peux modifier tes informations et envoyer une nouvelle demande.";button.textContent="Renvoyer ma demande"}
 }
 async function submitCreatorApplication(event){
- event.preventDefault();if(!currentUser)return message("Connecte-toi pour envoyer une demande.");
+ event.preventDefault();
+ if(!currentUser)return message("Connecte-toi pour envoyer une demande.");
  const channel=$("channelName").value.trim(),bio=$("creatorBio").value.trim(),category=$("creatorCategory").value,country=$("creatorCountry").value.trim(),social=$("creatorSocial").value.trim();
  if(channel.length<2||bio.length<10||!category||country.length<2)return message("Vérifie les informations du formulaire.");
- if(social&&!/^https?:\/\/.+/i.test(social))return message("Le lien du réseau social doit commencer par https:// ou http://.");
+ if(social&&!safeHttpUrl(social))return message("Le lien du réseau social doit commencer par https:// ou http://.");
  const button=$("submitApplication");button.disabled=true;button.textContent="Envoi en cours...";
  const {data:previous,error:re}=await db.from("creator_applications").select("id,status").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
  if(re){message("Impossible de vérifier ta demande : "+re.message);button.disabled=false;button.textContent="Envoyer ma demande";return}
  if(previous&&previous.status!=="rejected"){message("Tu as déjà une demande qui n'est pas refusée.");await loadApplication();return}
  const {error}=await db.from("creator_applications").insert({user_id:currentUser.id,channel_name:channel,bio,category,country,social_link:social||null,status:"pending"});
  if(error){message("Erreur lors de l'envoi : "+error.message);button.disabled=false;button.textContent="Envoyer ma demande";return}
- message("Ta demande a bien été envoyée. Elle est en attente d'examen.",true);await loadApplication()
-}
-async function loadDiscover(){
- const box=$("creators");box.innerHTML="<p>Chargement...</p>";
- const {data,error}=await db.from("profiles").select("id,username,display_name,bio").eq("role","creator").limit(30);
- if(error)box.innerHTML="<p>Impossible de charger les créateurs : "+escapeHTML(error.message)+"</p>";
- else if(!data.length)box.innerHTML="<p>Aucun créateur pour le moment. Reviens bientôt !</p>";
- else{
-  const counts=await Promise.all(data.map(c=>getFollowerCount(c.id)));
-  box.innerHTML=data.map((c,i)=>{
-   const following=myFollows.has(c.id),isMe=currentUser&&c.id===currentUser.id,countText=counts[i]===null?"":`<p class="small">👥 ${counts[i]} abonné(s)</p>`;
-   return `<div class="item"><h3>${escapeHTML(c.display_name)}</h3><p class="small">@${escapeHTML(c.username)}</p>${countText}<p>${escapeHTML(c.bio||"Créateur AFRO LIVE")}</p><button onclick="viewCreator('${c.id}')">Voir le profil</button> ${isMe?"":`<button class="secondary" onclick="toggleFollow('${c.id}')">${following?"Ne plus suivre":"Suivre"}</button>`}</div>`
-  }).join("")
- }
- const videos=$("freeVideos"),res=await db.from("videos").select("id,title,description,creator_id,created_at").eq("status","published").order("created_at",{ascending:false}).limit(30);
- if(res.error)videos.innerHTML="<p>Chargement des vidéos indisponible.</p>";
- else if(!res.data.length)videos.innerHTML="<p>Pas encore de vidéos publiées.</p>";
- else videos.innerHTML=res.data.map(v=>`<div class="item"><h3>${escapeHTML(v.title)}</h3><p>${escapeHTML(v.description||"")}</p><span class="small">Vidéo gratuite</span><p class="small">Le lecteur vidéo sera disponible après configuration du stockage.</p></div>`).join("")
-}
-async function viewCreator(id){
- const {data,error}=await db.from("creator_settings").select("monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",id).maybeSingle();
- if(error)return message("Impossible de lire le tarif : "+error.message);
- if(!data)return message("Ce créateur n'a pas encore défini son tarif.");
- if(!data.is_accepting_subscriptions)return message("Ce créateur n'accepte pas de nouveaux abonnements.");
- message("Tarif : "+Number(data.monthly_price_fcfa).toLocaleString("fr-FR")+" FCFA pour 30 jours. Le paiement sécurisé n'est pas encore connecté.")
-}
-async function loadSubscriptions(){
- const box=$("mySubscriptions"),{data,error}=await db.from("subscriptions").select("creator_id,starts_at,expires_at,status").eq("spectator_id",currentUser.id).order("expires_at",{ascending:false});
- if(error){box.textContent="Impossible de charger les abonnements : "+error.message;return}
- if(!data.length){box.innerHTML="<p>Tu n'as pas encore d'abonnement.</p>";return}
- box.innerHTML=data.map(s=>`<div class="item"><p>Créateur : ${escapeHTML(s.creator_id)}</p><p>Statut : ${escapeHTML(s.status)}</p><p>Expire le : ${new Date(s.expires_at).toLocaleDateString("fr-FR")}</p></div>`).join("")
+ message("Ta demande a bien été envoyée. Elle est en attente d'examen.",true);
+ applicationFilled=false;await loadApplication();
 }
 
-/* LIVEKIT : jeton serveur, caméra, audio et salon */
-function createLiveRoom(){if(!window.LivekitClient)throw new Error("La bibliothèque LiveKit n'est pas chargée. Actualise la page.");return new LivekitClient.Room({adaptiveStream:true,dynacast:true})}
+/* ABONNEMENTS */
+async function loadSubscriptions(){
+ const box=$("mySubscriptions");
+ const {data,error}=await db.from("subscriptions").select("creator_id,starts_at,expires_at,status").eq("spectator_id",currentUser.id).order("expires_at",{ascending:false});
+ if(error){box.textContent="Impossible de charger les abonnements : "+error.message;return}
+ if(!data.length){box.innerHTML="<p>Tu n'as pas encore d'abonnement.</p>";return}
+ box.innerHTML=data.map(s=>`<div class="item"><p>Statut : ${escapeHTML(s.status)}</p><p>Expire le : ${new Date(s.expires_at).toLocaleDateString("fr-FR")}</p></div>`).join("");
+}
+
+/* LIVEKIT */
+function createLiveRoom(){
+ if(!window.LivekitClient)throw new Error("La bibliothèque LiveKit n'est pas chargée. Actualise la page.");
+ return new LivekitClient.Room({adaptiveStream:true,dynacast:true});
+}
 async function getLiveToken(sessionId){
  const {data,error}=await db.functions.invoke("livekit-token",{body:{session_id:sessionId}});
  if(error)throw new Error(data?.error||error.message||"Impossible d'obtenir le jeton du direct.");
- if(!data?.token||!data?.livekit_url)throw new Error(data?.error||"Réponse invalide du serveur LiveKit.");return data
+ if(!data?.token||!data?.livekit_url)throw new Error(data?.error||"Réponse invalide du serveur LiveKit.");
+ return data;
 }
 function attachLiveTrack(track,container){
  if(!track||!container)return;
@@ -367,9 +578,7 @@ function attachLiveTrack(track,container){
   let video=container.querySelector("video.live-video");
   if(!video){
    video=document.createElement("video");
-   video.className="live-video";
-   video.autoplay=true;
-   video.playsInline=true;
+   video.className="live-video";video.autoplay=true;video.playsInline=true;
    container.prepend(video);
   }
   if(track.attachedElements?.includes(video))return;
@@ -379,24 +588,26 @@ function attachLiveTrack(track,container){
  if(track.kind===LivekitClient.Track.Kind.Audio){
   if(track.attachedElements?.length)return;
   const audio=track.attach();
-  audio.autoplay=true;
-  audio.style.display="none";
+  audio.autoplay=true;audio.style.display="none";
   container.appendChild(audio);
  }
 }
 
-/* APERÇUS SILENCIEUX DANS LA LISTE DES DIRECTS (3 maximum, seulement à l'écran) */
+/* APERÇUS SILENCIEUX (3 maximum, seulement à l'écran) */
 const previewRooms=new Map();
 const PREVIEW_LIMIT=3;
 let previewObserver=null;
 
 async function startPreview(sessionId){
+ if(liveMode==="spectator"&&sessionId===currentLiveSessionId)return;
  if(previewRooms.has(sessionId)||previewRooms.size>=PREVIEW_LIMIT)return;
  const box=$("livePreview_"+sessionId);if(!box)return;
  previewRooms.set(sessionId,null);
+ let room=null;
  try{
   const credentials=await getLiveToken(sessionId);
-  const room=createLiveRoom();
+  if(!previewRooms.has(sessionId))return;
+  room=createLiveRoom();
   previewRooms.set(sessionId,room);
   room.on(LivekitClient.RoomEvent.TrackSubscribed,track=>{
    if(track.kind!==LivekitClient.Track.Kind.Video)return;
@@ -405,6 +616,7 @@ async function startPreview(sessionId){
    box.appendChild(v);
   });
   await room.connect(credentials.livekit_url,credentials.token,{autoSubscribe:false});
+  if(!previewRooms.has(sessionId)){room.disconnect().catch(()=>{});return}
   for(const p of room.remoteParticipants.values())
    for(const pub of p.trackPublications.values())
     if(pub.kind===LivekitClient.Track.Kind.Video)pub.setSubscribed(true);
@@ -412,14 +624,18 @@ async function startPreview(sessionId){
    if(pub.kind===LivekitClient.Track.Kind.Video)pub.setSubscribed(true);
   });
  }catch(error){
+  if(room)room.disconnect().catch(()=>{});
   previewRooms.delete(sessionId);
-  if(box)box.innerHTML="<p class='small'>Aperçu indisponible</p>";
+  if(box&&!box.querySelector(".live-stage"))box.innerHTML="<p class='small'>Aperçu indisponible</p>";
  }
 }
 function stopPreview(sessionId){
- const room=previewRooms.get(sessionId);previewRooms.delete(sessionId);
+ const room=previewRooms.get(sessionId);
+ previewRooms.delete(sessionId);
  if(room)room.disconnect().catch(()=>{});
- const box=$("livePreview_"+sessionId);if(box)box.innerHTML="<p class='small'>Aperçu en pause</p>";
+ if(liveMode==="spectator"&&sessionId===currentLiveSessionId)return;
+ const box=$("livePreview_"+sessionId);
+ if(box&&!box.querySelector(".live-stage"))box.innerHTML="<p class='small'>Aperçu en pause</p>";
 }
 function stopAllPreviews(){[...previewRooms.keys()].forEach(stopPreview)}
 function observeLivePreviews(lives){
@@ -427,13 +643,14 @@ function observeLivePreviews(lives){
  previewObserver=new IntersectionObserver(entries=>{
   entries.forEach(e=>{
    const id=e.target.id.replace("livePreview_","");
+   if(liveMode==="spectator"&&id===currentLiveSessionId)return;
    if(e.isIntersecting)startPreview(id);else stopPreview(id);
   });
  },{threshold:0.6});
  lives.forEach(l=>{const el=$("livePreview_"+l.id);if(el)previewObserver.observe(el)});
 }
 
-/* CHAT TEMPORAIRE LIVEKIT DATA PACKETS : aucun message n'est enregistré en base */
+/* CHAT TEMPORAIRE (LiveKit data packets, rien n'est enregistré) */
 function addChatMessage(list,name,text,isMine=false){
  const row=document.createElement("div");
  row.className="live-chat-message";
@@ -445,7 +662,7 @@ function addChatMessage(list,name,text,isMine=false){
  list.appendChild(row);
  while(list.children.length>100)list.removeChild(list.firstChild);
  list.scrollTop=list.scrollHeight;
- setTimeout(()=>row.remove(),3000);
+ setTimeout(()=>row.remove(),5000);
 }
 function installLiveInterface(stage,room,mode){
  if(!stage||!room)return;
@@ -460,7 +677,6 @@ function installLiveInterface(stage,room,mode){
   const active=stage.classList.toggle("live-fullscreen");
   full.textContent=active?"✕ Réduire":"⛶ Plein écran";
  });
-
  bar.appendChild(count);
 
  if(mode==="creator"){
@@ -488,21 +704,23 @@ function installLiveInterface(stage,room,mode){
   end.addEventListener("click",()=>{if(confirm("Veux-tu vraiment terminer ce direct ?"))stopCreatorLive()});
   bar.appendChild(end);
  }
-
  if(mode==="spectator"){
   const leave=document.createElement("button");leave.className="danger";leave.type="button";leave.textContent="Quitter";
-  leave.addEventListener("click",leaveSpectatorLive);bar.appendChild(leave);
+  leave.addEventListener("click",leaveSpectatorLive);
+  bar.appendChild(leave);
  }
-
  bar.appendChild(full);
 
  const chat=document.createElement("div");chat.className="live-chat";
  const title=document.createElement("div");title.className="live-chat-title";title.textContent="Discussion en direct";
  const list=document.createElement("div");list.className="live-chat-messages";list.setAttribute("aria-live","polite");
  const form=document.createElement("form");form.className="live-chat-form";
- const input=document.createElement("input");input.type="text";input.maxLength=300;input.placeholder="Écris un message...";input.autocomplete="off";input.setAttribute("aria-label","Message du chat");
+ const input=document.createElement("input");
+ input.type="text";input.maxLength=300;input.placeholder="Écris un message...";input.autocomplete="off";
+ input.enterKeyHint="send";input.setAttribute("aria-label","Message du chat");
  const send=document.createElement("button");send.type="submit";send.textContent="Envoyer";
- form.append(input,send);chat.append(title,list,form);tools.append(bar,chat);stage.appendChild(tools);
+ form.append(input,send);chat.append(title,list,form);
+ tools.append(bar,chat);stage.appendChild(tools);
 
  const update=()=>{
   const n=room.remoteParticipants.size;
@@ -513,9 +731,9 @@ function installLiveInterface(stage,room,mode){
  room.on(LivekitClient.RoomEvent.ParticipantConnected,update);
  room.on(LivekitClient.RoomEvent.ParticipantDisconnected,update);
 
- room.on(LivekitClient.RoomEvent.DataReceived,(payload,participant)=>{
+ room.on(LivekitClient.RoomEvent.DataReceived,(payload)=>{
   try{
-   const decoded=new TextDecoder().decode(payload),data=JSON.parse(decoded);
+   const data=JSON.parse(new TextDecoder().decode(payload));
    if(data?.type!=="afro_chat"||typeof data.text!=="string")return;
    const clean=data.text.trim().slice(0,300);if(!clean)return;
    addChatMessage(list,String(data.name||"Spectateur").slice(0,40),clean,false);
@@ -524,24 +742,33 @@ function installLiveInterface(stage,room,mode){
 
  let lastSent=0;
  form.addEventListener("submit",async event=>{
-  event.preventDefault();const text=input.value.trim();if(!text)return;
+  event.preventDefault();
+  const text=input.value.trim();if(!text)return;
   if(Date.now()-lastSent<900){message("Attends un instant avant d'envoyer un autre message.");return}
   lastSent=Date.now();send.disabled=true;
   try{
-   const packet=new TextEncoder().encode(JSON.stringify({type:"afro_chat",name:(currentProfile?.display_name||currentProfile?.username||"Spectateur").slice(0,40),text:text.slice(0,300)}));
+   const name=(currentProfile?.display_name||currentProfile?.username||"Spectateur").slice(0,40);
+   const packet=new TextEncoder().encode(JSON.stringify({type:"afro_chat",name,text:text.slice(0,300)}));
    await room.localParticipant.publishData(packet,{reliable:true});
-   addChatMessage(list,currentProfile?.display_name||currentProfile?.username||"Moi",text.slice(0,300),true);
+   addChatMessage(list,name,text.slice(0,300),true);
    input.value="";
   }catch(error){message("Impossible d'envoyer le message : "+(error.message||"erreur"))}
   finally{send.disabled=false;input.focus()}
  });
 }
 function cleanLiveInterface(stage){
- if(!stage)return;stage.classList.remove("live-fullscreen");
+ if(!stage)return;
+ stage.classList.remove("live-fullscreen");
  const overlay=stage.querySelector(".live-overlay-tools");if(overlay)overlay.remove();
 }
 
-/* CAMÉRA AVANT / ARRIÈRE PENDANT LE DIRECT */
+/* Retour de l'appli au premier plan : relancer la vidéo (évite l'écran noir) */
+document.addEventListener("visibilitychange",()=>{
+ if(document.hidden||!liveRoom)return;
+ liveRoom.startAudio?.().catch(()=>{});
+ document.querySelectorAll(".live-stage video").forEach(v=>v.play?.().catch(()=>{}));
+});
+
 async function switchCamera(room,btn){
  const pub=[...room.localParticipant.videoTrackPublications.values()].find(p=>p.track);
  if(!pub)return message("Caméra indisponible.");
@@ -553,15 +780,103 @@ async function switchCamera(room,btn){
   pub.track.attach($("localLiveVideo"));
   btn.textContent=next==="environment"?"🔄 Caméra avant":"🔄 Caméra arrière";
   message("Caméra "+(next==="environment"?"arrière":"avant")+" activée.",true);
+ }catch(error){message("Impossible de changer de caméra : "+(error.message||"erreur"))}
+ finally{btn.disabled=false}
+}
+
+/* LISTE DES DIRECTS */
+async function loadLives(){
+ const box=$("liveList");
+ box.innerHTML="<p>Chargement des directs...</p>";
+ stopAllPreviews();
+ const {data:lives,error}=await db.from("live_sessions").select("id,title,status,creator_id").eq("status","live").order("started_at",{ascending:false}).limit(30);
+ if(error){box.textContent="Impossible de charger les directs : "+error.message;return}
+ liveCreatorIds=new Set(lives.map(l=>l.creator_id));
+ if(!lives.length){box.innerHTML="<p>Aucun direct en cours. Reviens bientôt !</p>";return}
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",lives.map(l=>l.creator_id));
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ box.innerHTML=lives.map(l=>{
+  const p=map[l.creator_id]||{};
+  return `<div class="card">
+   <div class="live-head">${avatarHTML(p,true)}<div><h3>${escapeHTML(l.title)}</h3>
+   <p class="small">${escapeHTML(p.display_name||p.username||"Créateur")}${myFollows.has(l.creator_id)?' <span class="follow-tag">Suivi</span>':""}</p></div></div>
+   <div id="livePreview_${l.id}" class="live-player live-preview"><p class="small">Aperçu...</p></div>
+   <button onclick="joinLive('${l.id}')" style="width:100%;margin-top:10px">Regarder le direct</button>
+  </div>`;
+ }).join("");
+ observeLivePreviews(lives);
+}
+
+/* DIRECT SPECTATEUR */
+async function joinLive(sessionId){
+ if(!currentUser)return message("Connecte-toi pour regarder ce direct.");
+ const previousId=currentLiveSessionId;
+ stopPreview(sessionId);
+ if(previewObserver){const el=$("livePreview_"+sessionId);if(el)previewObserver.unobserve(el)}
+ if(liveRoom){
+  const previous=liveRoom;
+  liveRoom=null;currentLiveSessionId=null;liveMode=null;
+  await previous.disconnect().catch(()=>{});
+  const oldBox=previousId&&$("livePreview_"+previousId);
+  if(oldBox)oldBox.innerHTML="<p class='small'>Tu as quitté ce direct.</p>";
+ }
+ const box=$("livePreview_"+sessionId);if(!box)return;
+ box.innerHTML="<p>Connexion au direct...</p>";
+ let room=null;
+ try{
+  const credentials=await getLiveToken(sessionId);
+  room=createLiveRoom();
+  liveRoom=room;currentLiveSessionId=sessionId;liveMode="spectator";
+  box.innerHTML="";
+  const stage=document.createElement("div");stage.className="live-stage";
+  const video=document.createElement("video");video.className="live-video";video.autoplay=true;video.playsInline=true;
+  stage.appendChild(video);box.appendChild(stage);
+
+  room.on(LivekitClient.RoomEvent.TrackSubscribed,track=>attachLiveTrack(track,stage));
+  room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>{
+   if(track.kind===LivekitClient.Track.Kind.Video){
+    const currentVideo=stage.querySelector("video.live-video");
+    if(currentVideo){track.detach(currentVideo);currentVideo.srcObject=null}
+   }else{track.detach().forEach(el=>el.remove())}
+  });
+  room.on(LivekitClient.RoomEvent.Disconnected,()=>{
+   if(liveMode==="spectator"&&liveRoom===room){
+    cleanLiveInterface(stage);
+    box.innerHTML="<p>Le direct s'est terminé ou la connexion a été interrompue.</p>";
+    liveRoom=null;currentLiveSessionId=null;liveMode=null;
+   }
+  });
+
+  await room.connect(credentials.livekit_url,credentials.token);
+  try{await room.startAudio()}catch(error){console.log("Activation audio différée par le navigateur.",error)}
+  for(const participant of room.remoteParticipants.values())
+   for(const publication of participant.trackPublications.values())
+    if(publication.track)attachLiveTrack(publication.track,stage);
+  installLiveInterface(stage,room,"spectator");
+  message("Tu es connecté au direct.",true);
  }catch(error){
-  message("Impossible de changer de caméra : "+(error.message||"erreur"));
- }finally{btn.disabled=false}
+  console.error("Erreur spectateur LiveKit :",error);
+  if(room)room.disconnect().catch(()=>{});
+  liveRoom=null;currentLiveSessionId=null;liveMode=null;
+  box.innerHTML="<p>Impossible de rejoindre : "+escapeHTML(error.message||"Erreur inconnue")+"</p>";
+ }
+}
+async function leaveSpectatorLive(){
+ if(liveMode!=="spectator"||!liveRoom)return;
+ const room=liveRoom;const id=currentLiveSessionId;
+ liveRoom=null;currentLiveSessionId=null;liveMode=null;
+ await room.disconnect().catch(()=>{});
+ document.querySelectorAll(".live-stage").forEach(stage=>cleanLiveInterface(stage));
+ const box=id&&$("livePreview_"+id);
+ if(box)box.innerHTML="<p class='small'>Tu as quitté ce direct.</p>";
+ message("Tu as quitté le direct.");
 }
 
 /* DIRECT CRÉATEUR */
 function updateLiveParticipantCount(){
- if(!liveRoom||liveMode!=="creator")return;const count=liveRoom.remoteParticipants.size;
- $("liveParticipantCount").textContent=count===0?"En attente de spectateurs...":count+" spectateur(s) connecté(s)."
+ if(!liveRoom||liveMode!=="creator")return;
+ const count=liveRoom.remoteParticipants.size;
+ $("liveParticipantCount").textContent=count===0?"En attente de spectateurs...":count+" spectateur(s) connecté(s).";
 }
 async function startCreatorLive(){
  if(!currentUser||currentProfile?.role!=="creator")return message("Seuls les créateurs peuvent démarrer un direct.");
@@ -569,143 +884,265 @@ async function startCreatorLive(){
  if(!window.isSecureContext)return message("La caméra nécessite une connexion HTTPS.");
  const title=$("liveTitle").value.trim(),description=$("liveDescription").value.trim(),button=$("startLiveButton");
  if(title.length<3)return message("Donne un titre d'au moins 3 caractères.");
- button.disabled=true;button.textContent="Préparation du direct...";$("creatorLiveStatus").textContent="Création de ta salle...";
+ button.disabled=true;button.textContent="Préparation du direct...";
+ $("creatorLiveStatus").textContent="Création de ta salle...";
  let sessionId=null,room=null;
  facingMode="user";
  try{
   const {data:session,error:ie}=await db.from("live_sessions").insert({creator_id:currentUser.id,title,description,status:"scheduled"}).select("id").single();
-  if(ie)throw ie;sessionId=session.id;$("creatorLiveStatus").textContent="Connexion au serveur vidéo...";
-  const credentials=await getLiveToken(sessionId);room=createLiveRoom();liveRoom=room;currentLiveSessionId=sessionId;liveMode="creator";
+  if(ie)throw ie;
+  sessionId=session.id;
+  $("creatorLiveStatus").textContent="Connexion au serveur vidéo...";
+  const credentials=await getLiveToken(sessionId);
+  room=createLiveRoom();
+  liveRoom=room;currentLiveSessionId=sessionId;liveMode="creator";
   room.on(LivekitClient.RoomEvent.Disconnected,()=>{if(liveMode==="creator")$("creatorLiveStatus").textContent="Connexion au direct interrompue."});
-  room.on(LivekitClient.RoomEvent.ParticipantConnected,updateLiveParticipantCount);room.on(LivekitClient.RoomEvent.ParticipantDisconnected,updateLiveParticipantCount);
+  room.on(LivekitClient.RoomEvent.ParticipantConnected,updateLiveParticipantCount);
+  room.on(LivekitClient.RoomEvent.ParticipantDisconnected,updateLiveParticipantCount);
   await room.connect(credentials.livekit_url,credentials.token);
   $("creatorLiveStatus").textContent="Activation de la caméra et du microphone...";
   await room.localParticipant.enableCameraAndMicrophone();
-  const pubs=[...room.localParticipant.videoTrackPublications.values()],cameraPub=pubs.find(p=>p.track);
+  const cameraPub=[...room.localParticipant.videoTrackPublications.values()].find(p=>p.track);
   if(!cameraPub)throw new Error("La caméra n'a pas pu démarrer.");
   cameraPub.track.attach($("localLiveVideo"));
   const {data:updated,error:ue}=await db.from("live_sessions").update({status:"live",started_at:new Date().toISOString()}).eq("id",sessionId).eq("creator_id",currentUser.id).select("id").maybeSingle();
   if(ue||!updated)throw new Error(ue?.message||"Impossible de publier le direct.");
-  $("creatorLivePreview").classList.remove("hidden");$("startLiveButton").classList.add("hidden");
+  liveCreatorIds.add(currentUser.id);
+  $("creatorLivePreview").classList.remove("hidden");
+  button.classList.add("hidden");
   installLiveInterface($("creatorLiveStage"),room,"creator");
-  $("creatorLiveStatus").textContent="Tu es en direct !";updateLiveParticipantCount();message("Ton direct est maintenant en ligne.",true)
+  $("creatorLiveStatus").textContent="Tu es en direct !";
+  updateLiveParticipantCount();
+  message("Ton direct est maintenant en ligne.",true);
  }catch(error){
-  console.error("Erreur LiveKit :",error);if(room)await room.disconnect().catch(()=>{});
+  console.error("Erreur LiveKit :",error);
+  if(room)await room.disconnect().catch(()=>{});
   liveRoom=null;currentLiveSessionId=null;liveMode=null;
   if(sessionId)await db.from("live_sessions").update({status:"cancelled"}).eq("id",sessionId).eq("creator_id",currentUser.id);
-  $("creatorLiveStatus").textContent="Erreur : "+(error.message||"Impossible de démarrer le direct.");message("Le direct n'a pas pu démarrer : "+(error.message||"Erreur inconnue."))
- }finally{button.disabled=false;button.textContent="Démarrer un direct"}
+  $("creatorLiveStatus").textContent="Erreur : "+(error.message||"Impossible de démarrer le direct.");
+  message("Le direct n'a pas pu démarrer : "+(error.message||"Erreur inconnue."));
+ }finally{
+  button.disabled=false;button.textContent="Démarrer un direct";
+ }
 }
 async function stopCreatorLive(){
  if(liveMode!=="creator"||!currentLiveSessionId)return message("Aucun direct créateur en cours.");
- const sessionId=currentLiveSessionId;$("creatorLiveStatus").textContent="Fermeture du direct...";
- const room=liveRoom;liveRoom=null;currentLiveSessionId=null;liveMode=null;
+ const sessionId=currentLiveSessionId;
+ $("creatorLiveStatus").textContent="Fermeture du direct...";
+ const room=liveRoom;
+ liveRoom=null;currentLiveSessionId=null;liveMode=null;
  if(room)await room.disconnect().catch(()=>{});
  cleanLiveInterface($("creatorLiveStage"));
+ liveCreatorIds.delete(currentUser.id);
  const {data,error}=await db.from("live_sessions").update({status:"ended",ended_at:new Date().toISOString()}).eq("id",sessionId).eq("creator_id",currentUser.id).select("id").maybeSingle();
- $("creatorLivePreview").classList.add("hidden");$("startLiveButton").classList.remove("hidden");$("localLiveVideo").srcObject=null;
+ $("creatorLivePreview").classList.add("hidden");
+ $("startLiveButton").classList.remove("hidden");
+ $("localLiveVideo").srcObject=null;
  $("creatorLiveStatus").textContent=error||!data?"Connexion terminée, mais le statut du direct n'a pas été actualisé.":"Ton direct est terminé.";
  $("liveTitle").value="";$("liveDescription").value="";
- if(error||!data)message("Le direct est déconnecté, mais son statut n'a pas été actualisé.");else message("Direct terminé.",true);
-}
-
-/* DIRECT SPECTATEUR */
-async function joinLive(sessionId){
- if(!currentUser)return message("Connecte-toi pour regarder ce direct.");
- stopPreview(sessionId);
- if(liveRoom){const previous=liveRoom;liveRoom=null;currentLiveSessionId=null;liveMode=null;await previous.disconnect().catch(()=>{})}
- const box=$("livePreview_"+sessionId);if(!box)return;
- box.innerHTML="<p>Connexion au direct...</p>";let room=null;
- try{
-  const credentials=await getLiveToken(sessionId);room=createLiveRoom();liveRoom=room;currentLiveSessionId=sessionId;liveMode="spectator";
-  box.innerHTML="";
-  const stage=document.createElement("div");stage.className="live-stage";stage.id="liveStage_"+sessionId;
-  const video=document.createElement("video");video.className="live-video";video.autoplay=true;video.playsInline=true;
-  stage.appendChild(video);box.appendChild(stage);
-  room.on(LivekitClient.RoomEvent.TrackSubscribed,track=>attachLiveTrack(track,stage));
-  room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>{
-   if(track.kind===LivekitClient.Track.Kind.Video){
-    const currentVideo=stage.querySelector("video.live-video");
-    if(currentVideo){track.detach(currentVideo);currentVideo.srcObject=null;}
-   }else{track.detach().forEach(el=>el.remove());}
-  });
-  room.on(LivekitClient.RoomEvent.Disconnected,()=>{
-   if(liveMode==="spectator"&&liveRoom===room){
-    cleanLiveInterface(stage);
-    box.innerHTML="<p>Tu as quitté ce direct.</p>";
-    liveRoom=null;currentLiveSessionId=null;liveMode=null;
-   }
-  });
-  await room.connect(credentials.livekit_url,credentials.token);
-  try{await room.startAudio()}catch(error){console.log("Activation audio différée par le navigateur.",error)}
-  for(const participant of room.remoteParticipants.values()){
-   for(const publication of participant.trackPublications.values()){
-    if(publication.track)attachLiveTrack(publication.track,stage);
-   }
-  }
-  installLiveInterface(stage,room,"spectator");
-  message("Tu es connecté au direct.",true)
- }catch(error){
-  console.error("Erreur spectateur LiveKit :",error);if(room)await room.disconnect().catch(()=>{});
-  liveRoom=null;currentLiveSessionId=null;liveMode=null;box.innerHTML="<p>Impossible de rejoindre : "+escapeHTML(error.message||"Erreur inconnue")+"</p>"
- }
-}
-async function leaveSpectatorLive(){
- if(liveMode!=="spectator"||!liveRoom)return;
- const room=liveRoom;liveRoom=null;currentLiveSessionId=null;liveMode=null;await room.disconnect().catch(()=>{});
- const stages=document.querySelectorAll(".live-stage");
- stages.forEach(stage=>cleanLiveInterface(stage));
- message("Tu as quitté le direct.")
-}
-async function loadLives(){
- const box=$("liveList");box.innerHTML="<p>Chargement des directs...</p>";
- stopAllPreviews();
- const {data,error}=await db.from("live_sessions").select("id,title,status,creator_id").eq("status","live").order("started_at",{ascending:false}).limit(30);
- if(error){box.textContent="Impossible de charger les directs : "+error.message;return}
- if(!data.length){box.innerHTML="<p>Aucun direct en cours. Reviens bientôt !</p>";return}
- box.innerHTML=data.map(l=>`<div class="card"><h3>${escapeHTML(l.title)}</h3><span class="tag">🔴 EN DIRECT</span>${myFollows.has(l.creator_id)?'<span class="follow-tag">Suivi</span>':""}<div id="livePreview_${l.id}" class="live-player" style="margin-top:12px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center"><p class="small">Aperçu...</p></div><button onclick="joinLive('${l.id}')" style="width:100%;margin-top:10px">Regarder le direct</button></div>`).join("");
- observeLivePreviews(data);
- const nav=document.querySelector('#navigation button[data-page="follows"]');
- if(nav&&myFollows.size)nav.textContent=data.some(l=>myFollows.has(l.creator_id))?"Suivis 🔴":"Suivis";
+ if(error||!data)message("Le direct est déconnecté, mais son statut n'a pas été actualisé.");
+ else message("Direct terminé.",true);
 }
 
 /* ESPACE CRÉATEUR */
-function creatorPage(page){["overview","price","videos","live","subscribers","earnings"].forEach(n=>$("creator"+n[0].toUpperCase()+n.slice(1)).classList.toggle("hidden",n!==page));if(page==="subscribers")loadCreatorFollowers()}
-function switchRolePage(){creatorPage("overview")}
-async function loadCreator(){
- const {data,error}=await db.from("creator_settings").select("monthly_price_fcfa").eq("creator_id",currentUser.id).maybeSingle();
- if(error)message("Tarif non chargé : "+error.message);if(data)$("creatorPriceInput").value=data.monthly_price_fcfa;
- const {data:videos}=await db.from("videos").select("title,status,created_at").eq("creator_id",currentUser.id).order("created_at",{ascending:false});
- $("creatorVideoList").innerHTML=videos?.length?videos.map(v=>`<div class="item">${escapeHTML(v.title)} · ${escapeHTML(v.status)}</div>`).join(""):"<p>Tu n'as pas encore publié de vidéo.</p>";
- const count=await getFollowerCount(currentUser.id);
- $("creatorFollowerCount").textContent=count===null?"":"👥 "+count+" abonné(s)";
+const CREATOR_PAGES=["overview","price","posts","live","subscribers","earnings"];
+function creatorPage(page){
+ CREATOR_PAGES.forEach(n=>$("creator"+cap(n)).classList.toggle("hidden",n!==page));
+ if(page==="subscribers")loadCreatorFollowers();
+ if(page==="posts")loadCreatorPosts();
 }
+async function loadCreator(){
+ $("statusInput").value=currentProfile.status_text||"";
+ const {data:price,error}=await db.from("creator_settings").select("monthly_price_fcfa").eq("creator_id",currentUser.id).maybeSingle();
+ if(error)message("Tarif non chargé : "+error.message);
+ if(price)$("creatorPriceInput").value=price.monthly_price_fcfa;
+ const {data:stats}=await db.rpc("public_profile",{p_id:currentUser.id});
+ const s=stats?.[0];
+ $("creatorStats").innerHTML=s
+  ?`<div class="stats"><span><b>${s.follower_count}</b> abonnés</span><span><b>${s.video_count}</b> vidéos</span><span><b>${s.photo_count}</b> photos</span></div>`
+  :"";
+}
+async function savePrice(){
+ const price=Number($("creatorPriceInput").value);
+ if(!Number.isInteger(price)||price<100||price>1000000)return message("Choisis un prix entre 100 et 1 000 000 FCFA.");
+ const {error}=await db.from("creator_settings").upsert({creator_id:currentUser.id,monthly_price_fcfa:price,is_accepting_subscriptions:true},{onConflict:"creator_id"});
+ if(error)return message("Enregistrement refusé : "+error.message);
+ message("Tarif enregistré : "+price.toLocaleString("fr-FR")+" FCFA.",true);
+}
+
+/* PUBLICATIONS */
+async function uploadPost(){
+ if(currentProfile?.role!=="creator")return message("Réservé aux créateurs.");
+ const file=$("postFile").files[0],caption=$("postCaption").value.trim();
+ if(!file)return message("Choisis une photo ou une vidéo.");
+ if(file.size>200*1024*1024)return message("Fichier trop lourd (200 Mo max).");
+ if(!/^(image|video)\//.test(file.type))return message("Format non accepté.");
+ const kind=file.type.startsWith("video/")?"video":"photo";
+ const ext=((file.name.split(".").pop()||"bin").replace(/[^a-z0-9]/gi,"")||"bin").toLowerCase();
+ const path=`${currentUser.id}/${crypto.randomUUID()}.${ext}`;
+ const button=$("postPublish");button.disabled=true;
+ message("Envoi en cours... ne ferme pas la page.");
+ try{
+  const {error:se}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type});
+  if(se)return message("Envoi impossible : "+se.message);
+  const {error}=await db.from("posts").insert({creator_id:currentUser.id,kind,media_path:path,caption:caption||null});
+  if(error)return message("Publication refusée : "+error.message);
+  $("postFile").value="";$("postCaption").value="";
+  message("Publication en ligne.",true);
+  loadCreatorPosts();
+ }finally{button.disabled=false}
+}
+async function loadCreatorPosts(){
+ const box=$("creatorPostList");
+ const {data,error}=await db.from("posts").select("id,kind,media_path,caption").eq("creator_id",currentUser.id).order("created_at",{ascending:false});
+ if(error){box.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
+ if(!data.length){box.innerHTML="<p>Tu n'as pas encore publié de contenu.</p>";return}
+ box.innerHTML="";
+ data.forEach(p=>{
+  const item=document.createElement("div");item.className="item";
+  item.innerHTML=renderMedia(p)+(p.caption?`<p class="small">${escapeHTML(p.caption)}</p>`:"");
+  const del=document.createElement("button");del.className="danger";del.textContent="Supprimer";
+  del.onclick=()=>deletePost(p.id,p.media_path);
+  item.appendChild(del);box.appendChild(item);
+ });
+}
+async function deletePost(id,path){
+ if(!confirm("Supprimer cette publication ?"))return;
+ const {error}=await db.from("posts").delete().eq("id",id).eq("creator_id",currentUser.id);
+ if(error)return message("Suppression impossible : "+error.message);
+ try{await db.storage.from("creator-media").remove([path])}catch{}
+ message("Publication supprimée.",true);
+ loadCreatorPosts();
+}
+async function saveStatus(){
+ const text=$("statusInput").value.trim().slice(0,140);
+ const {error}=await db.from("profiles").update({status_text:text||null,status_updated_at:new Date().toISOString()}).eq("id",currentUser.id);
+ if(error)return message("Statut non enregistré : "+error.message);
+ currentProfile.status_text=text||null;
+ message("Statut mis à jour.",true);
+}
+async function uploadAvatar(file){
+ if(!file)return;
+ if(!file.type.startsWith("image/"))return message("Choisis une image.");
+ const ext=((file.name.split(".").pop()||"jpg").replace(/[^a-z0-9]/gi,"")||"jpg").toLowerCase();
+ const path=`${currentUser.id}/avatar-${Date.now()}.${ext}`;
+ const {error:se}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type});
+ if(se)return message("Photo non envoyée : "+se.message);
+ const url=mediaUrl(path);
+ const {error}=await db.from("profiles").update({avatar_url:url}).eq("id",currentUser.id);
+ if(error)return message("Photo enregistrée mais non liée au profil : "+error.message);
+ currentProfile.avatar_url=url;
+ message("Photo de profil mise à jour.",true);
+}
+
+/* ABONNÉS (noms visibles uniquement par le créateur) */
 async function loadCreatorFollowers(){
  const box=$("subscriberList");
  const {data,error}=await db.from("follows").select("spectator_id,created_at").eq("creator_id",currentUser.id).order("created_at",{ascending:false});
- if(error){box.innerHTML="<div class='notice'>Liste indisponible : "+escapeHTML(error.message)+"</div>";return}
+ if(error){box.innerHTML=`<div class="notice">Liste indisponible : ${escapeHTML(error.message)}</div>`;return}
  if(!data.length){box.innerHTML="<p>Aucun abonné pour le moment.</p>";return}
  const {data:profiles}=await db.from("profiles").select("id,username,display_name").in("id",data.map(r=>r.spectator_id));
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
- box.innerHTML=data.map(r=>{const p=map[r.spectator_id]||{};return `<div class="item">${escapeHTML(p.display_name||p.username||"Abonné")} <span class="small">· depuis le ${new Date(r.created_at).toLocaleDateString("fr-FR")}</span></div>`}).join("")
-}
-async function savePrice(){
- const price=Number($("creatorPriceInput").value);if(!Number.isInteger(price)||price<100||price>1000000)return message("Choisis un prix entre 100 et 1 000 000 FCFA.");
- const {error}=await db.from("creator_settings").upsert({creator_id:currentUser.id,monthly_price_fcfa:price,is_accepting_subscriptions:true},{onConflict:"creator_id"});
- if(error)return message("Enregistrement refusé : "+error.message);message("Tarif enregistré : "+price.toLocaleString("fr-FR")+" FCFA.",true)
+ box.innerHTML=data.map(r=>{
+  const p=map[r.spectator_id]||{};
+  return `<div class="item">${escapeHTML(p.display_name||p.username||"Abonné")} <span class="small">· depuis le ${new Date(r.created_at).toLocaleDateString("fr-FR")}</span></div>`;
+ }).join("");
 }
 
-/* ÉVÉNEMENTS ET SESSION */
-$("signup").addEventListener("click",signUp);$("login").addEventListener("click",signIn);$("logout").addEventListener("click",signOut);
-$("savePrice").addEventListener("click",savePrice);$("creatorApplicationForm").addEventListener("submit",submitCreatorApplication);
+/* ADMIN */
+async function loadAdminApplications(){
+ if(!currentUser||currentProfile?.role!=="admin")return message("Accès administrateur nécessaire.");
+ const box=$("adminApplications");
+ box.innerHTML="<p>Chargement des candidatures...</p>";
+ const {data:applications,error}=await db.from("creator_applications")
+  .select("id,user_id,channel_name,bio,category,country,social_link,status,admin_note,created_at")
+  .order("created_at",{ascending:false});
+ if(error){box.innerHTML='<div class="notice">Erreur de chargement : '+escapeHTML(error.message)+'</div>';return}
+ $("pendingCount").textContent=applications.filter(a=>a.status==="pending").length;
+ $("reviewedCount").textContent=applications.filter(a=>a.status!=="pending").length;
+ if(!applications.length){box.innerHTML="<div class='card'><p>Aucune candidature reçue pour le moment.</p></div>";return}
+ const ids=[...new Set(applications.map(a=>a.user_id))];
+ const {data:profiles,error:pe}=await db.from("profiles").select("id,username,display_name,bio,role").in("id",ids);
+ if(pe){box.innerHTML='<div class="notice">Impossible de charger les profils : '+escapeHTML(pe.message)+'</div>';return}
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ box.innerHTML=applications.map(a=>{
+  const p=map[a.user_id]||{};
+  const date=new Date(a.created_at).toLocaleString("fr-FR");
+  const label=a.status==="pending"?"En attente":a.status==="approved"?"Acceptée":"Refusée";
+  const color=a.status==="pending"?"#ffd2ad":a.status==="approved"?"#9ce5ae":"#ffaaaa";
+  const social=safeHttpUrl(a.social_link);
+  return `<div class="card">
+   <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3>${escapeHTML(a.channel_name)}</h3><span class="tag" style="color:${color}">${label}</span></div>
+   <p><strong>Candidat :</strong> ${escapeHTML(p.display_name||"Nom non renseigné")}</p>
+   <p><strong>Identifiant :</strong> @${escapeHTML(p.username||"inconnu")}</p>
+   <p><strong>Rôle actuel :</strong> ${escapeHTML(p.role||"inconnu")}</p>
+   <p><strong>Catégorie :</strong> ${escapeHTML(a.category)}</p>
+   <p><strong>Pays :</strong> ${escapeHTML(a.country)}</p>
+   <p><strong>Présentation :</strong><br>${escapeHTML(a.bio)}</p>
+   ${social?`<p><strong>Réseau social :</strong> <a href="${escapeHTML(social)}" target="_blank" rel="noopener noreferrer" style="color:#ff9b55">Ouvrir le lien</a></p>`:""}
+   <p class="small">Demande envoyée le ${escapeHTML(date)}</p>
+   ${a.admin_note?`<div class="notice">Note administrative : ${escapeHTML(a.admin_note)}</div>`:""}
+   ${a.status==="pending"?`
+    <label for="adminNote_${a.id}">Note ou motif (facultatif)</label>
+    <textarea id="adminNote_${a.id}" rows="2" maxlength="500" placeholder="Écris une note pour le candidat..."></textarea>
+    <div class="admin-actions">
+     <button onclick="reviewApplication('${a.id}','${a.user_id}','approved')">Accepter et activer</button>
+     <button class="danger" onclick="reviewApplication('${a.id}','${a.user_id}','rejected')">Refuser</button>
+    </div>`:""}
+  </div>`;
+ }).join("");
+}
+async function reviewApplication(applicationId,userId,decision){
+ if(!currentUser||currentProfile?.role!=="admin")return message("Action réservée à l'administrateur.");
+ if(!["approved","rejected"].includes(decision))return;
+ const note=$("adminNote_"+applicationId)?.value.trim()||"";
+ const label=decision==="approved"?"accepter cette candidature et activer le compte créateur":"refuser cette candidature";
+ if(!confirm("Confirmer : "+label+" ?"))return;
+ message("Traitement de la candidature...");
+ if(decision==="approved"){
+  const {data:app,error:ae}=await db.from("creator_applications").select("id,bio,status").eq("id",applicationId).eq("user_id",userId).eq("status","pending").maybeSingle();
+  if(ae||!app){message("Cette candidature n'est plus en attente ou ne peut pas être lue.");await loadAdminApplications();return}
+  const {data:old,error:oe}=await db.from("profiles").select("id,bio,role").eq("id",userId).maybeSingle();
+  if(oe||!old){message("Impossible de vérifier le profil du candidat.");return}
+  const {data:updated,error:pe}=await db.from("profiles").update({role:"creator",bio:app.bio}).eq("id",userId).select("id").maybeSingle();
+  if(pe||!updated){message("Activation impossible : "+(pe?.message||"profil non modifié"));return}
+  const {error:ue}=await db.from("creator_applications").update({status:"approved",admin_note:note||null,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq("id",applicationId).eq("status","pending");
+  if(ue){
+   await db.from("profiles").update({role:old.role,bio:old.bio}).eq("id",userId);
+   message("La validation a échoué. Le profil a été remis dans son état précédent : "+ue.message);
+   return;
+  }
+  message("Candidature acceptée. Le compte est maintenant créateur.",true);
+ }else{
+  const {data:updated,error}=await db.from("creator_applications").update({status:"rejected",admin_note:note||null,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq("id",applicationId).eq("user_id",userId).eq("status","pending").select("id").maybeSingle();
+  if(error||!updated){message("Impossible de refuser cette candidature : "+(error?.message||"demande déjà traitée"));return}
+  message("Candidature refusée.",true);
+ }
+ await loadAdminApplications();
+}
+
+/* ÉVÉNEMENTS */
+$("signup").addEventListener("click",signUp);
+$("login").addEventListener("click",signIn);
+$("logout").addEventListener("click",signOut);
+$("savePrice").addEventListener("click",savePrice);
+$("creatorApplicationForm").addEventListener("submit",submitCreatorApplication);
+$("postPublish").addEventListener("click",uploadPost);
+$("statusSave").addEventListener("click",saveStatus);
+$("avatarInput").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";uploadAvatar(f)});
+$("startLiveButton").addEventListener("click",startCreatorLive);
+$("openMyProfile").addEventListener("click",()=>{if(currentUser)openProfile(currentUser.id)});
+$("refreshAdmin").addEventListener("click",loadAdminApplications);
+
+/* SESSION */
 db.auth.getSession().then(({data})=>{if(data.session)loadAccount()});
 db.auth.onAuthStateChange((event,session)=>{
  if(session&&!currentUser)setTimeout(loadAccount,0);
  if(!session&&currentUser){
   stopAllPreviews();
   if(liveRoom){const r=liveRoom;liveRoom=null;r.disconnect().catch(()=>{})}
-  currentLiveSessionId=null;liveMode=null;currentUser=null;currentProfile=null;viewMode=null;myFollows=new Set();followsReady=false;
-  $("app").classList.add("hidden");$("auth").classList.remove("hidden");$("logout").classList.add("hidden")
+  currentLiveSessionId=null;liveMode=null;
+  resetSession();
  }
 });
 </script>
