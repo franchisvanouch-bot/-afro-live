@@ -3,84 +3,118 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#101010">
+<meta name="theme-color" content="#0b0b0c">
 <title>AFRO LIVE — Congo</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.5.8/dist/livekit-client.umd.min.js"></script>
 <style>
-:root{--bg:#101010;--panel:#1b1b1b;--orange:#ff6a00;--muted:#aaa;--line:#303030;--green:#22c55e}
+:root{--bg:#0b0b0c;--surface:#161618;--surface2:#222226;--line:#2a2a2e;--text:#f5f5f5;--muted:#9a9aa2;--orange:#ff6a00;--green:#22c55e;--red:#e0262b}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif}
-header{background:#171717;border-bottom:1px solid var(--line);padding:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:5}
-.logo{font-size:23px;font-weight:900;color:var(--orange)}.logo span{color:#fff}
-button,.btn{background:var(--orange);color:#fff;border:0;border-radius:8px;padding:12px 16px;font-weight:bold;cursor:pointer}
-button.secondary{background:#333}button.danger{background:#a52a2a}button:disabled{opacity:.5;cursor:not-allowed}
-button.plain{background:none;padding:0;border-radius:0}
-main{max-width:1000px;margin:auto;padding:18px}
-h1{font-size:28px;margin:12px 0}h2{font-size:21px;margin-top:26px}h3{margin:8px 0}
-p{color:#ccc;line-height:1.5}
-.card{background:var(--panel);border:1px solid var(--line);padding:17px;border-radius:13px;margin:13px 0}
-input,textarea,select{width:100%;padding:13px;background:#111;color:#fff;border:1px solid #444;border-radius:8px;margin:7px 0 13px;font-size:16px}
-label{font-size:14px;color:#ddd}
-nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}nav button{background:#292929}nav button.active{background:var(--orange)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.small{font-size:13px;color:var(--muted)}.orange{color:var(--orange)}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:max(12px,env(safe-area-inset-top)) 16px 12px;background:rgba(11,11,12,.95);border-bottom:1px solid var(--line)}
+.logo{font-size:20px;font-weight:800;color:var(--orange)}.logo span{color:var(--text)}
+main{max-width:900px;margin:auto;padding:16px 16px calc(40px + env(safe-area-inset-bottom))}
+h1{font-size:24px;margin:10px 0}h2{font-size:18px;margin:22px 0 10px}h3{font-size:16px;margin:8px 0}
+p{color:#c8c8cf;line-height:1.5;margin:6px 0}
+button{font:inherit;background:var(--orange);color:#fff;border:0;border-radius:10px;padding:11px 14px;font-weight:600;font-size:14px;cursor:pointer}
+button.soft{background:var(--surface2);color:var(--text)}
+button.ghost{background:none;color:var(--text);padding:0;border-radius:0}
+button.danger{background:#8b1d1d;color:#fff}
+button.icon{width:40px;height:40px;padding:0;border-radius:50%;background:var(--surface2);color:var(--text);display:inline-flex;align-items:center;justify-content:center;font-size:20px}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,textarea,select{width:100%;padding:12px;background:var(--surface2);color:var(--text);border:1px solid transparent;border-radius:10px;margin:6px 0 12px;font:inherit;font-size:16px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--orange)}
+input[type=file]{padding:10px;font-size:14px}
+label{font-size:13px;color:var(--muted)}
 .hidden{display:none!important}
-.notice{padding:12px;border-radius:8px;background:#292015;color:#ffd2ad;margin:12px 0}
+.small{font-size:12px;color:var(--muted)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.card{background:var(--surface);border-radius:16px;padding:16px;margin:12px 0}
+.item{background:var(--surface);border-radius:14px;padding:14px;margin:8px 0}
+.notice{padding:12px 14px;border-radius:12px;background:#2a2118;color:#ffd2ad;margin:10px 0;font-size:14px}
 .success{background:#14271b;color:#b8f5c9}
-.item{background:#222;padding:14px;border-radius:10px;border:1px solid #333}
-.item h3{margin:5px 0}
-footer{text-align:center;padding:30px;color:#777;font-size:13px}
-#status{color:#ffb47c;font-size:14px;min-height:22px}
-.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-actions button{flex:1}
-.tag{display:inline-block;padding:5px 9px;border-radius:6px;background:#333;color:#ddd;font-size:12px}
-.follow-tag{display:inline-block;background:#14271b;color:#b8f5c9;font-size:12px;padding:4px 8px;border-radius:6px;margin-left:6px}
-.card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#status{font-size:13px;color:#ffb47c;min-height:20px;margin:8px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+footer{text-align:center;padding:24px;color:#666;font-size:12px}
+
+/* Pastilles de navigation */
+.pills{display:flex;gap:8px;overflow-x:auto;margin:12px 0;scrollbar-width:none}
+.pills button{background:var(--surface2);color:var(--text);white-space:nowrap;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:500}
+.pills button.active{background:var(--orange);color:#fff}
 
 /* Avatars, anneau de statut, point vert */
 .avatar-wrap{position:relative;display:inline-block;flex:0 0 auto;border-radius:50%}
 .avatar-wrap.ring{padding:3px;background:linear-gradient(45deg,#ff6a00,#e0262b,#ff9b55)}
-.avatar{display:flex;width:72px;height:72px;border-radius:50%;object-fit:cover;background:#333;align-items:center;justify-content:center;font-size:30px;font-weight:bold;color:#fff}
-.avatar-wrap.ring .avatar{border:3px solid #1b1b1b}
-.dot-live{position:absolute;right:2px;bottom:2px;width:16px;height:16px;border-radius:50%;background:var(--green);border:3px solid #1b1b1b;animation:pulse 1.6s infinite}
+.avatar{display:flex;width:64px;height:64px;border-radius:50%;object-fit:cover;background:var(--surface2);align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff}
+.avatar-wrap.ring .avatar{border:3px solid var(--bg)}
+.dot-live{position:absolute;right:0;bottom:0;width:14px;height:14px;border-radius:50%;background:var(--green);border:3px solid var(--bg);animation:pulse 1.6s infinite}
 .dot-inline{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);vertical-align:middle}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.7)}70%{box-shadow:0 0 0 10px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
-.creator-card{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
-.creator-card>div:nth-child(2){flex:1;min-width:160px}
-.live-head{display:flex;gap:12px;align-items:center}
-.status{color:#ffb47c;font-style:italic}
-.stats{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0;color:#ddd}
-.profile-top{display:flex;gap:18px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:17px;margin:13px 0}
-.profile-info{flex:1;min-width:220px}
+.tag-live{display:inline-block;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;margin-left:6px;vertical-align:middle}
+.follow-tag{display:inline-block;background:#14271b;color:#b8f5c9;font-size:11px;padding:3px 7px;border-radius:6px;margin-left:6px;vertical-align:middle}
+.creator-card{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.creator-card>div:nth-child(2){flex:1;min-width:150px}
+.status{color:#ffb47c;font-style:italic;font-size:14px}
 
-/* Barre des statuts (façon WhatsApp) */
-.status-bar{display:flex;gap:12px;overflow-x:auto;padding:6px 2px 12px}
-.status-bubble{flex:0 0 auto;width:82px;display:flex;flex-direction:column;align-items:center;gap:6px;color:#ddd;font-size:12px;background:none;padding:0}
-.status-bubble span.name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px}
+/* Barre des statuts */
+.status-bar{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none}
+.status-bubble{flex:0 0 auto;width:72px;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;color:var(--text);font-size:12px;font-weight:400;padding:0}
+.status-bubble .name{max-width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-bubble .avatar{width:58px;height:58px}
 
-/* Grille façon TikTok */
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
-.tile{position:relative;aspect-ratio:3/4;padding:0;border-radius:4px;overflow:hidden;background:#222;display:block}
+/* Grille façon Instagram / TikTok */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.tile{position:relative;aspect-ratio:3/4;padding:0;border-radius:0;background:var(--surface2);overflow:hidden}
 .tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
-.tile-icon{position:absolute;left:6px;bottom:4px;color:#fff;font-size:13px;text-shadow:0 1px 3px #000}
+.tile-icon{position:absolute;left:6px;bottom:5px;color:#fff;font-size:12px;text-shadow:0 1px 3px #000}
 
-/* Liste de gestion (créateur) */
-.manage-item{background:#222;padding:10px;border-radius:10px;border:1px solid #333;margin-bottom:10px}
-.manage-item img,.manage-item video{width:100%;max-height:50vh;object-fit:contain;background:#000;border-radius:8px;display:block}
+/* Espace créateur */
+.c-top{display:flex;justify-content:space-between;align-items:center;margin:4px 0 14px}
+.c-top strong{font-size:17px}
+.c-head{display:flex;align-items:center;gap:20px;margin:6px 0 10px}
+.c-stats{display:flex;flex:1;justify-content:space-around;text-align:center}
+.c-stats b{display:block;font-size:17px}
+.c-stats span{font-size:12px;color:var(--muted)}
+.c-name b{display:block;font-size:15px}
+.c-name p{font-size:14px;margin:4px 0;color:var(--text)}
+.c-actions{display:flex;gap:8px;margin:12px 0}
+.c-actions button{flex:1;background:var(--surface2);color:var(--text)}
+.c-tabs{display:flex;justify-content:space-around;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:10px -16px 14px}
+.c-tabs button{flex:1;background:none;border-radius:0;padding:13px 0;color:var(--muted);font-size:20px}
+.c-tabs button.active{color:var(--text);box-shadow:inset 0 -2px 0 var(--text)}
+.row-item{display:flex;gap:12px;align-items:center;background:var(--surface);border-radius:12px;padding:8px;margin:8px 0}
+.row-thumb{width:56px;height:70px;border-radius:8px;overflow:hidden;background:var(--surface2);flex:0 0 auto}
+.row-thumb img,.row-thumb video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.row-text{flex:1;font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis}
+.empty{color:var(--muted);text-align:center;padding:24px 0}
 
-/* Visionneuse plein écran (publications, défilement vertical) */
+/* Feuilles du bas (menu +, composition) */
+.sheet-back{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;padding:12px 16px max(20px,env(safe-area-inset-bottom));max-height:90vh;overflow-y:auto}
+.sheet-grab{width:40px;height:4px;border-radius:2px;background:#444;margin:0 auto 14px}
+.sheet-opt{display:flex;align-items:center;gap:14px;width:100%;background:var(--surface2);color:var(--text);text-align:left;padding:14px;border-radius:14px;margin:8px 0;font-weight:500}
+.sheet-opt i{font-size:22px;color:var(--orange)}
+.sheet-opt small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:2px}
+#composerPreview img,#composerPreview video{width:100%;max-height:260px;object-fit:contain;border-radius:12px;background:#000;margin:8px 0}
+
+/* Visionneuse plein écran (publications) */
 .viewer{position:fixed;inset:0;z-index:100000;background:#000}
-.viewer-close{position:absolute;top:12px;left:12px;z-index:3;background:rgba(0,0,0,.5);width:40px;height:40px;padding:0;border-radius:50%;font-size:18px}
-.feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory}
-.feed-item{height:100%;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;background:#000}
+.viewer-close{position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;z-index:3;background:rgba(0,0,0,.45);width:40px;height:40px;border-radius:50%;padding:0;font-size:18px;display:flex;align-items:center;justify-content:center}
+.feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}
+.feed-item{height:100%;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden}
 .feed-media{width:100%;height:100%;object-fit:contain;background:#000}
-.sound-btn{position:absolute;right:12px;top:12px;background:rgba(0,0,0,.5);padding:8px 10px;border-radius:50%;font-size:16px;z-index:2}
-.feed-meta{position:absolute;left:14px;bottom:24px;right:70px;color:#fff;text-shadow:0 1px 3px #000;pointer-events:none}
-.feed-meta p{color:#fff;margin:4px 0}
+.feed-shade{position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(transparent,rgba(0,0,0,.75));pointer-events:none}
+.feed-side{position:absolute;right:12px;bottom:110px;display:flex;flex-direction:column;gap:16px;align-items:center;z-index:2}
+.feed-side button{background:rgba(0,0,0,.4);width:44px;height:44px;border-radius:50%;padding:0;font-size:20px;display:flex;align-items:center;justify-content:center}
+.feed-meta{position:absolute;left:14px;right:72px;bottom:28px;color:#fff;z-index:2;pointer-events:none}
+.feed-meta b{font-size:15px}
+.feed-meta p{color:#fff;margin:6px 0 0;font-size:14px;text-shadow:0 1px 3px #000}
+.feed-profile{pointer-events:auto;margin-top:10px;background:rgba(255,255,255,.18);color:#fff;padding:8px 14px;font-size:13px;border-radius:999px}
 
 /* Visionneuse des statuts (24 h) */
 .sv{position:fixed;inset:0;z-index:100001;background:#000;display:flex;flex-direction:column}
-.sv-top{position:relative;z-index:3;padding:12px 12px 6px}
+.sv-top{position:relative;z-index:3;padding:max(12px,env(safe-area-inset-top)) 12px 6px}
 .sv-bars{display:flex;gap:4px;margin-bottom:10px}
 .sv-bar{flex:1;height:3px;background:rgba(255,255,255,.35);border-radius:2px;overflow:hidden}
 .sv-bar span{display:block;height:100%;width:0;background:#fff}
@@ -88,7 +122,7 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 .sv-bar span.run{animation:svfill linear forwards}
 @keyframes svfill{from{width:0}to{width:100%}}
 .sv-head{display:flex;align-items:center;gap:10px;color:#fff}
-.sv-head .avatar{width:38px;height:38px;font-size:16px}
+.sv-head .avatar{width:38px;height:38px;font-size:15px}
 .sv-head .avatar-wrap.ring{padding:2px}
 .sv-close{margin-left:auto;background:rgba(0,0,0,.5);width:36px;height:36px;padding:0;border-radius:50%}
 .sv-body{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -98,20 +132,21 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 .sv-caption{position:absolute;left:0;right:0;bottom:0;padding:18px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.7));z-index:1;text-align:center}
 
 /* Direct */
-.live-video{width:100%;max-height:65vh;background:#000;border-radius:10px;object-fit:contain}
-.live-player{background:#080808;border-radius:10px;overflow:hidden;min-height:100px}
-.live-preview{margin-top:12px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
+.live-video{width:100%;max-height:65vh;background:#000;border-radius:12px;object-fit:contain}
+.live-player{background:#080808;border-radius:12px;overflow:hidden}
+.live-preview{margin-top:10px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
 .live-player video{width:100%;max-height:65vh;object-fit:contain;background:#000}
-.live-stage{position:relative;background:#050505;border-radius:12px;overflow:hidden;min-height:170px}
+.live-stage{position:relative;background:#050505;border-radius:14px;overflow:hidden;min-height:170px}
 .live-stage video{display:block;width:100%;max-height:70vh;object-fit:contain;background:#000}
+.live-head{display:flex;gap:12px;align-items:center}
 .live-tools{display:flex;justify-content:space-between;align-items:center;gap:7px;flex-wrap:wrap;padding:10px;background:rgba(0,0,0,.16);pointer-events:auto}
 .live-tools button{padding:9px 11px;font-size:13px}
-.live-tools .count{font-size:14px;font-weight:bold;color:#fff;background:#e0262b;padding:6px 10px;border-radius:6px}
+.live-tools .count{font-size:13px;font-weight:700;color:#fff;background:var(--red);padding:6px 10px;border-radius:8px}
 .live-overlay-tools{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.18),transparent 20%,transparent 65%,rgba(0,0,0,.12))}
 .live-chat{pointer-events:auto;margin-top:auto;padding:10px}
 .live-chat-title{color:rgba(255,255,255,.75);text-shadow:0 1px 3px #000;font-size:13px;margin-bottom:6px}
-.live-chat-messages{height:auto;max-height:22vh;overflow:hidden;padding:5px;margin-bottom:8px}
-.live-chat-message{width:fit-content;max-width:90%;font-size:13px;line-height:1.4;padding:4px 8px;margin:4px 0;border-radius:7px;background:rgba(0,0,0,.28);color:#fff;text-shadow:0 1px 2px #000;overflow-wrap:anywhere}
+.live-chat-messages{max-height:22vh;overflow:hidden;padding:5px;margin-bottom:8px}
+.live-chat-message{width:fit-content;max-width:90%;font-size:13px;line-height:1.4;padding:4px 8px;margin:4px 0;border-radius:8px;background:rgba(0,0,0,.28);color:#fff;text-shadow:0 1px 2px #000;overflow-wrap:anywhere}
 .live-chat-message strong{color:#ff9b55}
 .live-chat-form{display:flex;gap:7px}
 .live-chat-form input{margin:0;min-width:0;flex:1;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25)}
@@ -122,15 +157,25 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 .live-fullscreen .live-tools{padding-top:max(10px,env(safe-area-inset-top))}
 .live-fullscreen .live-chat{padding-bottom:max(12px,env(safe-area-inset-bottom))}
 .live-fullscreen .live-chat-messages{max-height:20dvh}
-@media(max-width:600px){main{padding:12px}.live-tools button{padding:9px}.tiles{grid-template-columns:repeat(3,1fr)}}
+
+/* Profil public */
+.p-top{display:flex;gap:18px;align-items:center;flex-wrap:wrap;padding:8px 0 4px}
+.p-info{flex:1;min-width:200px}
+.p-info h2{margin:0 0 2px;font-size:20px}
+.stats{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0;color:#ddd;font-size:14px}
+.stats b{color:var(--text)}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-actions button{flex:1}
+.tag{display:inline-block;padding:4px 9px;border-radius:6px;background:var(--surface2);color:#ddd;font-size:12px}
+@media(max-width:600px){main{padding:12px}.live-tools button{padding:9px}}
 </style>
 </head>
 <body>
-<header><div class="logo">AFRO <span>LIVE</span></div><button id="logout" class="secondary hidden">Déconnexion</button></header>
+<header><div class="logo">AFRO <span>LIVE</span></div><button id="logout" class="soft hidden">Déconnexion</button></header>
 <main>
 
 <section id="auth">
- <h1>Bienvenue sur <span class="orange">AFRO LIVE</span></h1>
+ <h1>Bienvenue sur <span style="color:var(--orange)">AFRO LIVE</span></h1>
  <p>La plateforme congolaise qui rapproche les créateurs et leur public grâce aux vidéos et aux directs.</p>
  <div class="card"><h2>Créer un compte</h2>
   <label for="signupName">Nom affiché</label><input id="signupName" placeholder="Ton nom">
@@ -146,16 +191,14 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 </section>
 
 <section id="app" class="hidden">
- <h1>Bonjour, <span id="displayName" class="orange"></span> 👋</h1>
- <p id="accountInfo"></p>
  <div id="status"></div>
- <nav id="navigation"></nav>
+ <nav id="navigation" class="pills"></nav>
 
  <section id="spectator">
   <div id="discoverPage">
    <h2>Statuts</h2>
    <div id="statusBar" class="status-bar"></div>
-   <h2>Découvrir les créateurs</h2>
+   <h2>Créateurs</h2>
    <div id="creators" class="grid"></div>
    <h2>Dernières publications</h2>
    <div id="freeVideos" class="tiles"></div>
@@ -175,7 +218,7 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 
   <div id="followsPage" class="hidden">
    <h2>Mes suivis</h2>
-   <p>Les créateurs que tu suis. Le point vert apparaît quand l'un d'eux est en direct.</p>
+   <p>Le point vert apparaît quand l'un d'eux est en direct.</p>
    <div id="followsList"></div>
   </div>
 
@@ -185,7 +228,7 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
     <p id="myProfile"></p>
     <div class="card-actions">
      <button id="openMyProfile">Voir mon profil public</button>
-     <button class="secondary" onclick="showPage('discover')">Retour à l'accueil</button>
+     <button class="soft" onclick="showPage('discover')">Retour à l'accueil</button>
     </div>
    </div>
   </div>
@@ -213,74 +256,40 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
  </section>
 
  <section id="creator" class="hidden">
-  <h2>Espace Créateur</h2>
-  <p>Gère ton activité et prépare ta communauté.</p>
-  <nav>
-   <button onclick="creatorPage('overview')">Tableau de bord</button>
-   <button onclick="creatorPage('price')">Mon tarif</button>
-   <button onclick="creatorPage('posts')">Publications</button>
-   <button onclick="creatorPage('statuts')">Statut</button>
-   <button onclick="creatorPage('live')">Mes directs</button>
-   <button onclick="creatorPage('subscribers')">Abonnés</button>
-   <button onclick="creatorPage('earnings')">Revenus</button>
-  </nav>
-
-  <div id="creatorOverview">
-   <div class="card">
-    <h3>Bienvenue dans ton espace créateur</h3>
-    <p>Publie du contenu, développe ton audience et prépare tes abonnements.</p>
-    <p>Commission de la plateforme : 30 %. Part du créateur : 70 % après confirmation du paiement.</p>
-    <div id="creatorStats"></div>
-   </div>
+  <div class="c-top">
+   <strong id="creatorTitle"></strong>
+   <button class="icon" id="openCreateSheet" aria-label="Créer"><i class="ti ti-plus" aria-hidden="true"></i></button>
+  </div>
+  <div id="creatorHeader"></div>
+  <div class="c-tabs">
+   <button data-tab="posts" onclick="creatorPage('posts')" aria-label="Publications"><i class="ti ti-layout-grid" aria-hidden="true"></i></button>
+   <button data-tab="statuts" onclick="creatorPage('statuts')" aria-label="Statuts"><i class="ti ti-circle-dashed" aria-hidden="true"></i></button>
+   <button data-tab="live" onclick="creatorPage('live')" aria-label="Directs"><i class="ti ti-broadcast" aria-hidden="true"></i></button>
+   <button data-tab="subscribers" onclick="creatorPage('subscribers')" aria-label="Abonnés"><i class="ti ti-users" aria-hidden="true"></i></button>
+   <button data-tab="earnings" onclick="creatorPage('earnings')" aria-label="Tarif et revenus"><i class="ti ti-coin" aria-hidden="true"></i></button>
   </div>
 
-  <div id="creatorPrice" class="hidden">
-   <div class="card">
-    <h3>Choisir mon prix mensuel</h3>
-    <p>Tu choisis librement ton prix entre 100 et 1 000 000 FCFA.</p>
-    <label for="creatorPriceInput">Prix en FCFA pour 30 jours</label>
-    <input id="creatorPriceInput" type="number" min="100" max="1000000" placeholder="Exemple : 2000">
-    <button id="savePrice">Enregistrer mon tarif</button>
-   </div>
-  </div>
-
-  <div id="creatorPosts" class="hidden">
-   <div class="card">
-    <h3>Publier une vidéo ou une photo</h3>
-    <input id="postFile" type="file" accept="image/*,video/*">
-    <textarea id="postCaption" maxlength="500" rows="2" placeholder="Légende (facultatif)"></textarea>
-    <button id="postPublish" style="width:100%">Publier</button>
-   </div>
-   <div class="card">
-    <h3>Photo de profil</h3>
-    <label for="avatarInput">Choisir une image</label>
-    <input id="avatarInput" type="file" accept="image/*">
-   </div>
-   <h3>Mes publications</h3>
+  <div id="creatorPosts">
+   <div id="creatorPostGrid" class="tiles"></div>
+   <h3 style="margin-top:18px">Gérer mes publications</h3>
    <div id="creatorPostList"></div>
   </div>
 
   <div id="creatorStatuts" class="hidden">
-   <div class="card">
-    <h3>Publier un statut</h3>
-    <p class="small">Photo ou vidéo visible pendant 24 h, comme sur WhatsApp.</p>
-    <input id="statusFile" type="file" accept="image/*,video/*">
-    <textarea id="statusCaption" maxlength="200" rows="2" placeholder="Légende (facultatif)"></textarea>
-    <button id="statusPublish" style="width:100%">Publier le statut</button>
-   </div>
+   <button style="width:100%" onclick="openComposer('status')">Publier un statut</button>
+   <p class="small" style="margin-top:8px">Visible 24 h, comme sur WhatsApp.</p>
    <h3>Mes statuts actifs</h3>
    <div id="myStatusList"></div>
   </div>
 
   <div id="creatorLive" class="hidden">
-   <h3>Mes directs</h3>
    <div class="card" id="createLiveCard">
-    <h3>Créer un direct</h3>
+    <h3>Démarrer un direct</h3>
     <label for="liveTitle">Titre du direct</label>
     <input id="liveTitle" maxlength="100" placeholder="Exemple : Discussion avec ma communauté">
     <label for="liveDescription">Description (facultatif)</label>
     <textarea id="liveDescription" maxlength="500" rows="3" placeholder="Présente ton direct..."></textarea>
-    <button id="startLiveButton" style="width:100%">Démarrer un direct</button>
+    <button id="startLiveButton" style="width:100%">Lancer le direct</button>
    </div>
    <div id="creatorLiveStatus" class="notice">Tu n'es pas actuellement en direct.</div>
    <div id="creatorLivePreview" class="card hidden">
@@ -292,15 +301,23 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
   </div>
 
   <div id="creatorSubscribers" class="hidden">
-   <h3>Mes abonnés</h3>
    <p class="small">Cette liste est privée : seul toi peux la voir.</p>
    <div id="subscriberList"></div>
   </div>
 
   <div id="creatorEarnings" class="hidden">
-   <h3>Revenus et retraits</h3>
-   <p>Les revenus seront calculés à partir des paiements réellement confirmés.</p>
-   <div class="notice">Les paiements MTN Mobile Money, Airtel Money et les retraits nécessitent une intégration serveur avant toute opération financière.</div>
+   <div class="card">
+    <h3>Mon tarif mensuel</h3>
+    <p class="small">Entre 100 et 1 000 000 FCFA, pour 30 jours.</p>
+    <label for="creatorPriceInput">Prix en FCFA</label>
+    <input id="creatorPriceInput" type="number" min="100" max="1000000" placeholder="Exemple : 2000">
+    <button id="savePrice" style="width:100%">Enregistrer mon tarif</button>
+   </div>
+   <div class="card">
+    <h3>Revenus</h3>
+    <p>Calculés à partir des paiements réellement confirmés.</p>
+    <div class="notice">Les paiements MTN Mobile Money, Airtel Money et les retraits nécessitent une intégration serveur.</div>
+   </div>
   </div>
  </section>
 
@@ -308,8 +325,8 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
   <h2>Administration AFRO LIVE</h2>
   <p>Gestion des candidatures pour devenir créateur.</p>
   <div class="grid">
-   <div class="card"><p class="small">Candidatures en attente</p><h1 id="pendingCount" class="orange">0</h1></div>
-   <div class="card"><p class="small">Candidatures examinées</p><h1 id="reviewedCount" class="orange">0</h1></div>
+   <div class="card"><p class="small">Candidatures en attente</p><h1 id="pendingCount" style="color:var(--orange)">0</h1></div>
+   <div class="card"><p class="small">Candidatures examinées</p><h1 id="reviewedCount" style="color:var(--orange)">0</h1></div>
   </div>
   <div class="admin-actions"><button id="refreshAdmin">Actualiser les demandes</button></div>
   <div id="adminApplications"><p>Chargement des candidatures...</p></div>
@@ -317,12 +334,39 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 
  <section id="publicProfile" class="hidden"></section>
 </section>
+
+<input id="avatarInput" type="file" accept="image/*" class="hidden">
 </main>
 <footer>AFRO LIVE Congo · Le numérique, c'est le futur.</footer>
 
-<!-- Visionneuse des publications (défilement vertical façon TikTok) -->
+<!-- Menu du bouton + -->
+<div id="createSheet" class="sheet-back hidden">
+ <div class="sheet">
+  <div class="sheet-grab"></div>
+  <button class="sheet-opt" onclick="closeSheet();openComposer('post')"><i class="ti ti-photo" aria-hidden="true"></i><span>Publication<small>Photo ou vidéo sur ton profil</small></span></button>
+  <button class="sheet-opt" onclick="closeSheet();openComposer('status')"><i class="ti ti-circle-dashed" aria-hidden="true"></i><span>Statut<small>Visible pendant 24 h</small></span></button>
+  <button class="sheet-opt" onclick="closeSheet();creatorPage('live')"><i class="ti ti-broadcast" aria-hidden="true"></i><span>Direct<small>Diffuser en direct</small></span></button>
+ </div>
+</div>
+
+<!-- Composition d'une publication ou d'un statut -->
+<div id="composer" class="sheet-back hidden">
+ <div class="sheet">
+  <div class="sheet-grab"></div>
+  <h3 id="composerTitle">Nouvelle publication</h3>
+  <p class="small" id="composerHint"></p>
+  <input id="composerFile" type="file" accept="image/*,video/*">
+  <div id="composerPreview"></div>
+  <label for="composerCaption">Légende (facultatif)</label>
+  <textarea id="composerCaption" maxlength="500" rows="2"></textarea>
+  <button id="composerSubmit" style="width:100%">Publier</button>
+  <button class="soft" style="width:100%;margin-top:8px" onclick="closeComposer()">Annuler</button>
+ </div>
+</div>
+
+<!-- Visionneuse des publications (plein écran, défilement vertical) -->
 <div id="viewer" class="viewer hidden">
- <button id="viewerClose" class="viewer-close" aria-label="Fermer">✕</button>
+ <button id="viewerClose" class="viewer-close" aria-label="Fermer"><i class="ti ti-x" aria-hidden="true"></i></button>
  <div id="feedBody" style="height:100%"></div>
 </div>
 
@@ -333,7 +377,7 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
   <div class="sv-head">
    <div id="svAvatar"></div>
    <div><b id="svName"></b><div class="small" id="svTime"></div></div>
-   <button id="svClose" class="sv-close" aria-label="Fermer">✕</button>
+   <button id="svClose" class="sv-close" aria-label="Fermer"><i class="ti ti-x" aria-hidden="true"></i></button>
   </div>
  </div>
  <div class="sv-body" id="svBody">
@@ -351,10 +395,11 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=null,currentProfile=null,liveRoom=null,currentLiveSessionId=null,liveMode=null,viewMode=null;
 let myFollows=new Set(),followsReady=false,facingMode="user",accountLoading=false,applicationFilled=false;
 let liveCreatorIds=new Set();
-let statusByCreator=new Map();     // creatorId -> { profile, items } (statuts actifs)
-const feedSources={};              // clé -> liste de publications pour la visionneuse
+let statusByCreator=new Map();
+const feedSources={};
 let hiddenForProfile=[];
 let feedObserver=null;
+let composerMode="post";
 let sv={group:null,index:0,timer:null};
 
 const $=id=>document.getElementById(id);
@@ -368,21 +413,24 @@ function safeHttpUrl(value){try{const u=new URL(value);return["http:","https:"].
 function mediaUrl(path){return db.storage.from("creator-media").getPublicUrl(path).data.publicUrl}
 function thumbHTML(p){
  const url=escapeHTML(mediaUrl(p.media_path));
- return p.kind==="video"
-  ? `<video src="${url}" muted playsinline preload="metadata"></video>`
-  : `<img src="${url}" alt="" loading="lazy">`;
+ return p.kind==="video"?`<video src="${url}" muted playsinline preload="metadata"></video>`:`<img src="${url}" alt="" loading="lazy">`;
 }
 function feedMediaHTML(p){
  const url=escapeHTML(mediaUrl(p.media_path));
- return p.kind==="video"
-  ? `<video class="feed-media" src="${url}" loop muted playsinline preload="metadata"></video>`
-  : `<img class="feed-media" src="${url}" alt="">`;
+ return p.kind==="video"?`<video class="feed-media" src="${url}" loop muted playsinline preload="metadata"></video>`:`<img class="feed-media" src="${url}" alt="">`;
 }
 function avatarHTML(p,live=false){
  const initial=escapeHTML(((p.display_name||p.username||"?")[0]||"?").toUpperCase());
  const img=safeHttpUrl(p.avatar_url);
  const ring=statusByCreator.has(p.id);
  return `<span class="avatar-wrap${ring?" ring":""}">${img?`<img class="avatar" src="${escapeHTML(img)}" alt="">`:`<span class="avatar">${initial}</span>`}${live?'<span class="dot-live" title="En direct"></span>':""}</span>`;
+}
+function fileInfo(file){
+ if(!file)return null;
+ const kind=file.type.startsWith("video/")?"video":file.type.startsWith("image/")?"photo":null;
+ if(!kind)return null;
+ const ext=((file.name.split(".").pop()||"bin").replace(/[^a-z0-9]/gi,"")||"bin").toLowerCase();
+ return {kind,ext};
 }
 
 /* AUTHENTIFICATION */
@@ -410,25 +458,21 @@ async function signOut(){
 function resetSession(){
  currentUser=null;currentProfile=null;viewMode=null;myFollows=new Set();followsReady=false;liveCreatorIds=new Set();
  statusByCreator=new Map();applicationFilled=false;hiddenForProfile=[];
- closeViewer();closeStatusViewer();
+ closeViewer();closeStatusViewer();closeSheet();closeComposer();
  $("app").classList.add("hidden");$("auth").classList.remove("hidden");$("logout").classList.add("hidden");
  $("publicProfile").classList.add("hidden");
 }
-
 async function loadAccount(){
  if(accountLoading)return;
  accountLoading=true;
  try{
   const {data:{user},error:ue}=await db.auth.getUser();
   if(ue||!user)return;
-  const {data:profile,error}=await db.from("profiles")
-   .select("id,username,display_name,role,bio,avatar_url").eq("id",user.id).maybeSingle();
+  const {data:profile,error}=await db.from("profiles").select("id,username,display_name,role,bio,avatar_url").eq("id",user.id).maybeSingle();
   if(error){authMessage("Impossible de charger ton profil : "+error.message);return}
   if(!profile){authMessage("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");return}
   currentUser=user;currentProfile=profile;
   $("auth").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");
-  $("displayName").textContent=profile.display_name||profile.username;
-  $("accountInfo").textContent="@"+profile.username+" · "+profile.role;
   $("myProfile").textContent=(profile.display_name||profile.username)+" · @"+profile.username+" · "+user.email;
   renderView();
  }finally{accountLoading=false}
@@ -441,7 +485,6 @@ function renderView(){
  const role=currentProfile.role;
  const mode=role==="creator"?(viewMode||"creator"):"spectator";
  ["spectator","creator","admin"].forEach(id=>$(id).classList.add("hidden"));
-
  if(role==="admin"){
   $("admin").classList.remove("hidden");
   $("navigation").innerHTML='<button class="active">Administration</button>';
@@ -450,8 +493,9 @@ function renderView(){
  }
  if(mode==="creator"){
   $("creator").classList.remove("hidden");
-  $("navigation").innerHTML='<button class="active" onclick="setViewMode(\'creator\')">Espace Créateur</button><button onclick="setViewMode(\'spectator\')">Voir comme spectateur</button>';
-  creatorPage("overview");
+  $("navigation").innerHTML='<button class="active" onclick="setViewMode(\'creator\')">Espace créateur</button><button onclick="setViewMode(\'spectator\')">Voir comme spectateur</button>';
+  $("creatorTitle").textContent="@"+currentProfile.username;
+  creatorPage("posts");
   loadCreator();
   return;
  }
@@ -463,7 +507,7 @@ function renderView(){
   `<button data-page="follows" onclick="showPage('follows')">Suivis</button>`+
   `<button data-page="profile" onclick="showPage('profile')">Mon profil</button>`+
   `<button data-page="application" onclick="showPage('application')">Devenir créateur</button>`+
-  (role==="creator"?`<button onclick="setViewMode('creator')">Retour espace créateur</button>`:"");
+  (role==="creator"?`<button onclick="setViewMode('creator')">Espace créateur</button>`:"");
  showPage("discover");
  loadSpectatorData();
 }
@@ -475,7 +519,7 @@ async function loadSpectatorData(){
  if(liveMode!=="spectator")loadLives();
 }
 
-/* NAVIGATION */
+/* NAVIGATION SPECTATEUR */
 function showPage(page){
  ["discover","subscriptions","lives","follows","profile","application"].forEach(p=>{
   const el=$(p+"Page");if(el)el.classList.toggle("hidden",p!==page);
@@ -488,7 +532,7 @@ function showPage(page){
  if(page==="subscriptions")loadSubscriptions();
 }
 
-/* LIVE IDS (point vert) */
+/* DIRECTS EN COURS (point vert) */
 async function refreshLiveIds(){
  const {data,error}=await db.from("live_sessions").select("creator_id").eq("status","live");
  if(!error)liveCreatorIds=new Set((data||[]).map(l=>l.creator_id));
@@ -556,8 +600,8 @@ function showStatusItem(){
   run(5000);
   sv.timer=setTimeout(nextStatus,5000);
  }
- const cap=$("svCaption");
- cap.textContent=item.caption||"";cap.hidden=!item.caption;
+ const capEl=$("svCaption");
+ capEl.textContent=item.caption||"";capEl.hidden=!item.caption;
 }
 function nextStatus(){
  if(!sv.group)return;
@@ -612,12 +656,12 @@ async function loadFollowsPage(){
   return `<div class="item creator-card">
    ${avatarHTML(p,live)}
    <div>
-    <h3>${escapeHTML(p.display_name||p.username)}${live?' <span class="follow-tag">En direct</span>':""}</h3>
+    <h3>${escapeHTML(p.display_name||p.username)}${live?'<span class="tag-live">EN DIRECT</span>':""}</h3>
     <p class="small">@${escapeHTML(p.username)}</p>
    </div>
    <div class="card-actions">
-    <button onclick="openProfile('${p.id}')">Profil</button>
-    <button class="secondary" onclick="toggleFollow('${p.id}')">Ne plus suivre</button>
+    <button class="soft" onclick="openProfile('${p.id}')">Profil</button>
+    <button class="soft" onclick="toggleFollow('${p.id}')">Ne plus suivre</button>
    </div>
   </div>`;
  }).join("")||"<p>Tu ne suis encore aucun créateur.</p>";
@@ -628,16 +672,16 @@ async function loadFollowsPage(){
 /* DÉCOUVRIR */
 function creatorCard(c,followers){
  const live=liveCreatorIds.has(c.id),isMe=currentUser?.id===c.id,following=myFollows.has(c.id);
- const countText=followers===null?"":` · 👥 ${followers} abonné(s)`;
+ const countText=followers===null?"":` · ${followers} abonné(s)`;
  return `<div class="item creator-card">
   ${avatarHTML(c,live)}
   <div>
-   <h3>${escapeHTML(c.display_name||c.username)}${live?' <span class="follow-tag">En direct</span>':""}</h3>
+   <h3>${escapeHTML(c.display_name||c.username)}${live?'<span class="tag-live">EN DIRECT</span>':""}</h3>
    <p class="small">@${escapeHTML(c.username)}${countText}</p>
   </div>
   <div class="card-actions">
-   <button onclick="openProfile('${c.id}')">Profil</button>
-   ${isMe?"":`<button class="secondary" onclick="toggleFollow('${c.id}')">${following?"Ne plus suivre":"Suivre"}</button>`}
+   <button class="soft" onclick="openProfile('${c.id}')">Profil</button>
+   ${isMe?"":`<button onclick="toggleFollow('${c.id}')">${following?"Ne plus suivre":"Suivre"}</button>`}
   </div>
  </div>`;
 }
@@ -656,17 +700,17 @@ async function loadFeed(){
  const box=$("freeVideos");
  const {data,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id").order("created_at",{ascending:false}).limit(30);
  if(error){box.innerHTML="<p>Chargement indisponible.</p>";return}
- if(!data.length){box.innerHTML="<p>Pas encore de publications.</p>";feedSources.discover=[];return}
+ if(!data.length){box.innerHTML="<p class='empty'>Pas encore de publications.</p>";feedSources.discover=[];return}
  const ids=[...new Set(data.map(p=>p.creator_id))];
  const {data:profiles}=await db.from("profiles").select("id,username").in("id",ids);
  const umap={};(profiles||[]).forEach(p=>umap[p.id]=p.username);
  feedSources.discover=data.map(p=>({...p,username:umap[p.creator_id]||""}));
  box.innerHTML=feedSources.discover.map((p,i)=>
-  `<button class="tile" onclick="openFeedFrom('discover',${i})">${thumbHTML(p)}${p.kind==="video"?'<span class="tile-icon">▶</span>':""}</button>`
+  `<button class="tile" onclick="openFeedFrom('discover',${i})">${thumbHTML(p)}${p.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play-filled" aria-hidden="true"></i></span>':""}</button>`
  ).join("");
 }
 
-/* VISIONNEUSE DES PUBLICATIONS (défilement vertical) */
+/* VISIONNEUSE DES PUBLICATIONS (plein écran, défilement vertical) */
 function openFeedFrom(key,index){
  const list=feedSources[key]||[];
  if(!list.length)return;
@@ -674,16 +718,24 @@ function openFeedFrom(key,index){
  body.innerHTML=`<div class="feed" id="feedScroll">${list.map(p=>`
   <section class="feed-item">
    ${feedMediaHTML(p)}
-   <button class="sound-btn" type="button" aria-label="Son">🔇</button>
-   <div class="feed-meta"><b>@${escapeHTML(p.username||"")}</b>${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}</div>
+   <div class="feed-shade"></div>
+   <div class="feed-side"><button class="sound-btn" type="button" aria-label="Activer le son"><i class="ti ti-volume-off" aria-hidden="true"></i></button></div>
+   <div class="feed-meta">
+    <b>@${escapeHTML(p.username||"")}</b>
+    ${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}
+    <button class="feed-profile" type="button" data-creator="${escapeHTML(p.creator_id||"")}">Voir le profil</button>
+   </div>
   </section>`).join("")}</div>`;
  const feed=$("feedScroll");
  $("viewer").classList.remove("hidden");
  feed.addEventListener("click",e=>{
+  const profileBtn=e.target.closest(".feed-profile");
+  if(profileBtn){closeViewer();openProfile(profileBtn.dataset.creator);return}
+  const soundBtn=e.target.closest(".sound-btn");
   const item=e.target.closest(".feed-item");
   const v=item?.querySelector("video");
-  if(e.target.classList.contains("sound-btn")){
-   if(v){v.muted=!v.muted;e.target.textContent=v.muted?"🔇":"🔊"}
+  if(soundBtn){
+   if(v){v.muted=!v.muted;soundBtn.innerHTML=`<i class="ti ${v.muted?"ti-volume-off":"ti-volume"}" aria-hidden="true"></i>`}
    return;
   }
   if(v&&e.target.tagName==="VIDEO"){v.paused?v.play().catch(()=>{}):v.pause()}
@@ -703,8 +755,9 @@ function closeViewer(){
  $("viewer").classList.add("hidden");
 }
 
-/* PROFIL PUBLIC (grille façon TikTok) */
+/* PROFIL PUBLIC */
 async function openProfile(id){
+ if(!id)return;
  const profile=$("publicProfile");
  if(profile.classList.contains("hidden")){
   hiddenForProfile=[...$("app").children].filter(el=>el!==profile&&!el.classList.contains("hidden"));
@@ -714,38 +767,35 @@ async function openProfile(id){
  profile.innerHTML="<p>Chargement...</p>";
  const {data,error}=await db.rpc("public_profile",{p_id:id});
  const p=data?.[0];
- if(error||!p){profile.innerHTML="<p>Profil introuvable.</p><button class='secondary' id='profileBack'>Retour</button>";$("profileBack").onclick=closeProfile;return}
+ if(error||!p){profile.innerHTML="<p>Profil introuvable.</p><button class='soft' id='profileBack'>Retour</button>";$("profileBack").onclick=closeProfile;return}
  const {data:posts}=await db.from("posts").select("id,kind,media_path,caption").eq("creator_id",id).order("created_at",{ascending:false});
- const list=(posts||[]).map(x=>({...x,username:p.username}));
+ const list=(posts||[]).map(x=>({...x,username:p.username,creator_id:id}));
  feedSources.profile=list;
  const hasStatus=statusByCreator.has(id);
  const following=myFollows.has(id),isMe=currentUser?.id===id;
 
  profile.innerHTML=`
-  <div class="profile-top">
+  <div class="p-top">
    <div ${hasStatus?`onclick="openStatusViewer('${id}')" style="cursor:pointer"`:""}>${avatarHTML(p,p.is_live)}</div>
-   <div class="profile-info">
-    <h2>${escapeHTML(p.display_name||p.username)}${p.is_live?' <span class="follow-tag">En direct</span>':""}</h2>
+   <div class="p-info">
+    <h2>${escapeHTML(p.display_name||p.username)}${p.is_live?'<span class="tag-live">EN DIRECT</span>':""}</h2>
     <p class="small">@${escapeHTML(p.username)}</p>
+    ${p.status_text?`<p class="status">${escapeHTML(p.status_text)}</p>`:""}
     ${p.bio?`<p>${escapeHTML(p.bio)}</p>`:""}
-    <div class="stats">
-     <span><b>${p.follower_count}</b> abonnés</span>
-     <span><b>${p.video_count}</b> vidéos</span>
-     <span><b>${p.photo_count}</b> photos</span>
-    </div>
+    <div class="stats"><span><b>${p.follower_count}</b> abonnés</span><span><b>${p.video_count}</b> vidéos</span><span><b>${p.photo_count}</b> photos</span></div>
     <div class="card-actions" id="profileActions"></div>
    </div>
   </div>
-  <div class="tiles">${list.length?list.map((x,i)=>
-   `<button class="tile" onclick="openFeedFrom('profile',${i})">${thumbHTML(x)}${x.kind==="video"?'<span class="tile-icon">▶</span>':""}</button>`
-  ).join(""):"<p>Aucune publication.</p>"}</div>
-  <div style="margin-top:14px"><button class="secondary" id="profileBack">Retour</button></div>`;
+  <div class="tiles" style="margin-top:14px">${list.length?list.map((x,i)=>
+   `<button class="tile" onclick="openFeedFrom('profile',${i})">${thumbHTML(x)}${x.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play-filled" aria-hidden="true"></i></span>':""}</button>`
+  ).join(""):"<p class='empty' style='grid-column:1/-1'>Aucune publication.</p>"}</div>
+  <div style="margin-top:14px"><button class="soft" id="profileBack">Retour</button></div>`;
 
  const actions=$("profileActions");
  if(!isMe){
   const f=document.createElement("button");
   f.textContent=following?"Ne plus suivre":"Suivre";
-  if(following)f.className="secondary";
+  if(following)f.className="soft";
   f.onclick=()=>toggleFollow(id);
   actions.appendChild(f);
  }
@@ -920,31 +970,31 @@ function installLiveInterface(stage,room,mode){
  const bar=document.createElement("div");bar.className="live-tools";
  const count=document.createElement("span");count.className="count";
 
- const full=document.createElement("button");full.className="secondary";full.type="button";full.textContent="⛶ Plein écran";
+ const full=document.createElement("button");full.className="soft";full.type="button";full.textContent="Plein écran";
  full.addEventListener("click",()=>{
   const active=stage.classList.toggle("live-fullscreen");
-  full.textContent=active?"✕ Réduire":"⛶ Plein écran";
+  full.textContent=active?"Réduire":"Plein écran";
  });
  bar.appendChild(count);
 
  if(mode==="creator"){
   let micEnabled=true;
-  const mic=document.createElement("button");mic.className="secondary";mic.type="button";mic.textContent="🎙️ Micro activé";
+  const mic=document.createElement("button");mic.className="soft";mic.type="button";mic.textContent="Micro activé";
   mic.addEventListener("click",async()=>{
    mic.disabled=true;
    try{
     const nextState=!micEnabled;
     await room.localParticipant.setMicrophoneEnabled(nextState);
     micEnabled=nextState;
-    mic.textContent=micEnabled?"🎙️ Micro activé":"🔇 Micro coupé";
+    mic.textContent=micEnabled?"Micro activé":"Micro coupé";
     mic.classList.toggle("danger",!micEnabled);
    }catch(error){message("Impossible de modifier le microphone : "+(error.message||"Erreur"))}
    finally{mic.disabled=false}
   });
   bar.appendChild(mic);
 
-  const cam=document.createElement("button");cam.className="secondary";cam.type="button";
-  cam.textContent=facingMode==="environment"?"🔄 Caméra avant":"🔄 Caméra arrière";
+  const cam=document.createElement("button");cam.className="soft";cam.type="button";
+  cam.textContent=facingMode==="environment"?"Caméra avant":"Caméra arrière";
   cam.addEventListener("click",()=>switchCamera(room,cam));
   bar.appendChild(cam);
 
@@ -1026,7 +1076,7 @@ async function switchCamera(room,btn){
   await pub.track.restartTrack({facingMode:next});
   facingMode=next;
   pub.track.attach($("localLiveVideo"));
-  btn.textContent=next==="environment"?"🔄 Caméra avant":"🔄 Caméra arrière";
+  btn.textContent=next==="environment"?"Caméra avant":"Caméra arrière";
   message("Caméra "+(next==="environment"?"arrière":"avant")+" activée.",true);
  }catch(error){message("Impossible de changer de caméra : "+(error.message||"erreur"))}
  finally{btn.disabled=false}
@@ -1170,7 +1220,7 @@ async function startCreatorLive(){
   $("creatorLiveStatus").textContent="Erreur : "+(error.message||"Impossible de démarrer le direct.");
   message("Le direct n'a pas pu démarrer : "+(error.message||"Erreur inconnue."));
  }finally{
-  button.disabled=false;button.textContent="Démarrer un direct";
+  button.disabled=false;button.textContent="Lancer le direct";
  }
 }
 async function stopCreatorLive(){
@@ -1193,23 +1243,38 @@ async function stopCreatorLive(){
 }
 
 /* ESPACE CRÉATEUR */
-const CREATOR_PAGES=["overview","price","posts","statuts","live","subscribers","earnings"];
+const CREATOR_PAGES=["posts","statuts","live","subscribers","earnings"];
 function creatorPage(page){
  CREATOR_PAGES.forEach(n=>$("creator"+cap(n)).classList.toggle("hidden",n!==page));
- if(page==="subscribers")loadCreatorFollowers();
+ document.querySelectorAll(".c-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===page));
  if(page==="posts")loadCreatorPosts();
  if(page==="statuts")loadMyStatuses();
+ if(page==="subscribers")loadCreatorFollowers();
 }
 async function loadCreator(){
- const {data:price,error}=await db.from("creator_settings").select("monthly_price_fcfa").eq("creator_id",currentUser.id).maybeSingle();
- if(error)message("Tarif non chargé : "+error.message);
+ const [{data:price,error:pe},{data:stats}]=await Promise.all([
+  db.from("creator_settings").select("monthly_price_fcfa").eq("creator_id",currentUser.id).maybeSingle(),
+  db.rpc("public_profile",{p_id:currentUser.id})
+ ]);
+ if(pe)message("Tarif non chargé : "+pe.message);
  if(price)$("creatorPriceInput").value=price.monthly_price_fcfa;
- const {data:stats}=await db.rpc("public_profile",{p_id:currentUser.id});
- const s=stats?.[0];
- $("creatorStats").innerHTML=s
-  ?`<div class="stats"><span><b>${s.follower_count}</b> abonnés</span><span><b>${s.video_count}</b> vidéos</span><span><b>${s.photo_count}</b> photos</span></div>`
-  :"";
+ const s=stats?.[0]||{follower_count:0,video_count:0,photo_count:0};
  await loadStatuses();
+ const name=currentProfile.display_name||currentProfile.username;
+ $("creatorHeader").innerHTML=`
+  <div class="c-head">
+   ${avatarHTML(currentProfile)}
+   <div class="c-stats">
+    <div><b>${s.video_count}</b><span>vidéos</span></div>
+    <div><b>${s.photo_count}</b><span>photos</span></div>
+    <div><b>${s.follower_count}</b><span>abonnés</span></div>
+   </div>
+  </div>
+  <div class="c-name"><b>${escapeHTML(name)}</b><span class="small">@${escapeHTML(currentProfile.username)}</span>${currentProfile.bio?`<p>${escapeHTML(currentProfile.bio)}</p>`:""}</div>
+  <div class="c-actions">
+   <button onclick="$('avatarInput').click()">Changer la photo</button>
+   <button onclick="openProfile('${currentUser.id}')">Voir mon profil public</button>
+  </div>`;
 }
 async function savePrice(){
  const price=Number($("creatorPriceInput").value);
@@ -1219,49 +1284,72 @@ async function savePrice(){
  message("Tarif enregistré : "+price.toLocaleString("fr-FR")+" FCFA.",true);
 }
 
-/* UPLOAD COMMUN DES FICHIERS */
-function fileInfo(file){
- if(!file)return null;
- const kind=file.type.startsWith("video/")?"video":file.type.startsWith("image/")?"photo":null;
- if(!kind)return null;
- const ext=((file.name.split(".").pop()||"bin").replace(/[^a-z0-9]/gi,"")||"bin").toLowerCase();
- return {kind,ext};
+/* MENUS ET COMPOSITION */
+function openSheet(){$("createSheet").classList.remove("hidden")}
+function closeSheet(){$("createSheet").classList.add("hidden")}
+function openComposer(mode){
+ composerMode=mode;
+ $("composerTitle").textContent=mode==="status"?"Nouveau statut":"Nouvelle publication";
+ $("composerHint").textContent=mode==="status"?"Visible pendant 24 h, comme sur WhatsApp.":"Photo ou vidéo publiée sur ton profil.";
+ $("composerFile").value="";$("composerCaption").value="";
+ $("composerPreview").innerHTML="";
+ $("composerSubmit").textContent=mode==="status"?"Publier le statut":"Publier";
+ $("composer").classList.remove("hidden");
 }
-
-/* PUBLICATIONS */
-async function uploadPost(){
+function closeComposer(){$("composer").classList.add("hidden")}
+function previewComposer(file){
+ const box=$("composerPreview");box.innerHTML="";
+ const info=fileInfo(file);if(!info)return;
+ const url=URL.createObjectURL(file);
+ box.innerHTML=info.kind==="video"?`<video src="${url}" controls playsinline></video>`:`<img src="${url}" alt="">`;
+}
+async function publishFromComposer(){
  if(currentProfile?.role!=="creator")return message("Réservé aux créateurs.");
- const file=$("postFile").files[0],caption=$("postCaption").value.trim();
+ const file=$("composerFile").files[0];
+ const isStatus=composerMode==="status";
+ const caption=$("composerCaption").value.trim().slice(isStatus?0:0,isStatus?200:500);
  if(!file)return message("Choisis une photo ou une vidéo.");
  if(file.size>200*1024*1024)return message("Fichier trop lourd (200 Mo max).");
  const info=fileInfo(file);
  if(!info)return message("Format non accepté.");
- const path=`${currentUser.id}/${crypto.randomUUID()}.${info.ext}`;
- const button=$("postPublish");button.disabled=true;
+ const btn=$("composerSubmit");btn.disabled=true;
  message("Envoi en cours... ne ferme pas la page.");
  try{
+  const prefix=isStatus?"status-":"";
+  const path=`${currentUser.id}/${prefix}${crypto.randomUUID()}.${info.ext}`;
   const {error:se}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type});
   if(se)return message("Envoi impossible : "+se.message);
-  const {error}=await db.from("posts").insert({creator_id:currentUser.id,kind:info.kind,media_path:path,caption:caption||null});
-  if(error)return message("Publication refusée : "+error.message);
-  $("postFile").value="";$("postCaption").value="";
-  message("Publication en ligne.",true);
-  loadCreatorPosts();
- }finally{button.disabled=false}
+  const table=isStatus?"statuses":"posts";
+  const {error}=await db.from(table).insert({creator_id:currentUser.id,kind:info.kind,media_path:path,caption:caption||null});
+  if(error)return message((isStatus?"Statut":"Publication")+" refusé : "+error.message);
+  closeComposer();
+  if(isStatus){
+   message("Statut publié pour 24 h.",true);
+   await loadStatuses();
+   loadMyStatuses();
+  }else{
+   message("Publication en ligne.",true);
+   loadCreatorPosts();
+  }
+ }finally{btn.disabled=false}
 }
+
+/* PUBLICATIONS DU CRÉATEUR */
 async function loadCreatorPosts(){
- const box=$("creatorPostList");
- const {data,error}=await db.from("posts").select("id,kind,media_path,caption").eq("creator_id",currentUser.id).order("created_at",{ascending:false});
- if(error){box.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
- if(!data.length){box.innerHTML="<p>Tu n'as pas encore publié de contenu.</p>";return}
- box.innerHTML="";
- data.forEach(p=>{
-  const item=document.createElement("div");item.className="manage-item";
-  item.innerHTML=thumbHTML(p).replace("<video ","<video controls ")+(p.caption?`<p class="small">${escapeHTML(p.caption)}</p>`:"");
-  const del=document.createElement("button");del.className="danger";del.textContent="Supprimer";
-  del.onclick=()=>deletePost(p.id,p.media_path);
-  item.appendChild(del);box.appendChild(item);
- });
+ const grid=$("creatorPostGrid"),manage=$("creatorPostList");
+ const {data,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id").eq("creator_id",currentUser.id).order("created_at",{ascending:false});
+ if(error){grid.innerHTML="";manage.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
+ feedSources.creator=(data||[]).map(p=>({...p,username:currentProfile.username}));
+ if(!data.length){grid.innerHTML="<p class='empty' style='grid-column:1/-1'>Tu n'as pas encore publié de contenu.</p>";manage.innerHTML="";return}
+ grid.innerHTML=feedSources.creator.map((p,i)=>
+  `<button class="tile" onclick="openFeedFrom('creator',${i})">${thumbHTML(p)}${p.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play-filled" aria-hidden="true"></i></span>':""}</button>`
+ ).join("");
+ manage.innerHTML=data.map(p=>`
+  <div class="row-item">
+   <div class="row-thumb">${thumbHTML(p)}</div>
+   <div class="row-text">${escapeHTML(p.caption||(p.kind==="video"?"Vidéo":"Photo"))}</div>
+   <button class="danger" onclick="deletePost('${p.id}','${p.media_path}')">Supprimer</button>
+  </div>`).join("");
 }
 async function deletePost(id,path){
  if(!confirm("Supprimer cette publication ?"))return;
@@ -1272,43 +1360,18 @@ async function deletePost(id,path){
  loadCreatorPosts();
 }
 
-/* STATUTS CRÉATEUR */
-async function uploadStatus(){
- if(currentProfile?.role!=="creator")return message("Réservé aux créateurs.");
- const file=$("statusFile").files[0],caption=$("statusCaption").value.trim();
- if(!file)return message("Choisis une photo ou une vidéo pour ton statut.");
- if(file.size>200*1024*1024)return message("Fichier trop lourd (200 Mo max).");
- const info=fileInfo(file);
- if(!info)return message("Format non accepté.");
- const path=`${currentUser.id}/status-${crypto.randomUUID()}.${info.ext}`;
- const button=$("statusPublish");button.disabled=true;
- message("Publication du statut... ne ferme pas la page.");
- try{
-  const {error:se}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type});
-  if(se)return message("Envoi impossible : "+se.message);
-  const {error}=await db.from("statuses").insert({creator_id:currentUser.id,kind:info.kind,media_path:path,caption:caption||null});
-  if(error)return message("Statut refusé : "+error.message);
-  $("statusFile").value="";$("statusCaption").value="";
-  message("Statut publié pour 24 h.",true);
-  await loadStatuses();
-  loadMyStatuses();
- }finally{button.disabled=false}
-}
+/* STATUTS DU CRÉATEUR */
 async function loadMyStatuses(){
  const box=$("myStatusList");
  const {data,error}=await db.from("statuses").select("id,kind,media_path,caption,created_at").eq("creator_id",currentUser.id).gt("expires_at",new Date().toISOString()).order("created_at",{ascending:false});
  if(error){box.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
- if(!data.length){box.innerHTML="<p>Aucun statut actif.</p>";return}
- box.innerHTML="";
- data.forEach(s=>{
-  const item=document.createElement("div");item.className="manage-item";
-  item.innerHTML=thumbHTML(s).replace("<video ","<video controls ")+
-   `<p class="small">Publié le ${new Date(s.created_at).toLocaleString("fr-FR")}</p>`+
-   (s.caption?`<p>${escapeHTML(s.caption)}</p>`:"");
-  const del=document.createElement("button");del.className="danger";del.textContent="Supprimer le statut";
-  del.onclick=()=>deleteStatus(s.id,s.media_path);
-  item.appendChild(del);box.appendChild(item);
- });
+ if(!data.length){box.innerHTML="<p class='empty'>Aucun statut actif.</p>";return}
+ box.innerHTML=data.map(s=>`
+  <div class="row-item">
+   <div class="row-thumb">${thumbHTML(s)}</div>
+   <div class="row-text">${escapeHTML(s.caption||"Sans légende")}<br><span class="small">Publié le ${new Date(s.created_at).toLocaleString("fr-FR")}</span></div>
+   <button class="danger" onclick="deleteStatus('${s.id}','${s.media_path}')">Supprimer</button>
+  </div>`).join("");
 }
 async function deleteStatus(id,path){
  if(!confirm("Supprimer ce statut ?"))return;
@@ -1333,6 +1396,7 @@ async function uploadAvatar(file){
  if(error)return message("Photo enregistrée mais non liée au profil : "+error.message);
  currentProfile.avatar_url=url;
  message("Photo de profil mise à jour.",true);
+ loadCreator();
 }
 
 /* ABONNÉS (noms visibles uniquement par le créateur) */
@@ -1340,7 +1404,7 @@ async function loadCreatorFollowers(){
  const box=$("subscriberList");
  const {data,error}=await db.from("follows").select("spectator_id,created_at").eq("creator_id",currentUser.id).order("created_at",{ascending:false});
  if(error){box.innerHTML=`<div class="notice">Liste indisponible : ${escapeHTML(error.message)}</div>`;return}
- if(!data.length){box.innerHTML="<p>Aucun abonné pour le moment.</p>";return}
+ if(!data.length){box.innerHTML="<p class='empty'>Aucun abonné pour le moment.</p>";return}
  const {data:profiles}=await db.from("profiles").select("id,username,display_name").in("id",data.map(r=>r.spectator_id));
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
  box.innerHTML=data.map(r=>{
@@ -1427,8 +1491,9 @@ $("login").addEventListener("click",signIn);
 $("logout").addEventListener("click",signOut);
 $("savePrice").addEventListener("click",savePrice);
 $("creatorApplicationForm").addEventListener("submit",submitCreatorApplication);
-$("postPublish").addEventListener("click",uploadPost);
-$("statusPublish").addEventListener("click",uploadStatus);
+$("openCreateSheet").addEventListener("click",openSheet);
+$("composerFile").addEventListener("change",e=>previewComposer(e.target.files[0]));
+$("composerSubmit").addEventListener("click",publishFromComposer);
 $("avatarInput").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";uploadAvatar(f)});
 $("startLiveButton").addEventListener("click",startCreatorLive);
 $("openMyProfile").addEventListener("click",()=>{if(currentUser)openProfile(currentUser.id)});
