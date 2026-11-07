@@ -2,16 +2,16 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#0b0b0c">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#000000">
 <title>AFRO LIVE — Congo</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.5.8/dist/livekit-client.umd.min.js"></script>
 <style>
-:root{--bg:#0b0b0c;--surface:#161618;--surface2:#222226;--line:#2a2a2e;--text:#f5f5f5;--muted:#9a9aa2;--orange:#ff6a00;--green:#22c55e;--red:#e0262b}
+:root{--bg:#0b0b0c;--surface:#161618;--surface2:#222226;--line:#2a2a2e;--text:#f5f5f5;--muted:#9a9aa2;--orange:#ff6a00;--green:#22c55e;--red:#fe2c55}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;touch-action:manipulation;-webkit-text-size-adjust:100%}
 header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:max(12px,env(safe-area-inset-top)) 16px 12px;background:rgba(11,11,12,.95);border-bottom:1px solid var(--line)}
 body.feed-mode header{display:none}
 .logo{font-size:20px;font-weight:800;color:var(--orange)}.logo span{color:var(--text)}
@@ -36,17 +36,21 @@ label{font-size:13px;color:var(--muted)}
 .notice{padding:12px 14px;border-radius:12px;background:#2a2118;color:#ffd2ad;margin:10px 0;font-size:14px}
 .success{background:#14271b;color:#b8f5c9}
 #status{font-size:13px;color:#ffb47c;min-height:20px;margin:8px 0}
+body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 50px);z-index:80;pointer-events:none;text-shadow:0 1px 3px #000;margin:0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
 .empty{color:var(--muted);text-align:center;padding:24px 0}
 .pills{display:flex;gap:8px;overflow-x:auto;margin:12px 0;scrollbar-width:none}
 .pills button{background:var(--surface2);color:var(--text);white-space:nowrap;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:500}
 .pills button.active{background:var(--orange);color:#fff}
 
-/* Barre du bas (spectateur) */
-#navigation.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;justify-content:space-around;background:rgba(11,11,12,.97);border-top:1px solid var(--line);padding:6px 4px calc(8px + env(safe-area-inset-bottom));margin:0;overflow:visible}
+/* Barre du bas */
+#navigation.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;justify-content:space-around;background:var(--bg);border-top:1px solid var(--line);padding:6px 4px calc(8px + env(safe-area-inset-bottom));margin:0;overflow:visible}
+#navigation.bottomnav.over{background:transparent;border-top:0}
 #navigation.bottomnav button{position:relative;flex:1;background:none;color:var(--muted);font-size:11px;font-weight:500;padding:4px 0;border-radius:0;display:flex;flex-direction:column;align-items:center;gap:2px}
 #navigation.bottomnav button i{font-size:22px}
 #navigation.bottomnav button.active{color:var(--text)}
+#navigation.bottomnav.over button{color:rgba(255,255,255,.8);text-shadow:0 1px 3px rgba(0,0,0,.8)}
+#navigation.bottomnav.over button.active{color:#fff}
 .navdot{position:absolute;top:2px;right:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:var(--red)}
 
 /* Avatars, anneau de statut, point vert */
@@ -64,25 +68,29 @@ label{font-size:13px;color:var(--muted)}
 .card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .status{color:#ffb47c;font-style:italic;font-size:14px}
 
-/* Accueil plein écran (publications des créateurs) */
-#discoverPage.homefeed{position:fixed;left:0;right:0;top:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:30;background:#000}
-.vfeed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;background:#000}
-.vitem{height:100%;position:relative;scroll-snap-align:start;overflow:hidden;background:#000}
-.vmedia{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
-.vshade{position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(transparent,rgba(0,0,0,.75));pointer-events:none}
-.vtop{position:absolute;top:max(12px,env(safe-area-inset-top));left:0;right:0;z-index:5;display:flex;justify-content:center;gap:20px}
-.vtab{background:none;color:rgba(255,255,255,.7);padding:4px 2px;font-size:15px;font-weight:600;border-radius:0;text-shadow:0 1px 3px #000}
+/* Accueil plein écran, transparent par-dessus la vidéo */
+#discoverPage.homefeed{position:fixed;inset:0;z-index:30;background:#000;overflow:hidden}
+.vfeed{position:absolute;inset:0;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;background:#000}
+.vfeed::-webkit-scrollbar{display:none}
+.vitem{position:relative;height:100%;width:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#000}
+.vmedia{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;transform:translateZ(0);backface-visibility:hidden}
+.vshade{position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none}
+.vtop{position:absolute;top:max(14px,env(safe-area-inset-top));left:0;right:0;z-index:5;display:flex;justify-content:center;gap:22px;pointer-events:none}
+.vtab{background:none;color:rgba(255,255,255,.7);padding:4px 2px;font-size:16px;font-weight:600;border-radius:0;text-shadow:0 1px 4px rgba(0,0,0,.7);pointer-events:auto}
 .vtab.active{color:#fff;box-shadow:inset 0 -2px 0 #fff}
-.vside{position:absolute;right:10px;bottom:110px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:16px}
-.vavatar{background:none;padding:0;border-radius:0}
-.vavatar .avatar{width:50px;height:50px;font-size:16px}
+.vside{position:absolute;right:10px;bottom:96px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:18px}
+.vavatar{background:none;padding:0;border-radius:0;margin-bottom:4px}
+.vavatar .avatar{width:50px;height:50px;font-size:16px;border:2px solid #fff}
 .vavatar .avatar-wrap.ring{padding:2px}
-.vfollow{width:24px;height:24px;border-radius:50%;background:var(--orange);color:#fff;padding:0;display:flex;align-items:center;justify-content:center;font-size:14px;margin-top:-12px}
-.vfollow.done{background:#555}
-.vsound{background:rgba(0,0,0,.45);width:40px;height:40px;border-radius:50%;padding:0;font-size:18px;display:flex;align-items:center;justify-content:center}
-.vmeta{position:absolute;left:14px;right:80px;bottom:20px;z-index:4;color:#fff;text-shadow:0 1px 3px #000}
+.vfollow{width:22px;height:22px;border-radius:50%;background:var(--red);color:#fff;padding:0;display:flex;align-items:center;justify-content:center;font-size:13px;margin-top:-30px;margin-bottom:6px;border:2px solid #fff}
+.vfollow.done{background:#444}
+.vbtn{background:none;padding:0;border-radius:0;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+.vbtn i{font-size:34px;line-height:1}
+.vbtn.on i{color:var(--red)}
+.vmeta{position:absolute;left:14px;right:90px;bottom:90px;z-index:4;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8);pointer-events:none}
+.vmeta b{font-size:16px}
 .vmeta p{color:#fff;font-size:14px;margin:6px 0 0}
-.vempty{color:#ccc;text-align:center;padding:40% 20px}
+.vempty{color:#ccc;text-align:center;padding:45% 20px;position:relative;z-index:2}
 
 /* Espace créateur */
 .c-top{display:flex;justify-content:space-between;align-items:center;margin:4px 0 14px}
@@ -116,7 +124,7 @@ label{font-size:13px;color:var(--muted)}
 .sheet-opt small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:2px}
 #composerPreview img,#composerPreview video{width:100%;max-height:260px;object-fit:contain;border-radius:12px;background:#000;margin:8px 0}
 
-/* Visionneuse de grille (plein écran, défilement vertical) */
+/* Visionneuse de grille */
 .viewer{position:fixed;inset:0;z-index:100000;background:#000}
 .viewer-close{position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;z-index:3;background:rgba(0,0,0,.45);width:40px;height:40px;border-radius:50%;padding:0;font-size:18px;display:flex;align-items:center;justify-content:center}
 .feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}
@@ -130,7 +138,7 @@ label{font-size:13px;color:var(--muted)}
 .feed-meta p{color:#fff;margin:6px 0 0;font-size:14px;text-shadow:0 1px 3px #000}
 .feed-profile{margin-top:10px;background:rgba(255,255,255,.18);color:#fff;padding:8px 14px;font-size:13px;border-radius:999px}
 
-/* Visionneuse des statuts (24 h) */
+/* Visionneuse des statuts */
 .sv{position:fixed;inset:0;z-index:100001;background:#000;display:flex;flex-direction:column}
 .sv-top{position:relative;z-index:3;padding:max(12px,env(safe-area-inset-top)) 12px 6px}
 .sv-bars{display:flex;gap:4px;margin-bottom:10px}
@@ -185,6 +193,7 @@ label{font-size:13px;color:var(--muted)}
 .admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-actions button{flex:1}
 .tag{display:inline-block;padding:4px 9px;border-radius:6px;background:var(--surface2);color:#ddd;font-size:12px}
 footer{text-align:center;padding:24px;color:#666;font-size:12px}
+body.feed-mode footer{display:none}
 @media(max-width:600px){main{padding:12px}body.spectator main{padding-bottom:96px}.live-tools button{padding:9px}}
 </style>
 </head>
@@ -374,7 +383,7 @@ footer{text-align:center;padding:24px;color:#666;font-size:12px}
  </div>
 </div>
 
-<!-- Composition d'une publication ou d'un statut -->
+<!-- Composition -->
 <div id="composer" class="sheet-back hidden">
  <div class="sheet">
   <div class="sheet-grab"></div>
@@ -389,13 +398,13 @@ footer{text-align:center;padding:24px;color:#666;font-size:12px}
  </div>
 </div>
 
-<!-- Visionneuse des publications (grille du profil ou de l'espace créateur) -->
+<!-- Visionneuse de grille -->
 <div id="viewer" class="viewer hidden">
  <button id="viewerClose" class="viewer-close" aria-label="Fermer"><i class="ti ti-x" aria-hidden="true"></i></button>
  <div id="feedBody" style="height:100%"></div>
 </div>
 
-<!-- Visionneuse des statuts (24 h) -->
+<!-- Visionneuse des statuts -->
 <div id="statusViewer" class="sv hidden">
  <div class="sv-top">
   <div class="sv-bars" id="svBars"></div>
@@ -438,6 +447,11 @@ function authMessage(text){$("authMessage").textContent=text;$("authMessage").cl
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function safeHttpUrl(value){try{const u=new URL(value);return["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}}
 function mediaUrl(path){return db.storage.from("creator-media").getPublicUrl(path).data.publicUrl}
+function fmtCount(n){
+ if(n>=1000000)return (n/1000000).toFixed(1).replace(".0","")+" M";
+ if(n>=1000)return (n/1000).toFixed(1).replace(".0","")+" K";
+ return String(n);
+}
 function thumbHTML(p){
  const url=escapeHTML(mediaUrl(p.media_path));
  return p.kind==="video"?`<video src="${url}" muted playsinline preload="metadata"></video>`:`<img src="${url}" alt="" loading="lazy">`;
@@ -489,7 +503,7 @@ async function signOut(){
 function resetSession(){
  currentUser=null;currentProfile=null;viewMode=null;myFollows=new Set();followsReady=false;liveCreatorIds=new Set();
  statusByCreator=new Map();applicationFilled=false;
- closeViewer();closeStatusViewer();closeSheet();closeComposer();
+ pauseHomeFeed();closeViewer();closeStatusViewer();closeSheet();closeComposer();
  document.body.classList.remove("spectator","feed-mode");
  $("app").classList.add("hidden");$("auth").classList.remove("hidden");$("logout").classList.add("hidden");
  $("publicProfile").classList.add("hidden");
@@ -553,8 +567,8 @@ function renderView(){
 async function loadSpectatorData(){
  await loadMyFollows();
  await refreshLiveIds();
- await loadStatuses();
  showPage("discover");
+ loadStatuses();
 }
 
 /* NAVIGATION SPECTATEUR */
@@ -563,10 +577,13 @@ function showPage(page){
  Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
  $(pages[page]).classList.remove("hidden");
  document.body.classList.toggle("feed-mode",page==="discover");
- document.querySelectorAll("#navigation button[data-page]").forEach(b=>{
+ const nav=$("navigation");
+ nav.classList.toggle("over",page==="discover");
+ nav.querySelectorAll("button[data-page]").forEach(b=>{
   const active=b.dataset.page===page||(b.dataset.page==="profile"&&(page==="subscriptions"||page==="application"));
   b.classList.toggle("active",active);
  });
+ if(page!=="discover")pauseHomeFeed();
  if(page!=="lives")stopAllPreviews();
  if(page==="discover")loadHomeFeed();
  if(page==="creators")loadCreatorsPage();
@@ -709,44 +726,43 @@ async function loadFollowsPage(){
  updateFollowsBadge();
 }
 
-/* ACCUEIL : PUBLICATIONS EN PLEIN ÉCRAN */
+/* ACCUEIL : PUBLICATIONS PLEIN ÉCRAN (une seule requête) */
 async function loadHomeFeed(){
  const box=$("homeFeed");
- box.innerHTML="<p class='vempty'>Chargement...</p>";
- const {data:posts,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id").order("created_at",{ascending:false}).limit(60);
- if(error){box.innerHTML=`<p class="vempty">${escapeHTML(error.message)}</p>`;return}
- const ids=[...new Set((posts||[]).map(p=>p.creator_id))];
- const {data:profiles}=ids.length?await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids):{data:[]};
- const pmap={};(profiles||[]).forEach(p=>pmap[p.id]=p);
- let list=(posts||[]).map(p=>({...p,profile:pmap[p.creator_id]||{id:p.creator_id,username:"créateur"}}));
- if(homeFilter==="follows")list=list.filter(p=>myFollows.has(p.creator_id));
- feedSources.home=list;
- if(!list.length){
-  box.innerHTML=`<p class="vempty">${homeFilter==="follows"?"Aucune publication de tes suivis pour le moment.":"Pas encore de publications."}</p>`;
+ box.innerHTML="<div class='vempty'>Chargement...</div>";
+ const {data,error}=await db.rpc("feed_posts",{p_only_follows:homeFilter==="follows",p_limit:40});
+ if(error){box.innerHTML=`<div class="vempty">${escapeHTML(error.message)}</div>`;return}
+ if(!data?.length){
+  box.innerHTML=`<div class="vempty">${homeFilter==="follows"?"Aucune publication de tes suivis pour le moment.":"Pas encore de publications."}</div>`;
   return;
  }
- box.innerHTML=list.map(vitemHTML).join("");
+ box.innerHTML=data.map(vitemHTML).join("");
  box.scrollTop=0;
  observeHomeVideos();
 }
 function vitemHTML(p){
- const prof=p.profile,id=p.creator_id;
- const name=prof.display_name||prof.username||"";
- const live=liveCreatorIds.has(id),isMe=currentUser?.id===id,following=myFollows.has(id);
+ const prof={id:p.creator_id,username:p.username,display_name:p.display_name,avatar_url:p.avatar_url};
+ const name=p.display_name||p.username||"";
+ const live=liveCreatorIds.has(p.creator_id),isMe=currentUser?.id===p.creator_id,following=myFollows.has(p.creator_id);
  const url=escapeHTML(mediaUrl(p.media_path));
  const media=p.kind==="video"
-  ?`<video class="vmedia" src="${url}" loop muted playsinline preload="metadata"></video>`
+  ?`<video class="vmedia" src="${url}" loop muted playsinline preload="auto"></video>`
   :`<img class="vmedia" src="${url}" alt="">`;
- return `<section class="vitem">
+ const liked=!!p.liked,count=Number(p.like_count)||0;
+ return `<section class="vitem" data-post="${escapeHTML(p.id)}">
   ${media}
   <div class="vshade"></div>
   <div class="vside">
-   <button class="vavatar" data-creator="${escapeHTML(id)}" aria-label="Voir le profil de ${escapeHTML(name)}">${avatarHTML(prof,live)}</button>
-   ${isMe?"":`<button class="vfollow${following?" done":""}" data-creator="${escapeHTML(id)}" aria-label="Suivre">${following?'<i class="ti ti-check" aria-hidden="true"></i>':'<i class="ti ti-plus" aria-hidden="true"></i>'}</button>`}
-   <button class="vsound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}</button>
+   <button class="vavatar" data-action="profile" data-creator="${escapeHTML(p.creator_id)}" aria-label="Voir le profil de ${escapeHTML(name)}">${avatarHTML(prof,live)}</button>
+   ${isMe?"":`<button class="vfollow${following?" done":""}" data-action="follow" data-creator="${escapeHTML(p.creator_id)}" aria-label="Suivre">${following?'<i class="ti ti-check" aria-hidden="true"></i>':'<i class="ti ti-plus" aria-hidden="true"></i>'}</button>`}
+   <button class="vbtn${liked?" on":""}" data-action="like" data-post="${escapeHTML(p.id)}" data-liked="${liked?1:0}" aria-label="J'aime">
+    <i class="ti ${liked?"ti-heart-filled":"ti-heart"}" aria-hidden="true"></i>
+    <span class="vcount" data-n="${count}">${fmtCount(count)}</span>
+   </button>
+   <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}</button>
   </div>
   <div class="vmeta">
-   <b>@${escapeHTML(prof.username||"")}</b>${live?' <span class="tag-live">EN DIRECT</span>':""}
+   <b>@${escapeHTML(p.username||"")}</b>${live?' <span class="tag-live">EN DIRECT</span>':""}
    ${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}
   </div>
  </section>`;
@@ -762,8 +778,29 @@ function observeHomeVideos(){
  feed.querySelectorAll(".vitem").forEach(el=>homeObserver.observe(el));
 }
 function pauseHomeFeed(){
- homeObserver?.disconnect();
+ homeObserver?.disconnect();homeObserver=null;
  document.querySelectorAll("#homeFeed video").forEach(v=>v.pause());
+}
+function setLikeUI(btn,on,n){
+ btn.classList.toggle("on",on);
+ btn.dataset.liked=on?1:0;
+ btn.querySelector("i").className=`ti ${on?"ti-heart-filled":"ti-heart"}`;
+ const c=btn.querySelector(".vcount");c.dataset.n=n;c.textContent=fmtCount(n);
+}
+async function toggleLike(btn){
+ if(!currentUser)return message("Connecte-toi pour aimer une publication.");
+ if(btn.dataset.busy)return;
+ btn.dataset.busy="1";
+ const postId=btn.dataset.post;
+ const wasLiked=btn.dataset.liked==="1";
+ const n=Number(btn.querySelector(".vcount").dataset.n)||0;
+ setLikeUI(btn,!wasLiked,wasLiked?Math.max(0,n-1):n+1);
+ const req=wasLiked
+  ?db.from("post_likes").delete().eq("post_id",postId).eq("user_id",currentUser.id)
+  :db.from("post_likes").insert({post_id:postId,user_id:currentUser.id});
+ const {error}=await req;
+ if(error){setLikeUI(btn,wasLiked,n);message("Like impossible : "+error.message)}
+ delete btn.dataset.busy;
 }
 
 /* CRÉATEURS */
@@ -793,7 +830,7 @@ async function loadCreatorsPage(){
  }
 }
 
-/* VISIONNEUSE DE GRILLE (profil ou espace créateur) */
+/* VISIONNEUSE DE GRILLE */
 function openFeedFrom(key,index){
  const list=feedSources[key]||[];
  if(!list.length)return;
@@ -838,12 +875,13 @@ function closeViewer(){
  $("viewer").classList.add("hidden");
 }
 
-/* PROFIL PUBLIC (avec statut visible) */
+/* PROFIL PUBLIC */
 async function openProfile(id){
  if(!id)return;
  pauseHomeFeed();
  ["spectator","creator","admin"].forEach(s=>$(s).classList.add("hidden"));
  document.body.classList.remove("feed-mode");
+ $("navigation").classList.remove("over");
  const profile=$("publicProfile");
  profile.classList.remove("hidden");
  profile.innerHTML="<p>Chargement...</p>";
@@ -1342,7 +1380,6 @@ function creatorPage(page){
  if(page==="subscribers")loadCreatorFollowers();
 }
 async function loadCreator(){
- // Ferme un direct resté ouvert si l'espace créateur s'ouvre sans direct en cours ici
  if(liveMode!=="creator"){
   await db.from("live_sessions").update({status:"ended",ended_at:new Date().toISOString()}).eq("creator_id",currentUser.id).eq("status","live");
   liveCreatorIds.delete(currentUser.id);
@@ -1603,17 +1640,21 @@ document.querySelectorAll(".vtab").forEach(b=>b.addEventListener("click",()=>{
  document.querySelectorAll(".vtab").forEach(x=>x.classList.toggle("active",x===b));
  loadHomeFeed();
 }));
+
+/* Délégation : clics dans le fil d'accueil */
 $("homeFeed").addEventListener("click",e=>{
- const av=e.target.closest(".vavatar");
- if(av){openProfile(av.dataset.creator);return}
- const fb=e.target.closest(".vfollow");
- if(fb){toggleFollow(fb.dataset.creator);return}
- const sb=e.target.closest(".vsound");
- if(sb){
-  homeMuted=!homeMuted;
-  document.querySelectorAll("#homeFeed video").forEach(v=>v.muted=homeMuted);
-  document.querySelectorAll(".vsound").forEach(b=>b.innerHTML=`<i class="ti ${homeMuted?"ti-volume-off":"ti-volume"}" aria-hidden="true"></i>`);
-  return;
+ const btn=e.target.closest("[data-action]");
+ if(btn){
+  const action=btn.dataset.action;
+  if(action==="profile"){openProfile(btn.dataset.creator);return}
+  if(action==="follow"){toggleFollow(btn.dataset.creator);return}
+  if(action==="like"){toggleLike(btn);return}
+  if(action==="sound"){
+   homeMuted=!homeMuted;
+   document.querySelectorAll("#homeFeed video").forEach(v=>v.muted=homeMuted);
+   document.querySelectorAll('[data-action="sound"]').forEach(b=>b.innerHTML=`<i class="ti ${homeMuted?"ti-volume-off":"ti-volume"}" aria-hidden="true"></i>`);
+   return;
+  }
  }
  const v=e.target.closest(".vitem")?.querySelector("video");
  if(v&&e.target.tagName==="VIDEO"){v.paused?v.play().catch(()=>{}):v.pause()}
