@@ -13,13 +13,15 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
 header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:max(12px,env(safe-area-inset-top)) 16px 12px;background:rgba(11,11,12,.95);border-bottom:1px solid var(--line)}
+body.feed-mode header{display:none}
 .logo{font-size:20px;font-weight:800;color:var(--orange)}.logo span{color:var(--text)}
-main{max-width:900px;margin:auto;padding:16px 16px calc(40px + env(safe-area-inset-bottom))}
+main{max-width:900px;margin:auto;padding:16px 16px 40px}
+body.spectator main{padding-bottom:96px}
+body.feed-mode main{padding:0;max-width:none}
 h1{font-size:24px;margin:10px 0}h2{font-size:18px;margin:22px 0 10px}h3{font-size:16px;margin:8px 0}
 p{color:#c8c8cf;line-height:1.5;margin:6px 0}
 button{font:inherit;background:var(--orange);color:#fff;border:0;border-radius:10px;padding:11px 14px;font-weight:600;font-size:14px;cursor:pointer}
 button.soft{background:var(--surface2);color:var(--text)}
-button.ghost{background:none;color:var(--text);padding:0;border-radius:0}
 button.danger{background:#8b1d1d;color:#fff}
 button.icon{width:40px;height:40px;padding:0;border-radius:50%;background:var(--surface2);color:var(--text);display:inline-flex;align-items:center;justify-content:center;font-size:20px}
 button:disabled{opacity:.5;cursor:not-allowed}
@@ -29,19 +31,23 @@ input[type=file]{padding:10px;font-size:14px}
 label{font-size:13px;color:var(--muted)}
 .hidden{display:none!important}
 .small{font-size:12px;color:var(--muted)}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .card{background:var(--surface);border-radius:16px;padding:16px;margin:12px 0}
 .item{background:var(--surface);border-radius:14px;padding:14px;margin:8px 0}
 .notice{padding:12px 14px;border-radius:12px;background:#2a2118;color:#ffd2ad;margin:10px 0;font-size:14px}
 .success{background:#14271b;color:#b8f5c9}
 #status{font-size:13px;color:#ffb47c;min-height:20px;margin:8px 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-footer{text-align:center;padding:24px;color:#666;font-size:12px}
-
-/* Pastilles de navigation */
+.empty{color:var(--muted);text-align:center;padding:24px 0}
 .pills{display:flex;gap:8px;overflow-x:auto;margin:12px 0;scrollbar-width:none}
 .pills button{background:var(--surface2);color:var(--text);white-space:nowrap;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:500}
 .pills button.active{background:var(--orange);color:#fff}
+
+/* Barre du bas (spectateur) */
+#navigation.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;justify-content:space-around;background:rgba(11,11,12,.97);border-top:1px solid var(--line);padding:6px 4px calc(8px + env(safe-area-inset-bottom));margin:0;overflow:visible}
+#navigation.bottomnav button{position:relative;flex:1;background:none;color:var(--muted);font-size:11px;font-weight:500;padding:4px 0;border-radius:0;display:flex;flex-direction:column;align-items:center;gap:2px}
+#navigation.bottomnav button i{font-size:22px}
+#navigation.bottomnav button.active{color:var(--text)}
+.navdot{position:absolute;top:2px;right:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:var(--red)}
 
 /* Avatars, anneau de statut, point vert */
 .avatar-wrap{position:relative;display:inline-block;flex:0 0 auto;border-radius:50%}
@@ -55,19 +61,28 @@ footer{text-align:center;padding:24px;color:#666;font-size:12px}
 .follow-tag{display:inline-block;background:#14271b;color:#b8f5c9;font-size:11px;padding:3px 7px;border-radius:6px;margin-left:6px;vertical-align:middle}
 .creator-card{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .creator-card>div:nth-child(2){flex:1;min-width:150px}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .status{color:#ffb47c;font-style:italic;font-size:14px}
 
-/* Barre des statuts */
-.status-bar{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none}
-.status-bubble{flex:0 0 auto;width:72px;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;color:var(--text);font-size:12px;font-weight:400;padding:0}
-.status-bubble .name{max-width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.status-bubble .avatar{width:58px;height:58px}
-
-/* Grille façon Instagram / TikTok */
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
-.tile{position:relative;aspect-ratio:3/4;padding:0;border-radius:0;background:var(--surface2);overflow:hidden}
-.tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
-.tile-icon{position:absolute;left:6px;bottom:5px;color:#fff;font-size:12px;text-shadow:0 1px 3px #000}
+/* Accueil plein écran (publications des créateurs) */
+#discoverPage.homefeed{position:fixed;left:0;right:0;top:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:30;background:#000}
+.vfeed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;background:#000}
+.vitem{height:100%;position:relative;scroll-snap-align:start;overflow:hidden;background:#000}
+.vmedia{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+.vshade{position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(transparent,rgba(0,0,0,.75));pointer-events:none}
+.vtop{position:absolute;top:max(12px,env(safe-area-inset-top));left:0;right:0;z-index:5;display:flex;justify-content:center;gap:20px}
+.vtab{background:none;color:rgba(255,255,255,.7);padding:4px 2px;font-size:15px;font-weight:600;border-radius:0;text-shadow:0 1px 3px #000}
+.vtab.active{color:#fff;box-shadow:inset 0 -2px 0 #fff}
+.vside{position:absolute;right:10px;bottom:110px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:16px}
+.vavatar{background:none;padding:0;border-radius:0}
+.vavatar .avatar{width:50px;height:50px;font-size:16px}
+.vavatar .avatar-wrap.ring{padding:2px}
+.vfollow{width:24px;height:24px;border-radius:50%;background:var(--orange);color:#fff;padding:0;display:flex;align-items:center;justify-content:center;font-size:14px;margin-top:-12px}
+.vfollow.done{background:#555}
+.vsound{background:rgba(0,0,0,.45);width:40px;height:40px;border-radius:50%;padding:0;font-size:18px;display:flex;align-items:center;justify-content:center}
+.vmeta{position:absolute;left:14px;right:80px;bottom:20px;z-index:4;color:#fff;text-shadow:0 1px 3px #000}
+.vmeta p{color:#fff;font-size:14px;margin:6px 0 0}
+.vempty{color:#ccc;text-align:center;padding:40% 20px}
 
 /* Espace créateur */
 .c-top{display:flex;justify-content:space-between;align-items:center;margin:4px 0 14px}
@@ -83,13 +98,16 @@ footer{text-align:center;padding:24px;color:#666;font-size:12px}
 .c-tabs{display:flex;justify-content:space-around;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:10px -16px 14px}
 .c-tabs button{flex:1;background:none;border-radius:0;padding:13px 0;color:var(--muted);font-size:20px}
 .c-tabs button.active{color:var(--text);box-shadow:inset 0 -2px 0 var(--text)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.tile{position:relative;aspect-ratio:3/4;padding:0;border-radius:0;background:var(--surface2);overflow:hidden}
+.tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.tile-icon{position:absolute;left:6px;bottom:5px;color:#fff;font-size:12px;text-shadow:0 1px 3px #000}
 .row-item{display:flex;gap:12px;align-items:center;background:var(--surface);border-radius:12px;padding:8px;margin:8px 0}
 .row-thumb{width:56px;height:70px;border-radius:8px;overflow:hidden;background:var(--surface2);flex:0 0 auto}
 .row-thumb img,.row-thumb video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .row-text{flex:1;font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis}
-.empty{color:var(--muted);text-align:center;padding:24px 0}
 
-/* Feuilles du bas (menu +, composition) */
+/* Feuilles du bas */
 .sheet-back{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
 .sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;padding:12px 16px max(20px,env(safe-area-inset-bottom));max-height:90vh;overflow-y:auto}
 .sheet-grab{width:40px;height:4px;border-radius:2px;background:#444;margin:0 auto 14px}
@@ -98,7 +116,7 @@ footer{text-align:center;padding:24px;color:#666;font-size:12px}
 .sheet-opt small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:2px}
 #composerPreview img,#composerPreview video{width:100%;max-height:260px;object-fit:contain;border-radius:12px;background:#000;margin:8px 0}
 
-/* Visionneuse plein écran (publications) */
+/* Visionneuse de grille (plein écran, défilement vertical) */
 .viewer{position:fixed;inset:0;z-index:100000;background:#000}
 .viewer-close{position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;z-index:3;background:rgba(0,0,0,.45);width:40px;height:40px;border-radius:50%;padding:0;font-size:18px;display:flex;align-items:center;justify-content:center}
 .feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}
@@ -107,10 +125,10 @@ footer{text-align:center;padding:24px;color:#666;font-size:12px}
 .feed-shade{position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(transparent,rgba(0,0,0,.75));pointer-events:none}
 .feed-side{position:absolute;right:12px;bottom:110px;display:flex;flex-direction:column;gap:16px;align-items:center;z-index:2}
 .feed-side button{background:rgba(0,0,0,.4);width:44px;height:44px;border-radius:50%;padding:0;font-size:20px;display:flex;align-items:center;justify-content:center}
-.feed-meta{position:absolute;left:14px;right:72px;bottom:28px;color:#fff;z-index:2;pointer-events:none}
+.feed-meta{position:absolute;left:14px;right:72px;bottom:28px;color:#fff;z-index:2}
 .feed-meta b{font-size:15px}
 .feed-meta p{color:#fff;margin:6px 0 0;font-size:14px;text-shadow:0 1px 3px #000}
-.feed-profile{pointer-events:auto;margin-top:10px;background:rgba(255,255,255,.18);color:#fff;padding:8px 14px;font-size:13px;border-radius:999px}
+.feed-profile{margin-top:10px;background:rgba(255,255,255,.18);color:#fff;padding:8px 14px;font-size:13px;border-radius:999px}
 
 /* Visionneuse des statuts (24 h) */
 .sv{position:fixed;inset:0;z-index:100001;background:#000;display:flex;flex-direction:column}
@@ -164,10 +182,10 @@ footer{text-align:center;padding:24px;color:#666;font-size:12px}
 .p-info h2{margin:0 0 2px;font-size:20px}
 .stats{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0;color:#ddd;font-size:14px}
 .stats b{color:var(--text)}
-.card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-actions button{flex:1}
 .tag{display:inline-block;padding:4px 9px;border-radius:6px;background:var(--surface2);color:#ddd;font-size:12px}
-@media(max-width:600px){main{padding:12px}.live-tools button{padding:9px}}
+footer{text-align:center;padding:24px;color:#666;font-size:12px}
+@media(max-width:600px){main{padding:12px}body.spectator main{padding-bottom:96px}.live-tools button{padding:9px}}
 </style>
 </head>
 <body>
@@ -195,13 +213,17 @@ footer{text-align:center;padding:24px;color:#666;font-size:12px}
  <nav id="navigation" class="pills"></nav>
 
  <section id="spectator">
-  <div id="discoverPage">
-   <h2>Statuts</h2>
-   <div id="statusBar" class="status-bar"></div>
+  <section id="discoverPage" class="homefeed hidden">
+   <div class="vtop">
+    <button class="vtab active" data-filter="pour-toi">Pour toi</button>
+    <button class="vtab" data-filter="follows">Suivis</button>
+   </div>
+   <div id="homeFeed" class="vfeed"></div>
+  </section>
+
+  <div id="creatorsPage" class="hidden">
    <h2>Créateurs</h2>
    <div id="creators" class="grid"></div>
-   <h2>Dernières publications</h2>
-   <div id="freeVideos" class="tiles"></div>
   </div>
 
   <div id="subscriptionsPage" class="hidden">
@@ -218,7 +240,7 @@ footer{text-align:center;padding:24px;color:#666;font-size:12px}
 
   <div id="followsPage" class="hidden">
    <h2>Mes suivis</h2>
-   <p>Le point vert apparaît quand l'un d'eux est en direct.</p>
+   <p>Le badge rouge apparaît quand l'un d'eux est en direct.</p>
    <div id="followsList"></div>
   </div>
 
@@ -228,7 +250,10 @@ footer{text-align:center;padding:24px;color:#666;font-size:12px}
     <p id="myProfile"></p>
     <div class="card-actions">
      <button id="openMyProfile">Voir mon profil public</button>
-     <button class="soft" onclick="showPage('discover')">Retour à l'accueil</button>
+     <button class="soft" onclick="showPage('subscriptions')">Mes abonnements</button>
+     <button class="soft" onclick="showPage('application')">Devenir créateur</button>
+     <button class="soft hidden" id="backCreatorBtn" onclick="setViewMode('creator')">Espace créateur</button>
+     <button class="danger" id="logoutProfile">Déconnexion</button>
     </div>
    </div>
   </div>
@@ -364,7 +389,7 @@ footer{text-align:center;padding:24px;color:#666;font-size:12px}
  </div>
 </div>
 
-<!-- Visionneuse des publications (plein écran, défilement vertical) -->
+<!-- Visionneuse des publications (grille du profil ou de l'espace créateur) -->
 <div id="viewer" class="viewer hidden">
  <button id="viewerClose" class="viewer-close" aria-label="Fermer"><i class="ti ti-x" aria-hidden="true"></i></button>
  <div id="feedBody" style="height:100%"></div>
@@ -392,18 +417,20 @@ const SUPABASE_URL="https://imhlbguhcafbxjszmjag.supabase.co";
 const SUPABASE_KEY="sb_publishable_FGSth0t3t-gbyqNeV4Nj-g_69kDOar7";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
+const LIVE_MAX_AGE_MS=12*3600*1000;
 let currentUser=null,currentProfile=null,liveRoom=null,currentLiveSessionId=null,liveMode=null,viewMode=null;
 let myFollows=new Set(),followsReady=false,facingMode="user",accountLoading=false,applicationFilled=false;
 let liveCreatorIds=new Set();
 let statusByCreator=new Map();
 const feedSources={};
-let hiddenForProfile=[];
-let feedObserver=null;
+let feedObserver=null,homeObserver=null;
+let homeFilter="pour-toi",homeMuted=true;
 let composerMode="post";
 let sv={group:null,index:0,timer:null};
 
 const $=id=>document.getElementById(id);
 const cap=s=>s[0].toUpperCase()+s.slice(1);
+const liveSinceIso=()=>new Date(Date.now()-LIVE_MAX_AGE_MS).toISOString();
 
 /* UTILITAIRES */
 function message(text,success=false){const box=$("status");box.textContent=text;box.className=success?"success":""}
@@ -432,6 +459,10 @@ function fileInfo(file){
  const ext=((file.name.split(".").pop()||"bin").replace(/[^a-z0-9]/gi,"")||"bin").toLowerCase();
  return {kind,ext};
 }
+function updateFollowsBadge(){
+ const dot=document.querySelector('#navigation button[data-page="follows"] .navdot');
+ if(dot)dot.hidden=![...liveCreatorIds].some(id=>myFollows.has(id));
+}
 
 /* AUTHENTIFICATION */
 async function signUp(){
@@ -457,10 +488,12 @@ async function signOut(){
 }
 function resetSession(){
  currentUser=null;currentProfile=null;viewMode=null;myFollows=new Set();followsReady=false;liveCreatorIds=new Set();
- statusByCreator=new Map();applicationFilled=false;hiddenForProfile=[];
+ statusByCreator=new Map();applicationFilled=false;
  closeViewer();closeStatusViewer();closeSheet();closeComposer();
+ document.body.classList.remove("spectator","feed-mode");
  $("app").classList.add("hidden");$("auth").classList.remove("hidden");$("logout").classList.add("hidden");
  $("publicProfile").classList.add("hidden");
+ $("navigation").className="pills";$("navigation").innerHTML="";
 }
 async function loadAccount(){
  if(accountLoading)return;
@@ -468,7 +501,8 @@ async function loadAccount(){
  try{
   const {data:{user},error:ue}=await db.auth.getUser();
   if(ue||!user)return;
-  const {data:profile,error}=await db.from("profiles").select("id,username,display_name,role,bio,avatar_url").eq("id",user.id).maybeSingle();
+  const {data:profile,error}=await db.from("profiles")
+   .select("id,username,display_name,role,bio,avatar_url").eq("id",user.id).maybeSingle();
   if(error){authMessage("Impossible de charger ton profil : "+error.message);return}
   if(!profile){authMessage("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");return}
   currentUser=user;currentProfile=profile;
@@ -484,58 +518,69 @@ function renderView(){
  if(!currentProfile)return;
  const role=currentProfile.role;
  const mode=role==="creator"?(viewMode||"creator"):"spectator";
- ["spectator","creator","admin"].forEach(id=>$(id).classList.add("hidden"));
+ ["spectator","creator","admin","publicProfile"].forEach(id=>$(id).classList.add("hidden"));
+ const nav=$("navigation");
+
  if(role==="admin"){
+  document.body.classList.remove("spectator","feed-mode");
+  nav.className="pills";nav.innerHTML='<button class="active">Administration</button>';
   $("admin").classList.remove("hidden");
-  $("navigation").innerHTML='<button class="active">Administration</button>';
   loadAdminApplications();
   return;
  }
  if(mode==="creator"){
+  document.body.classList.remove("spectator","feed-mode");
   $("creator").classList.remove("hidden");
-  $("navigation").innerHTML='<button class="active" onclick="setViewMode(\'creator\')">Espace créateur</button><button onclick="setViewMode(\'spectator\')">Voir comme spectateur</button>';
+  nav.className="pills";
+  nav.innerHTML='<button class="active" onclick="setViewMode(\'creator\')">Espace créateur</button><button onclick="setViewMode(\'spectator\')">Voir comme spectateur</button>';
   $("creatorTitle").textContent="@"+currentProfile.username;
   creatorPage("posts");
   loadCreator();
   return;
  }
+ document.body.classList.add("spectator");
  $("spectator").classList.remove("hidden");
- $("navigation").innerHTML=
-  `<button class="active" data-page="discover" onclick="showPage('discover')">Découvrir</button>`+
-  `<button data-page="subscriptions" onclick="showPage('subscriptions')">Abonnements</button>`+
-  `<button data-page="lives" onclick="showPage('lives')">Directs</button>`+
-  `<button data-page="follows" onclick="showPage('follows')">Suivis</button>`+
-  `<button data-page="profile" onclick="showPage('profile')">Mon profil</button>`+
-  `<button data-page="application" onclick="showPage('application')">Devenir créateur</button>`+
-  (role==="creator"?`<button onclick="setViewMode('creator')">Espace créateur</button>`:"");
- showPage("discover");
+ $("backCreatorBtn").classList.toggle("hidden",role!=="creator");
+ nav.className="bottomnav";
+ nav.innerHTML=
+  `<button class="active" data-page="discover" onclick="showPage('discover')"><i class="ti ti-home" aria-hidden="true"></i><span>Accueil</span></button>`+
+  `<button data-page="creators" onclick="showPage('creators')"><i class="ti ti-users" aria-hidden="true"></i><span>Créateurs</span></button>`+
+  `<button data-page="lives" onclick="showPage('lives')"><i class="ti ti-broadcast" aria-hidden="true"></i><span>Directs</span></button>`+
+  `<button data-page="follows" onclick="showPage('follows')"><i class="ti ti-heart" aria-hidden="true"></i><span>Suivis</span><i class="navdot" hidden></i></button>`+
+  `<button data-page="profile" onclick="showPage('profile')"><i class="ti ti-user" aria-hidden="true"></i><span>Profil</span></button>`;
  loadSpectatorData();
 }
 async function loadSpectatorData(){
  await loadMyFollows();
  await refreshLiveIds();
  await loadStatuses();
- loadDiscover();loadSubscriptions();
- if(liveMode!=="spectator")loadLives();
+ showPage("discover");
 }
 
 /* NAVIGATION SPECTATEUR */
 function showPage(page){
- ["discover","subscriptions","lives","follows","profile","application"].forEach(p=>{
-  const el=$(p+"Page");if(el)el.classList.toggle("hidden",p!==page);
+ const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",profile:"profilePage",subscriptions:"subscriptionsPage",application:"applicationPage"};
+ Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
+ $(pages[page]).classList.remove("hidden");
+ document.body.classList.toggle("feed-mode",page==="discover");
+ document.querySelectorAll("#navigation button[data-page]").forEach(b=>{
+  const active=b.dataset.page===page||(b.dataset.page==="profile"&&(page==="subscriptions"||page==="application"));
+  b.classList.toggle("active",active);
  });
- document.querySelectorAll("#navigation button[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
  if(page!=="lives")stopAllPreviews();
- if(page==="application")loadApplication();
+ if(page==="discover")loadHomeFeed();
+ if(page==="creators")loadCreatorsPage();
  if(page==="lives"&&liveMode!=="spectator")loadLives();
  if(page==="follows")loadFollowsPage();
  if(page==="subscriptions")loadSubscriptions();
+ if(page==="application")loadApplication();
 }
 
 /* DIRECTS EN COURS (point vert) */
 async function refreshLiveIds(){
- const {data,error}=await db.from("live_sessions").select("creator_id").eq("status","live");
+ const {data,error}=await db.from("live_sessions").select("creator_id").eq("status","live").gte("started_at",liveSinceIso());
  if(!error)liveCreatorIds=new Set((data||[]).map(l=>l.creator_id));
+ updateFollowsBadge();
 }
 
 /* STATUTS (photo ou vidéo, 24 h) */
@@ -545,7 +590,7 @@ async function loadStatuses(){
   .gt("expires_at",new Date().toISOString())
   .order("created_at",{ascending:true});
  statusByCreator=new Map();
- if(error||!data?.length){renderStatusBar();return}
+ if(error||!data?.length)return;
  const ids=[...new Set(data.map(s=>s.creator_id))];
  const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
  const pmap={};(profiles||[]).forEach(p=>pmap[p.id]=p);
@@ -554,16 +599,6 @@ async function loadStatuses(){
    statusByCreator.set(s.creator_id,{profile:pmap[s.creator_id]||{id:s.creator_id,username:"créateur"},items:[]});
   statusByCreator.get(s.creator_id).items.push(s);
  });
- renderStatusBar();
-}
-function renderStatusBar(){
- const bar=$("statusBar");if(!bar)return;
- if(!statusByCreator.size){bar.innerHTML="<p class='small'>Aucun statut actif pour le moment.</p>";return}
- bar.innerHTML=[...statusByCreator.values()].map(g=>`
-  <button class="status-bubble" onclick="openStatusViewer('${g.profile.id}')">
-   ${avatarHTML(g.profile,liveCreatorIds.has(g.profile.id))}
-   <span class="name">${escapeHTML(g.profile.display_name||g.profile.username||"")}</span>
-  </button>`).join("");
 }
 function openStatusViewer(creatorId){
  const g=statusByCreator.get(creatorId);if(!g||!g.items.length)return;
@@ -589,11 +624,7 @@ function showStatusItem(){
  if(item.kind==="video"){
   body.insertAdjacentHTML("afterbegin",`<video src="${url}" autoplay playsinline></video>`);
   const v=body.querySelector("video");
-  v.onloadedmetadata=()=>{
-   const ms=Math.min(v.duration||15,30)*1000;
-   run(ms);
-   clearTimeout(sv.timer);sv.timer=setTimeout(nextStatus,ms);
-  };
+  v.onloadedmetadata=()=>{const ms=Math.min(v.duration||15,30)*1000;run(ms);clearTimeout(sv.timer);sv.timer=setTimeout(nextStatus,ms)};
   v.onerror=()=>{run(5000);sv.timer=setTimeout(nextStatus,5000)};
  }else{
   body.insertAdjacentHTML("afterbegin",`<img src="${url}" alt="">`);
@@ -638,8 +669,18 @@ async function toggleFollow(creatorId){
   if(error)return message("Impossible de suivre : "+error.message);
  }
  await loadMyFollows();
- loadDiscover();loadFollowsPage();
+ updateFollowButtons();
+ if(homeFilter==="follows")loadHomeFeed();
+ loadFollowsPage();
+ if(!$("creatorsPage").classList.contains("hidden"))loadCreatorsPage();
  if(!$("publicProfile").classList.contains("hidden"))openProfile(creatorId);
+}
+function updateFollowButtons(){
+ document.querySelectorAll(".vfollow").forEach(b=>{
+  const on=myFollows.has(b.dataset.creator);
+  b.classList.toggle("done",on);
+  b.innerHTML=on?'<i class="ti ti-check" aria-hidden="true"></i>':'<i class="ti ti-plus" aria-hidden="true"></i>';
+ });
 }
 async function getFollowerCount(creatorId){
  const {data,error}=await db.rpc("public_profile",{p_id:creatorId});
@@ -665,11 +706,67 @@ async function loadFollowsPage(){
    </div>
   </div>`;
  }).join("")||"<p>Tu ne suis encore aucun créateur.</p>";
- const nav=document.querySelector('#navigation button[data-page="follows"]');
- if(nav)nav.textContent=[...liveCreatorIds].some(id=>myFollows.has(id))?"Suivis 🔴":"Suivis";
+ updateFollowsBadge();
 }
 
-/* DÉCOUVRIR */
+/* ACCUEIL : PUBLICATIONS EN PLEIN ÉCRAN */
+async function loadHomeFeed(){
+ const box=$("homeFeed");
+ box.innerHTML="<p class='vempty'>Chargement...</p>";
+ const {data:posts,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id").order("created_at",{ascending:false}).limit(60);
+ if(error){box.innerHTML=`<p class="vempty">${escapeHTML(error.message)}</p>`;return}
+ const ids=[...new Set((posts||[]).map(p=>p.creator_id))];
+ const {data:profiles}=ids.length?await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids):{data:[]};
+ const pmap={};(profiles||[]).forEach(p=>pmap[p.id]=p);
+ let list=(posts||[]).map(p=>({...p,profile:pmap[p.creator_id]||{id:p.creator_id,username:"créateur"}}));
+ if(homeFilter==="follows")list=list.filter(p=>myFollows.has(p.creator_id));
+ feedSources.home=list;
+ if(!list.length){
+  box.innerHTML=`<p class="vempty">${homeFilter==="follows"?"Aucune publication de tes suivis pour le moment.":"Pas encore de publications."}</p>`;
+  return;
+ }
+ box.innerHTML=list.map(vitemHTML).join("");
+ box.scrollTop=0;
+ observeHomeVideos();
+}
+function vitemHTML(p){
+ const prof=p.profile,id=p.creator_id;
+ const name=prof.display_name||prof.username||"";
+ const live=liveCreatorIds.has(id),isMe=currentUser?.id===id,following=myFollows.has(id);
+ const url=escapeHTML(mediaUrl(p.media_path));
+ const media=p.kind==="video"
+  ?`<video class="vmedia" src="${url}" loop muted playsinline preload="metadata"></video>`
+  :`<img class="vmedia" src="${url}" alt="">`;
+ return `<section class="vitem">
+  ${media}
+  <div class="vshade"></div>
+  <div class="vside">
+   <button class="vavatar" data-creator="${escapeHTML(id)}" aria-label="Voir le profil de ${escapeHTML(name)}">${avatarHTML(prof,live)}</button>
+   ${isMe?"":`<button class="vfollow${following?" done":""}" data-creator="${escapeHTML(id)}" aria-label="Suivre">${following?'<i class="ti ti-check" aria-hidden="true"></i>':'<i class="ti ti-plus" aria-hidden="true"></i>'}</button>`}
+   <button class="vsound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}</button>
+  </div>
+  <div class="vmeta">
+   <b>@${escapeHTML(prof.username||"")}</b>${live?' <span class="tag-live">EN DIRECT</span>':""}
+   ${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}
+  </div>
+ </section>`;
+}
+function observeHomeVideos(){
+ const feed=$("homeFeed");
+ homeObserver?.disconnect();
+ homeObserver=new IntersectionObserver(entries=>entries.forEach(e=>{
+  const v=e.target.querySelector("video");if(!v)return;
+  v.muted=homeMuted;
+  if(e.isIntersecting&&e.intersectionRatio>=0.6)v.play().catch(()=>{});else v.pause();
+ }),{root:feed,threshold:[0.6]});
+ feed.querySelectorAll(".vitem").forEach(el=>homeObserver.observe(el));
+}
+function pauseHomeFeed(){
+ homeObserver?.disconnect();
+ document.querySelectorAll("#homeFeed video").forEach(v=>v.pause());
+}
+
+/* CRÉATEURS */
 function creatorCard(c,followers){
  const live=liveCreatorIds.has(c.id),isMe=currentUser?.id===c.id,following=myFollows.has(c.id);
  const countText=followers===null?"":` · ${followers} abonné(s)`;
@@ -685,7 +782,7 @@ function creatorCard(c,followers){
   </div>
  </div>`;
 }
-async function loadDiscover(){
+async function loadCreatorsPage(){
  const box=$("creators");box.innerHTML="<p>Chargement...</p>";
  const {data,error}=await db.from("profiles").select("id,username,display_name,bio,avatar_url").eq("role","creator").limit(30);
  if(error)box.innerHTML="<p>Impossible de charger les créateurs : "+escapeHTML(error.message)+"</p>";
@@ -694,23 +791,9 @@ async function loadDiscover(){
   const counts=await Promise.all(data.map(c=>getFollowerCount(c.id)));
   box.innerHTML=data.map((c,i)=>creatorCard(c,counts[i])).join("");
  }
- loadFeed();
-}
-async function loadFeed(){
- const box=$("freeVideos");
- const {data,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id").order("created_at",{ascending:false}).limit(30);
- if(error){box.innerHTML="<p>Chargement indisponible.</p>";return}
- if(!data.length){box.innerHTML="<p class='empty'>Pas encore de publications.</p>";feedSources.discover=[];return}
- const ids=[...new Set(data.map(p=>p.creator_id))];
- const {data:profiles}=await db.from("profiles").select("id,username").in("id",ids);
- const umap={};(profiles||[]).forEach(p=>umap[p.id]=p.username);
- feedSources.discover=data.map(p=>({...p,username:umap[p.creator_id]||""}));
- box.innerHTML=feedSources.discover.map((p,i)=>
-  `<button class="tile" onclick="openFeedFrom('discover',${i})">${thumbHTML(p)}${p.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play-filled" aria-hidden="true"></i></span>':""}</button>`
- ).join("");
 }
 
-/* VISIONNEUSE DES PUBLICATIONS (plein écran, défilement vertical) */
+/* VISIONNEUSE DE GRILLE (profil ou espace créateur) */
 function openFeedFrom(key,index){
  const list=feedSources[key]||[];
  if(!list.length)return;
@@ -755,14 +838,13 @@ function closeViewer(){
  $("viewer").classList.add("hidden");
 }
 
-/* PROFIL PUBLIC */
+/* PROFIL PUBLIC (avec statut visible) */
 async function openProfile(id){
  if(!id)return;
+ pauseHomeFeed();
+ ["spectator","creator","admin"].forEach(s=>$(s).classList.add("hidden"));
+ document.body.classList.remove("feed-mode");
  const profile=$("publicProfile");
- if(profile.classList.contains("hidden")){
-  hiddenForProfile=[...$("app").children].filter(el=>el!==profile&&!el.classList.contains("hidden"));
-  hiddenForProfile.forEach(el=>el.classList.add("hidden"));
- }
  profile.classList.remove("hidden");
  profile.innerHTML="<p>Chargement...</p>";
  const {data,error}=await db.rpc("public_profile",{p_id:id});
@@ -773,21 +855,29 @@ async function openProfile(id){
  feedSources.profile=list;
  const hasStatus=statusByCreator.has(id);
  const following=myFollows.has(id),isMe=currentUser?.id===id;
+ const avatarBlock=hasStatus
+  ?`<button class="vavatar" style="cursor:pointer" onclick="openStatusViewer('${id}')" aria-label="Voir le statut">${avatarHTML(p,p.is_live)}</button>`
+  :`<div>${avatarHTML(p,p.is_live)}</div>`;
 
  profile.innerHTML=`
   <div class="p-top">
-   <div ${hasStatus?`onclick="openStatusViewer('${id}')" style="cursor:pointer"`:""}>${avatarHTML(p,p.is_live)}</div>
+   ${avatarBlock}
    <div class="p-info">
     <h2>${escapeHTML(p.display_name||p.username)}${p.is_live?'<span class="tag-live">EN DIRECT</span>':""}</h2>
     <p class="small">@${escapeHTML(p.username)}</p>
+    ${hasStatus?`<p class="status">Statut actif · touche la photo pour le voir</p>`:""}
     ${p.status_text?`<p class="status">${escapeHTML(p.status_text)}</p>`:""}
     ${p.bio?`<p>${escapeHTML(p.bio)}</p>`:""}
-    <div class="stats"><span><b>${p.follower_count}</b> abonnés</span><span><b>${p.video_count}</b> vidéos</span><span><b>${p.photo_count}</b> photos</span></div>
+    <div class="stats">
+     <span><b>${p.follower_count}</b> abonnés</span>
+     <span><b>${p.video_count}</b> vidéos</span>
+     <span><b>${p.photo_count}</b> photos</span>
+    </div>
     <div class="card-actions" id="profileActions"></div>
    </div>
   </div>
   <div class="tiles" style="margin-top:14px">${list.length?list.map((x,i)=>
-   `<button class="tile" onclick="openFeedFrom('profile',${i})">${thumbHTML(x)}${x.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play-filled" aria-hidden="true"></i></span>':""}</button>`
+   `<button class="tile" onclick="openFeedFrom('profile',${i})">${thumbHTML(x)}${x.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play" aria-hidden="true"></i></span>':""}</button>`
   ).join(""):"<p class='empty' style='grid-column:1/-1'>Aucune publication.</p>"}</div>
   <div style="margin-top:14px"><button class="soft" id="profileBack">Retour</button></div>`;
 
@@ -809,8 +899,7 @@ async function openProfile(id){
 }
 function closeProfile(){
  $("publicProfile").classList.add("hidden");
- hiddenForProfile.forEach(el=>el.classList.remove("hidden"));
- hiddenForProfile=[];
+ renderView();
 }
 
 /* CANDIDATURE CRÉATEUR */
@@ -1087,9 +1176,10 @@ async function loadLives(){
  const box=$("liveList");
  box.innerHTML="<p>Chargement des directs...</p>";
  stopAllPreviews();
- const {data:lives,error}=await db.from("live_sessions").select("id,title,status,creator_id").eq("status","live").order("started_at",{ascending:false}).limit(30);
+ const {data:lives,error}=await db.from("live_sessions").select("id,title,status,creator_id").eq("status","live").gte("started_at",liveSinceIso()).order("started_at",{ascending:false}).limit(30);
  if(error){box.textContent="Impossible de charger les directs : "+error.message;return}
  liveCreatorIds=new Set(lives.map(l=>l.creator_id));
+ updateFollowsBadge();
  if(!lives.length){box.innerHTML="<p>Aucun direct en cours. Reviens bientôt !</p>";return}
  const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",lives.map(l=>l.creator_id));
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
@@ -1252,6 +1342,11 @@ function creatorPage(page){
  if(page==="subscribers")loadCreatorFollowers();
 }
 async function loadCreator(){
+ // Ferme un direct resté ouvert si l'espace créateur s'ouvre sans direct en cours ici
+ if(liveMode!=="creator"){
+  await db.from("live_sessions").update({status:"ended",ended_at:new Date().toISOString()}).eq("creator_id",currentUser.id).eq("status","live");
+  liveCreatorIds.delete(currentUser.id);
+ }
  const [{data:price,error:pe},{data:stats}]=await Promise.all([
   db.from("creator_settings").select("monthly_price_fcfa").eq("creator_id",currentUser.id).maybeSingle(),
   db.rpc("public_profile",{p_id:currentUser.id})
@@ -1307,7 +1402,7 @@ async function publishFromComposer(){
  if(currentProfile?.role!=="creator")return message("Réservé aux créateurs.");
  const file=$("composerFile").files[0];
  const isStatus=composerMode==="status";
- const caption=$("composerCaption").value.trim().slice(isStatus?0:0,isStatus?200:500);
+ const caption=$("composerCaption").value.trim().slice(0,isStatus?200:500);
  if(!file)return message("Choisis une photo ou une vidéo.");
  if(file.size>200*1024*1024)return message("Fichier trop lourd (200 Mo max).");
  const info=fileInfo(file);
@@ -1342,7 +1437,7 @@ async function loadCreatorPosts(){
  feedSources.creator=(data||[]).map(p=>({...p,username:currentProfile.username}));
  if(!data.length){grid.innerHTML="<p class='empty' style='grid-column:1/-1'>Tu n'as pas encore publié de contenu.</p>";manage.innerHTML="";return}
  grid.innerHTML=feedSources.creator.map((p,i)=>
-  `<button class="tile" onclick="openFeedFrom('creator',${i})">${thumbHTML(p)}${p.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play-filled" aria-hidden="true"></i></span>':""}</button>`
+  `<button class="tile" onclick="openFeedFrom('creator',${i})">${thumbHTML(p)}${p.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play" aria-hidden="true"></i></span>':""}</button>`
  ).join("");
  manage.innerHTML=data.map(p=>`
   <div class="row-item">
@@ -1489,6 +1584,7 @@ async function reviewApplication(applicationId,userId,decision){
 $("signup").addEventListener("click",signUp);
 $("login").addEventListener("click",signIn);
 $("logout").addEventListener("click",signOut);
+$("logoutProfile").addEventListener("click",signOut);
 $("savePrice").addEventListener("click",savePrice);
 $("creatorApplicationForm").addEventListener("submit",submitCreatorApplication);
 $("openCreateSheet").addEventListener("click",openSheet);
@@ -1502,6 +1598,26 @@ $("viewerClose").addEventListener("click",closeViewer);
 $("svClose").addEventListener("click",closeStatusViewer);
 $("svPrev").addEventListener("click",prevStatus);
 $("svNext").addEventListener("click",nextStatus);
+document.querySelectorAll(".vtab").forEach(b=>b.addEventListener("click",()=>{
+ homeFilter=b.dataset.filter;
+ document.querySelectorAll(".vtab").forEach(x=>x.classList.toggle("active",x===b));
+ loadHomeFeed();
+}));
+$("homeFeed").addEventListener("click",e=>{
+ const av=e.target.closest(".vavatar");
+ if(av){openProfile(av.dataset.creator);return}
+ const fb=e.target.closest(".vfollow");
+ if(fb){toggleFollow(fb.dataset.creator);return}
+ const sb=e.target.closest(".vsound");
+ if(sb){
+  homeMuted=!homeMuted;
+  document.querySelectorAll("#homeFeed video").forEach(v=>v.muted=homeMuted);
+  document.querySelectorAll(".vsound").forEach(b=>b.innerHTML=`<i class="ti ${homeMuted?"ti-volume-off":"ti-volume"}" aria-hidden="true"></i>`);
+  return;
+ }
+ const v=e.target.closest(".vitem")?.querySelector("video");
+ if(v&&e.target.tagName==="VIDEO"){v.paused?v.play().catch(()=>{}):v.pause()}
+});
 
 /* SESSION */
 db.auth.getSession().then(({data})=>{if(data.session)loadAccount()});
