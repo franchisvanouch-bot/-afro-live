@@ -15,6 +15,7 @@ header{background:#171717;border-bottom:1px solid var(--line);padding:16px;displ
 .logo{font-size:23px;font-weight:900;color:var(--orange)}.logo span{color:#fff}
 button,.btn{background:var(--orange);color:#fff;border:0;border-radius:8px;padding:12px 16px;font-weight:bold;cursor:pointer}
 button.secondary{background:#333}button.danger{background:#a52a2a}button:disabled{opacity:.5;cursor:not-allowed}
+button.plain{background:none;padding:0;border-radius:0}
 main{max-width:1000px;margin:auto;padding:18px}
 h1{font-size:28px;margin:12px 0}h2{font-size:21px;margin-top:26px}h3{margin:8px 0}
 p{color:#ccc;line-height:1.5}
@@ -36,27 +37,71 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 .follow-tag{display:inline-block;background:#14271b;color:#b8f5c9;font-size:12px;padding:4px 8px;border-radius:6px;margin-left:6px}
 .card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 
-/* Avatars, point vert, statut */
-.avatar-wrap{position:relative;display:inline-block;flex:0 0 auto}
-.avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;background:#333;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:bold}
-.profile-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-.profile-info{flex:1;min-width:220px}
-.creator-card{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
-.creator-card>div:nth-child(2){flex:1;min-width:160px}
-.live-head{display:flex;gap:12px;align-items:center}
-.stats{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0;color:#ddd}
-.status{color:#ffb47c;font-style:italic}
+/* Avatars, anneau de statut, point vert */
+.avatar-wrap{position:relative;display:inline-block;flex:0 0 auto;border-radius:50%}
+.avatar-wrap.ring{padding:3px;background:linear-gradient(45deg,#ff6a00,#e0262b,#ff9b55)}
+.avatar{display:flex;width:72px;height:72px;border-radius:50%;object-fit:cover;background:#333;align-items:center;justify-content:center;font-size:30px;font-weight:bold;color:#fff}
+.avatar-wrap.ring .avatar{border:3px solid #1b1b1b}
 .dot-live{position:absolute;right:2px;bottom:2px;width:16px;height:16px;border-radius:50%;background:var(--green);border:3px solid #1b1b1b;animation:pulse 1.6s infinite}
 .dot-inline{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);vertical-align:middle}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.7)}70%{box-shadow:0 0 0 10px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
-.post-item video,.post-item img,.item video,.item img{width:100%;border-radius:10px;max-height:60vh;object-fit:contain;background:#000}
+.creator-card{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.creator-card>div:nth-child(2){flex:1;min-width:160px}
+.live-head{display:flex;gap:12px;align-items:center}
+.status{color:#ffb47c;font-style:italic}
+.stats{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0;color:#ddd}
+.profile-top{display:flex;gap:18px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:17px;margin:13px 0}
+.profile-info{flex:1;min-width:220px}
+
+/* Barre des statuts (façon WhatsApp) */
+.status-bar{display:flex;gap:12px;overflow-x:auto;padding:6px 2px 12px}
+.status-bubble{flex:0 0 auto;width:82px;display:flex;flex-direction:column;align-items:center;gap:6px;color:#ddd;font-size:12px;background:none;padding:0}
+.status-bubble span.name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px}
+
+/* Grille façon TikTok */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.tile{position:relative;aspect-ratio:3/4;padding:0;border-radius:4px;overflow:hidden;background:#222;display:block}
+.tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.tile-icon{position:absolute;left:6px;bottom:4px;color:#fff;font-size:13px;text-shadow:0 1px 3px #000}
+
+/* Liste de gestion (créateur) */
+.manage-item{background:#222;padding:10px;border-radius:10px;border:1px solid #333;margin-bottom:10px}
+.manage-item img,.manage-item video{width:100%;max-height:50vh;object-fit:contain;background:#000;border-radius:8px;display:block}
+
+/* Visionneuse plein écran (publications, défilement vertical) */
+.viewer{position:fixed;inset:0;z-index:100000;background:#000}
+.viewer-close{position:absolute;top:12px;left:12px;z-index:3;background:rgba(0,0,0,.5);width:40px;height:40px;padding:0;border-radius:50%;font-size:18px}
+.feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory}
+.feed-item{height:100%;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;background:#000}
+.feed-media{width:100%;height:100%;object-fit:contain;background:#000}
+.sound-btn{position:absolute;right:12px;top:12px;background:rgba(0,0,0,.5);padding:8px 10px;border-radius:50%;font-size:16px;z-index:2}
+.feed-meta{position:absolute;left:14px;bottom:24px;right:70px;color:#fff;text-shadow:0 1px 3px #000;pointer-events:none}
+.feed-meta p{color:#fff;margin:4px 0}
+
+/* Visionneuse des statuts (24 h) */
+.sv{position:fixed;inset:0;z-index:100001;background:#000;display:flex;flex-direction:column}
+.sv-top{position:relative;z-index:3;padding:12px 12px 6px}
+.sv-bars{display:flex;gap:4px;margin-bottom:10px}
+.sv-bar{flex:1;height:3px;background:rgba(255,255,255,.35);border-radius:2px;overflow:hidden}
+.sv-bar span{display:block;height:100%;width:0;background:#fff}
+.sv-bar span.done{width:100%}
+.sv-bar span.run{animation:svfill linear forwards}
+@keyframes svfill{from{width:0}to{width:100%}}
+.sv-head{display:flex;align-items:center;gap:10px;color:#fff}
+.sv-head .avatar{width:38px;height:38px;font-size:16px}
+.sv-head .avatar-wrap.ring{padding:2px}
+.sv-close{margin-left:auto;background:rgba(0,0,0,.5);width:36px;height:36px;padding:0;border-radius:50%}
+.sv-body{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.sv-body img,.sv-body video{max-width:100%;max-height:100%;object-fit:contain}
+.sv-tap{position:absolute;top:0;bottom:0;width:50%;z-index:2;background:none;padding:0;border-radius:0}
+.sv-tap.prev{left:0}.sv-tap.next{right:0}
+.sv-caption{position:absolute;left:0;right:0;bottom:0;padding:18px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.7));z-index:1;text-align:center}
 
 /* Direct */
 .live-video{width:100%;max-height:65vh;background:#000;border-radius:10px;object-fit:contain}
 .live-player{background:#080808;border-radius:10px;overflow:hidden;min-height:100px}
 .live-preview{margin-top:12px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
 .live-player video{width:100%;max-height:65vh;object-fit:contain;background:#000}
-.live-player audio{display:none}
 .live-stage{position:relative;background:#050505;border-radius:12px;overflow:hidden;min-height:170px}
 .live-stage video{display:block;width:100%;max-height:70vh;object-fit:contain;background:#000}
 .live-tools{display:flex;justify-content:space-between;align-items:center;gap:7px;flex-wrap:wrap;padding:10px;background:rgba(0,0,0,.16);pointer-events:auto}
@@ -77,7 +122,7 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 .live-fullscreen .live-tools{padding-top:max(10px,env(safe-area-inset-top))}
 .live-fullscreen .live-chat{padding-bottom:max(12px,env(safe-area-inset-bottom))}
 .live-fullscreen .live-chat-messages{max-height:20dvh}
-@media(max-width:600px){main{padding:12px}.live-tools button{padding:9px}}
+@media(max-width:600px){main{padding:12px}.live-tools button{padding:9px}.tiles{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
@@ -108,10 +153,12 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 
  <section id="spectator">
   <div id="discoverPage">
+   <h2>Statuts</h2>
+   <div id="statusBar" class="status-bar"></div>
    <h2>Découvrir les créateurs</h2>
    <div id="creators" class="grid"></div>
    <h2>Dernières publications</h2>
-   <div id="freeVideos" class="grid"></div>
+   <div id="freeVideos" class="tiles"></div>
   </div>
 
   <div id="subscriptionsPage" class="hidden">
@@ -172,6 +219,7 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
    <button onclick="creatorPage('overview')">Tableau de bord</button>
    <button onclick="creatorPage('price')">Mon tarif</button>
    <button onclick="creatorPage('posts')">Publications</button>
+   <button onclick="creatorPage('statuts')">Statut</button>
    <button onclick="creatorPage('live')">Mes directs</button>
    <button onclick="creatorPage('subscribers')">Abonnés</button>
    <button onclick="creatorPage('earnings')">Revenus</button>
@@ -204,18 +252,24 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
     <button id="postPublish" style="width:100%">Publier</button>
    </div>
    <div class="card">
-    <h3>Mon statut</h3>
-    <p class="small">Visible sur ton profil public (140 caractères max).</p>
-    <input id="statusInput" maxlength="140" placeholder="Ton statut">
-    <button id="statusSave">Enregistrer le statut</button>
-   </div>
-   <div class="card">
     <h3>Photo de profil</h3>
     <label for="avatarInput">Choisir une image</label>
     <input id="avatarInput" type="file" accept="image/*">
    </div>
    <h3>Mes publications</h3>
-   <div id="creatorPostList" class="grid"></div>
+   <div id="creatorPostList"></div>
+  </div>
+
+  <div id="creatorStatuts" class="hidden">
+   <div class="card">
+    <h3>Publier un statut</h3>
+    <p class="small">Photo ou vidéo visible pendant 24 h, comme sur WhatsApp.</p>
+    <input id="statusFile" type="file" accept="image/*,video/*">
+    <textarea id="statusCaption" maxlength="200" rows="2" placeholder="Légende (facultatif)"></textarea>
+    <button id="statusPublish" style="width:100%">Publier le statut</button>
+   </div>
+   <h3>Mes statuts actifs</h3>
+   <div id="myStatusList"></div>
   </div>
 
   <div id="creatorLive" class="hidden">
@@ -260,11 +314,34 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
   <div class="admin-actions"><button id="refreshAdmin">Actualiser les demandes</button></div>
   <div id="adminApplications"><p>Chargement des candidatures...</p></div>
  </section>
-</section>
 
-<section id="publicProfile" class="hidden"></section>
+ <section id="publicProfile" class="hidden"></section>
+</section>
 </main>
 <footer>AFRO LIVE Congo · Le numérique, c'est le futur.</footer>
+
+<!-- Visionneuse des publications (défilement vertical façon TikTok) -->
+<div id="viewer" class="viewer hidden">
+ <button id="viewerClose" class="viewer-close" aria-label="Fermer">✕</button>
+ <div id="feedBody" style="height:100%"></div>
+</div>
+
+<!-- Visionneuse des statuts (24 h) -->
+<div id="statusViewer" class="sv hidden">
+ <div class="sv-top">
+  <div class="sv-bars" id="svBars"></div>
+  <div class="sv-head">
+   <div id="svAvatar"></div>
+   <div><b id="svName"></b><div class="small" id="svTime"></div></div>
+   <button id="svClose" class="sv-close" aria-label="Fermer">✕</button>
+  </div>
+ </div>
+ <div class="sv-body" id="svBody">
+  <button class="sv-tap prev" id="svPrev" aria-label="Statut précédent"></button>
+  <button class="sv-tap next" id="svNext" aria-label="Statut suivant"></button>
+ </div>
+ <div class="sv-caption" id="svCaption" hidden></div>
+</div>
 
 <script>
 const SUPABASE_URL="https://imhlbguhcafbxjszmjag.supabase.co";
@@ -274,6 +351,11 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=null,currentProfile=null,liveRoom=null,currentLiveSessionId=null,liveMode=null,viewMode=null;
 let myFollows=new Set(),followsReady=false,facingMode="user",accountLoading=false,applicationFilled=false;
 let liveCreatorIds=new Set();
+let statusByCreator=new Map();     // creatorId -> { profile, items } (statuts actifs)
+const feedSources={};              // clé -> liste de publications pour la visionneuse
+let hiddenForProfile=[];
+let feedObserver=null;
+let sv={group:null,index:0,timer:null};
 
 const $=id=>document.getElementById(id);
 const cap=s=>s[0].toUpperCase()+s.slice(1);
@@ -284,17 +366,23 @@ function authMessage(text){$("authMessage").textContent=text;$("authMessage").cl
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function safeHttpUrl(value){try{const u=new URL(value);return["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}}
 function mediaUrl(path){return db.storage.from("creator-media").getPublicUrl(path).data.publicUrl}
-function renderMedia(p){
+function thumbHTML(p){
  const url=escapeHTML(mediaUrl(p.media_path));
  return p.kind==="video"
-  ? `<video src="${url}" controls playsinline preload="metadata"></video>`
+  ? `<video src="${url}" muted playsinline preload="metadata"></video>`
   : `<img src="${url}" alt="" loading="lazy">`;
 }
-function postHTML(p){return `<div class="item post-item">${renderMedia(p)}${p.caption?`<p class="small">${escapeHTML(p.caption)}</p>`:""}</div>`}
+function feedMediaHTML(p){
+ const url=escapeHTML(mediaUrl(p.media_path));
+ return p.kind==="video"
+  ? `<video class="feed-media" src="${url}" loop muted playsinline preload="metadata"></video>`
+  : `<img class="feed-media" src="${url}" alt="">`;
+}
 function avatarHTML(p,live=false){
  const initial=escapeHTML(((p.display_name||p.username||"?")[0]||"?").toUpperCase());
  const img=safeHttpUrl(p.avatar_url);
- return `<div class="avatar-wrap">${img?`<img class="avatar" src="${escapeHTML(img)}" alt="">`:`<div class="avatar avatar-empty">${initial}</div>`}${live?'<span class="dot-live" title="En direct"></span>':""}</div>`;
+ const ring=statusByCreator.has(p.id);
+ return `<span class="avatar-wrap${ring?" ring":""}">${img?`<img class="avatar" src="${escapeHTML(img)}" alt="">`:`<span class="avatar">${initial}</span>`}${live?'<span class="dot-live" title="En direct"></span>':""}</span>`;
 }
 
 /* AUTHENTIFICATION */
@@ -320,7 +408,9 @@ async function signOut(){
  resetSession();
 }
 function resetSession(){
- currentUser=null;currentProfile=null;viewMode=null;myFollows=new Set();followsReady=false;liveCreatorIds=new Set();applicationFilled=false;
+ currentUser=null;currentProfile=null;viewMode=null;myFollows=new Set();followsReady=false;liveCreatorIds=new Set();
+ statusByCreator=new Map();applicationFilled=false;hiddenForProfile=[];
+ closeViewer();closeStatusViewer();
  $("app").classList.add("hidden");$("auth").classList.remove("hidden");$("logout").classList.add("hidden");
  $("publicProfile").classList.add("hidden");
 }
@@ -332,7 +422,7 @@ async function loadAccount(){
   const {data:{user},error:ue}=await db.auth.getUser();
   if(ue||!user)return;
   const {data:profile,error}=await db.from("profiles")
-   .select("id,username,display_name,role,bio,avatar_url,status_text").eq("id",user.id).maybeSingle();
+   .select("id,username,display_name,role,bio,avatar_url").eq("id",user.id).maybeSingle();
   if(error){authMessage("Impossible de charger ton profil : "+error.message);return}
   if(!profile){authMessage("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");return}
   currentUser=user;currentProfile=profile;
@@ -380,6 +470,7 @@ function renderView(){
 async function loadSpectatorData(){
  await loadMyFollows();
  await refreshLiveIds();
+ await loadStatuses();
  loadDiscover();loadSubscriptions();
  if(liveMode!=="spectator")loadLives();
 }
@@ -401,6 +492,88 @@ function showPage(page){
 async function refreshLiveIds(){
  const {data,error}=await db.from("live_sessions").select("creator_id").eq("status","live");
  if(!error)liveCreatorIds=new Set((data||[]).map(l=>l.creator_id));
+}
+
+/* STATUTS (photo ou vidéo, 24 h) */
+async function loadStatuses(){
+ const {data,error}=await db.from("statuses")
+  .select("id,creator_id,kind,media_path,caption,created_at")
+  .gt("expires_at",new Date().toISOString())
+  .order("created_at",{ascending:true});
+ statusByCreator=new Map();
+ if(error||!data?.length){renderStatusBar();return}
+ const ids=[...new Set(data.map(s=>s.creator_id))];
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ const pmap={};(profiles||[]).forEach(p=>pmap[p.id]=p);
+ data.forEach(s=>{
+  if(!statusByCreator.has(s.creator_id))
+   statusByCreator.set(s.creator_id,{profile:pmap[s.creator_id]||{id:s.creator_id,username:"créateur"},items:[]});
+  statusByCreator.get(s.creator_id).items.push(s);
+ });
+ renderStatusBar();
+}
+function renderStatusBar(){
+ const bar=$("statusBar");if(!bar)return;
+ if(!statusByCreator.size){bar.innerHTML="<p class='small'>Aucun statut actif pour le moment.</p>";return}
+ bar.innerHTML=[...statusByCreator.values()].map(g=>`
+  <button class="status-bubble" onclick="openStatusViewer('${g.profile.id}')">
+   ${avatarHTML(g.profile,liveCreatorIds.has(g.profile.id))}
+   <span class="name">${escapeHTML(g.profile.display_name||g.profile.username||"")}</span>
+  </button>`).join("");
+}
+function openStatusViewer(creatorId){
+ const g=statusByCreator.get(creatorId);if(!g||!g.items.length)return;
+ sv={group:g,index:0,timer:null};
+ $("statusViewer").classList.remove("hidden");
+ showStatusItem();
+}
+function showStatusItem(){
+ clearTimeout(sv.timer);
+ const {group,index}=sv;
+ const item=group.items[index];
+ if(!item)return closeStatusViewer();
+ const p=group.profile;
+ $("svAvatar").innerHTML=avatarHTML(p,liveCreatorIds.has(p.id));
+ $("svName").textContent=p.display_name||p.username||"";
+ $("svTime").textContent=new Date(item.created_at).toLocaleString("fr-FR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"});
+ $("svBars").innerHTML=group.items.map((_,i)=>`<div class="sv-bar"><span class="${i<index?"done":""}" id="${i===index?"svCurrent":""}"></span></div>`).join("");
+ const body=$("svBody");
+ body.querySelectorAll("img,video").forEach(el=>el.remove());
+ const url=escapeHTML(mediaUrl(item.media_path));
+ const bar=$("svCurrent");
+ const run=ms=>{if(!bar)return;bar.style.animationDuration=ms+"ms";void bar.offsetWidth;bar.classList.add("run")};
+ if(item.kind==="video"){
+  body.insertAdjacentHTML("afterbegin",`<video src="${url}" autoplay playsinline></video>`);
+  const v=body.querySelector("video");
+  v.onloadedmetadata=()=>{
+   const ms=Math.min(v.duration||15,30)*1000;
+   run(ms);
+   clearTimeout(sv.timer);sv.timer=setTimeout(nextStatus,ms);
+  };
+  v.onerror=()=>{run(5000);sv.timer=setTimeout(nextStatus,5000)};
+ }else{
+  body.insertAdjacentHTML("afterbegin",`<img src="${url}" alt="">`);
+  run(5000);
+  sv.timer=setTimeout(nextStatus,5000);
+ }
+ const cap=$("svCaption");
+ cap.textContent=item.caption||"";cap.hidden=!item.caption;
+}
+function nextStatus(){
+ if(!sv.group)return;
+ if(sv.index<sv.group.items.length-1){sv.index++;showStatusItem()}
+ else closeStatusViewer();
+}
+function prevStatus(){
+ if(!sv.group)return;
+ if(sv.index>0)sv.index--;
+ showStatusItem();
+}
+function closeStatusViewer(){
+ clearTimeout(sv.timer);
+ $("statusViewer").classList.add("hidden");
+ $("svBody").querySelectorAll("img,video").forEach(el=>{if(el.pause)el.pause();el.remove()});
+ sv={group:null,index:0,timer:null};
 }
 
 /* SUIVIS */
@@ -428,6 +601,29 @@ async function getFollowerCount(creatorId){
  const {data,error}=await db.rpc("public_profile",{p_id:creatorId});
  return error||!data?.length?null:Number(data[0].follower_count);
 }
+async function loadFollowsPage(){
+ const box=$("followsList");
+ if(!followsReady){box.innerHTML="<div class='notice'>Les suivis ne sont pas encore activés sur la base.</div>";return}
+ const ids=[...myFollows];
+ if(!ids.length){box.innerHTML="<p>Tu ne suis encore aucun créateur.</p>";return}
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ box.innerHTML=(profiles||[]).map(p=>{
+  const live=liveCreatorIds.has(p.id);
+  return `<div class="item creator-card">
+   ${avatarHTML(p,live)}
+   <div>
+    <h3>${escapeHTML(p.display_name||p.username)}${live?' <span class="follow-tag">En direct</span>':""}</h3>
+    <p class="small">@${escapeHTML(p.username)}</p>
+   </div>
+   <div class="card-actions">
+    <button onclick="openProfile('${p.id}')">Profil</button>
+    <button class="secondary" onclick="toggleFollow('${p.id}')">Ne plus suivre</button>
+   </div>
+  </div>`;
+ }).join("")||"<p>Tu ne suis encore aucun créateur.</p>";
+ const nav=document.querySelector('#navigation button[data-page="follows"]');
+ if(nav)nav.textContent=[...liveCreatorIds].some(id=>myFollows.has(id))?"Suivis 🔴":"Suivis";
+}
 
 /* DÉCOUVRIR */
 function creatorCard(c,followers){
@@ -438,7 +634,6 @@ function creatorCard(c,followers){
   <div>
    <h3>${escapeHTML(c.display_name||c.username)}${live?' <span class="follow-tag">En direct</span>':""}</h3>
    <p class="small">@${escapeHTML(c.username)}${countText}</p>
-   ${c.status_text?`<p class="status">${escapeHTML(c.status_text)}</p>`:""}
   </div>
   <div class="card-actions">
    <button onclick="openProfile('${c.id}')">Profil</button>
@@ -448,7 +643,7 @@ function creatorCard(c,followers){
 }
 async function loadDiscover(){
  const box=$("creators");box.innerHTML="<p>Chargement...</p>";
- const {data,error}=await db.from("profiles").select("id,username,display_name,bio,avatar_url,status_text").eq("role","creator").limit(30);
+ const {data,error}=await db.from("profiles").select("id,username,display_name,bio,avatar_url").eq("role","creator").limit(30);
  if(error)box.innerHTML="<p>Impossible de charger les créateurs : "+escapeHTML(error.message)+"</p>";
  else if(!data.length)box.innerHTML="<p>Aucun créateur pour le moment. Reviens bientôt !</p>";
  else{
@@ -460,29 +655,78 @@ async function loadDiscover(){
 async function loadFeed(){
  const box=$("freeVideos");
  const {data,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id").order("created_at",{ascending:false}).limit(30);
- if(error)box.innerHTML="<p>Chargement indisponible.</p>";
- else box.innerHTML=data.length?data.map(postHTML).join(""):"<p>Pas encore de publications.</p>";
+ if(error){box.innerHTML="<p>Chargement indisponible.</p>";return}
+ if(!data.length){box.innerHTML="<p>Pas encore de publications.</p>";feedSources.discover=[];return}
+ const ids=[...new Set(data.map(p=>p.creator_id))];
+ const {data:profiles}=await db.from("profiles").select("id,username").in("id",ids);
+ const umap={};(profiles||[]).forEach(p=>umap[p.id]=p.username);
+ feedSources.discover=data.map(p=>({...p,username:umap[p.creator_id]||""}));
+ box.innerHTML=feedSources.discover.map((p,i)=>
+  `<button class="tile" onclick="openFeedFrom('discover',${i})">${thumbHTML(p)}${p.kind==="video"?'<span class="tile-icon">▶</span>':""}</button>`
+ ).join("");
 }
 
-/* PROFIL PUBLIC */
+/* VISIONNEUSE DES PUBLICATIONS (défilement vertical) */
+function openFeedFrom(key,index){
+ const list=feedSources[key]||[];
+ if(!list.length)return;
+ const body=$("feedBody");
+ body.innerHTML=`<div class="feed" id="feedScroll">${list.map(p=>`
+  <section class="feed-item">
+   ${feedMediaHTML(p)}
+   <button class="sound-btn" type="button" aria-label="Son">🔇</button>
+   <div class="feed-meta"><b>@${escapeHTML(p.username||"")}</b>${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}</div>
+  </section>`).join("")}</div>`;
+ const feed=$("feedScroll");
+ $("viewer").classList.remove("hidden");
+ feed.addEventListener("click",e=>{
+  const item=e.target.closest(".feed-item");
+  const v=item?.querySelector("video");
+  if(e.target.classList.contains("sound-btn")){
+   if(v){v.muted=!v.muted;e.target.textContent=v.muted?"🔇":"🔊"}
+   return;
+  }
+  if(v&&e.target.tagName==="VIDEO"){v.paused?v.play().catch(()=>{}):v.pause()}
+ });
+ feedObserver?.disconnect();
+ feedObserver=new IntersectionObserver(entries=>entries.forEach(e=>{
+  const v=e.target.querySelector("video");if(!v)return;
+  if(e.isIntersecting&&e.intersectionRatio>=0.6)v.play().catch(()=>{});else v.pause();
+ }),{root:feed,threshold:[0.6]});
+ feed.querySelectorAll(".feed-item").forEach(el=>feedObserver.observe(el));
+ requestAnimationFrame(()=>{feed.scrollTop=index*feed.clientHeight});
+}
+function closeViewer(){
+ feedObserver?.disconnect();feedObserver=null;
+ document.querySelectorAll("#feedBody video").forEach(v=>v.pause());
+ $("feedBody").innerHTML="";
+ $("viewer").classList.add("hidden");
+}
+
+/* PROFIL PUBLIC (grille façon TikTok) */
 async function openProfile(id){
- showPage(null);
- const box=$("publicProfile");
- box.classList.remove("hidden");
- box.innerHTML="<p>Chargement...</p>";
+ const profile=$("publicProfile");
+ if(profile.classList.contains("hidden")){
+  hiddenForProfile=[...$("app").children].filter(el=>el!==profile&&!el.classList.contains("hidden"));
+  hiddenForProfile.forEach(el=>el.classList.add("hidden"));
+ }
+ profile.classList.remove("hidden");
+ profile.innerHTML="<p>Chargement...</p>";
  const {data,error}=await db.rpc("public_profile",{p_id:id});
  const p=data?.[0];
- if(error||!p){box.innerHTML="<p>Profil introuvable.</p><button class='secondary' id='profileBack'>Retour</button>";$("profileBack").onclick=closeProfile;return}
+ if(error||!p){profile.innerHTML="<p>Profil introuvable.</p><button class='secondary' id='profileBack'>Retour</button>";$("profileBack").onclick=closeProfile;return}
  const {data:posts}=await db.from("posts").select("id,kind,media_path,caption").eq("creator_id",id).order("created_at",{ascending:false});
+ const list=(posts||[]).map(x=>({...x,username:p.username}));
+ feedSources.profile=list;
+ const hasStatus=statusByCreator.has(id);
  const following=myFollows.has(id),isMe=currentUser?.id===id;
 
- box.innerHTML=`
-  <div class="card profile-head">
-   ${avatarHTML(p,p.is_live)}
+ profile.innerHTML=`
+  <div class="profile-top">
+   <div ${hasStatus?`onclick="openStatusViewer('${id}')" style="cursor:pointer"`:""}>${avatarHTML(p,p.is_live)}</div>
    <div class="profile-info">
     <h2>${escapeHTML(p.display_name||p.username)}${p.is_live?' <span class="follow-tag">En direct</span>':""}</h2>
     <p class="small">@${escapeHTML(p.username)}</p>
-    ${p.status_text?`<p class="status">${escapeHTML(p.status_text)}</p>`:""}
     ${p.bio?`<p>${escapeHTML(p.bio)}</p>`:""}
     <div class="stats">
      <span><b>${p.follower_count}</b> abonnés</span>
@@ -492,8 +736,9 @@ async function openProfile(id){
     <div class="card-actions" id="profileActions"></div>
    </div>
   </div>
-  <h3>Publications</h3>
-  <div class="grid" id="profilePosts"></div>
+  <div class="tiles">${list.length?list.map((x,i)=>
+   `<button class="tile" onclick="openFeedFrom('profile',${i})">${thumbHTML(x)}${x.kind==="video"?'<span class="tile-icon">▶</span>':""}</button>`
+  ).join(""):"<p>Aucune publication.</p>"}</div>
   <div style="margin-top:14px"><button class="secondary" id="profileBack">Retour</button></div>`;
 
  const actions=$("profileActions");
@@ -507,13 +752,16 @@ async function openProfile(id){
  if(p.is_live){
   const v=document.createElement("button");
   v.textContent="Voir le direct";
-  v.onclick=()=>{$("publicProfile").classList.add("hidden");showPage("lives")};
+  v.onclick=()=>{closeProfile();showPage("lives")};
   actions.appendChild(v);
  }
- $("profilePosts").innerHTML=(posts||[]).length?posts.map(postHTML).join(""):"<p>Aucune publication.</p>";
  $("profileBack").onclick=closeProfile;
 }
-function closeProfile(){$("publicProfile").classList.add("hidden");showPage("discover")}
+function closeProfile(){
+ $("publicProfile").classList.add("hidden");
+ hiddenForProfile.forEach(el=>el.classList.remove("hidden"));
+ hiddenForProfile=[];
+}
 
 /* CANDIDATURE CRÉATEUR */
 async function loadApplication(){
@@ -796,7 +1044,7 @@ async function loadLives(){
  const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",lives.map(l=>l.creator_id));
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
  box.innerHTML=lives.map(l=>{
-  const p=map[l.creator_id]||{};
+  const p=map[l.creator_id]||{id:l.creator_id};
   return `<div class="card">
    <div class="live-head">${avatarHTML(p,true)}<div><h3>${escapeHTML(l.title)}</h3>
    <p class="small">${escapeHTML(p.display_name||p.username||"Créateur")}${myFollows.has(l.creator_id)?' <span class="follow-tag">Suivi</span>':""}</p></div></div>
@@ -945,14 +1193,14 @@ async function stopCreatorLive(){
 }
 
 /* ESPACE CRÉATEUR */
-const CREATOR_PAGES=["overview","price","posts","live","subscribers","earnings"];
+const CREATOR_PAGES=["overview","price","posts","statuts","live","subscribers","earnings"];
 function creatorPage(page){
  CREATOR_PAGES.forEach(n=>$("creator"+cap(n)).classList.toggle("hidden",n!==page));
  if(page==="subscribers")loadCreatorFollowers();
  if(page==="posts")loadCreatorPosts();
+ if(page==="statuts")loadMyStatuses();
 }
 async function loadCreator(){
- $("statusInput").value=currentProfile.status_text||"";
  const {data:price,error}=await db.from("creator_settings").select("monthly_price_fcfa").eq("creator_id",currentUser.id).maybeSingle();
  if(error)message("Tarif non chargé : "+error.message);
  if(price)$("creatorPriceInput").value=price.monthly_price_fcfa;
@@ -961,6 +1209,7 @@ async function loadCreator(){
  $("creatorStats").innerHTML=s
   ?`<div class="stats"><span><b>${s.follower_count}</b> abonnés</span><span><b>${s.video_count}</b> vidéos</span><span><b>${s.photo_count}</b> photos</span></div>`
   :"";
+ await loadStatuses();
 }
 async function savePrice(){
  const price=Number($("creatorPriceInput").value);
@@ -970,22 +1219,30 @@ async function savePrice(){
  message("Tarif enregistré : "+price.toLocaleString("fr-FR")+" FCFA.",true);
 }
 
+/* UPLOAD COMMUN DES FICHIERS */
+function fileInfo(file){
+ if(!file)return null;
+ const kind=file.type.startsWith("video/")?"video":file.type.startsWith("image/")?"photo":null;
+ if(!kind)return null;
+ const ext=((file.name.split(".").pop()||"bin").replace(/[^a-z0-9]/gi,"")||"bin").toLowerCase();
+ return {kind,ext};
+}
+
 /* PUBLICATIONS */
 async function uploadPost(){
  if(currentProfile?.role!=="creator")return message("Réservé aux créateurs.");
  const file=$("postFile").files[0],caption=$("postCaption").value.trim();
  if(!file)return message("Choisis une photo ou une vidéo.");
  if(file.size>200*1024*1024)return message("Fichier trop lourd (200 Mo max).");
- if(!/^(image|video)\//.test(file.type))return message("Format non accepté.");
- const kind=file.type.startsWith("video/")?"video":"photo";
- const ext=((file.name.split(".").pop()||"bin").replace(/[^a-z0-9]/gi,"")||"bin").toLowerCase();
- const path=`${currentUser.id}/${crypto.randomUUID()}.${ext}`;
+ const info=fileInfo(file);
+ if(!info)return message("Format non accepté.");
+ const path=`${currentUser.id}/${crypto.randomUUID()}.${info.ext}`;
  const button=$("postPublish");button.disabled=true;
  message("Envoi en cours... ne ferme pas la page.");
  try{
   const {error:se}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type});
   if(se)return message("Envoi impossible : "+se.message);
-  const {error}=await db.from("posts").insert({creator_id:currentUser.id,kind,media_path:path,caption:caption||null});
+  const {error}=await db.from("posts").insert({creator_id:currentUser.id,kind:info.kind,media_path:path,caption:caption||null});
   if(error)return message("Publication refusée : "+error.message);
   $("postFile").value="";$("postCaption").value="";
   message("Publication en ligne.",true);
@@ -999,8 +1256,8 @@ async function loadCreatorPosts(){
  if(!data.length){box.innerHTML="<p>Tu n'as pas encore publié de contenu.</p>";return}
  box.innerHTML="";
  data.forEach(p=>{
-  const item=document.createElement("div");item.className="item";
-  item.innerHTML=renderMedia(p)+(p.caption?`<p class="small">${escapeHTML(p.caption)}</p>`:"");
+  const item=document.createElement("div");item.className="manage-item";
+  item.innerHTML=thumbHTML(p).replace("<video ","<video controls ")+(p.caption?`<p class="small">${escapeHTML(p.caption)}</p>`:"");
   const del=document.createElement("button");del.className="danger";del.textContent="Supprimer";
   del.onclick=()=>deletePost(p.id,p.media_path);
   item.appendChild(del);box.appendChild(item);
@@ -1014,13 +1271,56 @@ async function deletePost(id,path){
  message("Publication supprimée.",true);
  loadCreatorPosts();
 }
-async function saveStatus(){
- const text=$("statusInput").value.trim().slice(0,140);
- const {error}=await db.from("profiles").update({status_text:text||null,status_updated_at:new Date().toISOString()}).eq("id",currentUser.id);
- if(error)return message("Statut non enregistré : "+error.message);
- currentProfile.status_text=text||null;
- message("Statut mis à jour.",true);
+
+/* STATUTS CRÉATEUR */
+async function uploadStatus(){
+ if(currentProfile?.role!=="creator")return message("Réservé aux créateurs.");
+ const file=$("statusFile").files[0],caption=$("statusCaption").value.trim();
+ if(!file)return message("Choisis une photo ou une vidéo pour ton statut.");
+ if(file.size>200*1024*1024)return message("Fichier trop lourd (200 Mo max).");
+ const info=fileInfo(file);
+ if(!info)return message("Format non accepté.");
+ const path=`${currentUser.id}/status-${crypto.randomUUID()}.${info.ext}`;
+ const button=$("statusPublish");button.disabled=true;
+ message("Publication du statut... ne ferme pas la page.");
+ try{
+  const {error:se}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type});
+  if(se)return message("Envoi impossible : "+se.message);
+  const {error}=await db.from("statuses").insert({creator_id:currentUser.id,kind:info.kind,media_path:path,caption:caption||null});
+  if(error)return message("Statut refusé : "+error.message);
+  $("statusFile").value="";$("statusCaption").value="";
+  message("Statut publié pour 24 h.",true);
+  await loadStatuses();
+  loadMyStatuses();
+ }finally{button.disabled=false}
 }
+async function loadMyStatuses(){
+ const box=$("myStatusList");
+ const {data,error}=await db.from("statuses").select("id,kind,media_path,caption,created_at").eq("creator_id",currentUser.id).gt("expires_at",new Date().toISOString()).order("created_at",{ascending:false});
+ if(error){box.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
+ if(!data.length){box.innerHTML="<p>Aucun statut actif.</p>";return}
+ box.innerHTML="";
+ data.forEach(s=>{
+  const item=document.createElement("div");item.className="manage-item";
+  item.innerHTML=thumbHTML(s).replace("<video ","<video controls ")+
+   `<p class="small">Publié le ${new Date(s.created_at).toLocaleString("fr-FR")}</p>`+
+   (s.caption?`<p>${escapeHTML(s.caption)}</p>`:"");
+  const del=document.createElement("button");del.className="danger";del.textContent="Supprimer le statut";
+  del.onclick=()=>deleteStatus(s.id,s.media_path);
+  item.appendChild(del);box.appendChild(item);
+ });
+}
+async function deleteStatus(id,path){
+ if(!confirm("Supprimer ce statut ?"))return;
+ const {error}=await db.from("statuses").delete().eq("id",id).eq("creator_id",currentUser.id);
+ if(error)return message("Suppression impossible : "+error.message);
+ try{await db.storage.from("creator-media").remove([path])}catch{}
+ message("Statut supprimé.",true);
+ await loadStatuses();
+ loadMyStatuses();
+}
+
+/* PHOTO DE PROFIL */
 async function uploadAvatar(file){
  if(!file)return;
  if(!file.type.startsWith("image/"))return message("Choisis une image.");
@@ -1128,11 +1428,15 @@ $("logout").addEventListener("click",signOut);
 $("savePrice").addEventListener("click",savePrice);
 $("creatorApplicationForm").addEventListener("submit",submitCreatorApplication);
 $("postPublish").addEventListener("click",uploadPost);
-$("statusSave").addEventListener("click",saveStatus);
+$("statusPublish").addEventListener("click",uploadStatus);
 $("avatarInput").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";uploadAvatar(f)});
 $("startLiveButton").addEventListener("click",startCreatorLive);
 $("openMyProfile").addEventListener("click",()=>{if(currentUser)openProfile(currentUser.id)});
 $("refreshAdmin").addEventListener("click",loadAdminApplications);
+$("viewerClose").addEventListener("click",closeViewer);
+$("svClose").addEventListener("click",closeStatusViewer);
+$("svPrev").addEventListener("click",prevStatus);
+$("svNext").addEventListener("click",nextStatus);
 
 /* SESSION */
 db.auth.getSession().then(({data})=>{if(data.session)loadAccount()});
