@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
-<title>AFRO LIVE — Congo</title>
+<title>AFRO LIVE</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.5.8/dist/livekit-client.umd.min.js"></script>
 <style>
 :root{--bg:#0b0b0c;--surface:#161618;--surface2:#222226;--line:#2a2a2e;--text:#f5f5f5;--muted:#9a9aa2;--orange:#ff6a00;--green:#22c55e;--red:#fe2c55}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;touch-action:manipulation;-webkit-text-size-adjust:100%}
 header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:max(12px,env(safe-area-inset-top)) 16px 12px;background:rgba(11,11,12,.95);border-bottom:1px solid var(--line)}
 body.feed-mode header{display:none}
@@ -28,8 +29,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
 input,textarea,select{width:100%;padding:12px;background:var(--surface2);color:var(--text);border:1px solid transparent;border-radius:10px;margin:6px 0 12px;font:inherit;font-size:16px}
 input:focus,textarea:focus,select:focus{outline:none;border-color:var(--orange)}
 input[type=file]{padding:10px;font-size:14px}
+input[type=checkbox]{width:auto;margin:0}
 label{font-size:13px;color:var(--muted)}
-.hidden{display:none!important}
 .small{font-size:12px;color:var(--muted)}
 .card{background:var(--surface);border-radius:16px;padding:16px;margin:12px 0}
 .item{background:var(--surface);border-radius:14px;padding:14px;margin:8px 0}
@@ -68,7 +69,7 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .status{color:#ffb47c;font-style:italic;font-size:14px}
 
-/* Accueil plein écran, transparent par-dessus la vidéo */
+/* Accueil plein écran */
 #discoverPage.homefeed{position:fixed;inset:0;z-index:30;background:#000;overflow:hidden}
 .vfeed{position:absolute;inset:0;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;background:#000}
 .vfeed::-webkit-scrollbar{display:none}
@@ -78,6 +79,8 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .vtop{position:absolute;top:max(14px,env(safe-area-inset-top));left:0;right:0;z-index:5;display:flex;justify-content:center;gap:22px;pointer-events:none}
 .vtab{background:none;color:rgba(255,255,255,.7);padding:4px 2px;font-size:16px;font-weight:600;border-radius:0;text-shadow:0 1px 4px rgba(0,0,0,.7);pointer-events:auto}
 .vtab.active{color:#fff;box-shadow:inset 0 -2px 0 #fff}
+.vbell{position:absolute;top:max(10px,env(safe-area-inset-top));right:12px;z-index:6;background:rgba(0,0,0,.35);width:40px;height:40px;border-radius:50%;padding:0;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center}
+.vdot{position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:50%;background:var(--red);border:1.5px solid #000}
 .vside{position:absolute;right:10px;bottom:96px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:18px}
 .vavatar{background:none;padding:0;border-radius:0;margin-bottom:4px}
 .vavatar .avatar{width:50px;height:50px;font-size:16px;border:2px solid #fff}
@@ -87,10 +90,17 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .vbtn{background:none;padding:0;border-radius:0;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .vbtn i{font-size:34px;line-height:1}
 .vbtn.on i{color:var(--red)}
+.vnotify i{font-size:28px}
+.vnotify.on i{color:#ffd166}
 .vmeta{position:absolute;left:14px;right:90px;bottom:90px;z-index:4;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8);pointer-events:none}
 .vmeta b{font-size:16px}
 .vmeta p{color:#fff;font-size:14px;margin:6px 0 0}
 .vempty{color:#ccc;text-align:center;padding:45% 20px;position:relative;z-index:2}
+
+/* Notifications */
+.notif{display:flex;gap:12px;align-items:center;width:100%;background:var(--surface);color:var(--text);text-align:left;border-radius:14px;padding:12px;margin:8px 0;font-weight:400}
+.notif.unread{box-shadow:inset 3px 0 0 var(--red)}
+.notif-text{flex:1;font-size:14px;display:flex;flex-direction:column;gap:3px}
 
 /* Espace créateur */
 .c-top{display:flex;justify-content:space-between;align-items:center;margin:4px 0 14px}
@@ -117,6 +127,7 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 
 /* Feuilles du bas */
 .sheet-back{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+#moreSheet{z-index:100002}
 .sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;padding:12px 16px max(20px,env(safe-area-inset-bottom));max-height:90vh;overflow-y:auto}
 .sheet-grab{width:40px;height:4px;border-radius:2px;background:#444;margin:0 auto 14px}
 .sheet-opt{display:flex;align-items:center;gap:14px;width:100%;background:var(--surface2);color:var(--text);text-align:left;padding:14px;border-radius:14px;margin:8px 0;font-weight:500}
@@ -192,7 +203,8 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .stats b{color:var(--text)}
 .admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-actions button{flex:1}
 .tag{display:inline-block;padding:4px 9px;border-radius:6px;background:var(--surface2);color:#ddd;font-size:12px}
-footer{text-align:center;padding:24px;color:#666;font-size:12px}
+footer{text-align:center;padding:24px 16px;color:#777;font-size:13px;line-height:1.6}
+footer b{color:var(--orange)}
 body.feed-mode footer{display:none}
 @media(max-width:600px){main{padding:12px}body.spectator main{padding-bottom:96px}.live-tools button{padding:9px}}
 </style>
@@ -203,12 +215,13 @@ body.feed-mode footer{display:none}
 
 <section id="auth">
  <h1>Bienvenue sur <span style="color:var(--orange)">AFRO LIVE</span></h1>
- <p>La plateforme congolaise qui rapproche les créateurs et leur public grâce aux vidéos et aux directs.</p>
+ <p>La plateforme qui rapproche les créateurs et leur public grâce aux vidéos et aux directs.</p>
  <div class="card"><h2>Créer un compte</h2>
   <label for="signupName">Nom affiché</label><input id="signupName" placeholder="Ton nom">
   <label for="signupUsername">Nom d'utilisateur</label><input id="signupUsername" placeholder="Exemple : vanouch123">
   <label for="signupEmail">Adresse e-mail</label><input id="signupEmail" type="email" placeholder="ton@email.com">
   <label for="signupPassword">Mot de passe</label><input id="signupPassword" type="password" placeholder="Au moins 6 caractères">
+  <label style="display:flex;gap:10px;align-items:center;margin:4px 0 12px;color:#ddd"><input id="signupAge" type="checkbox"> J'ai 18 ans ou plus</label>
   <button id="signup" style="width:100%">Créer mon compte</button></div>
  <div class="card"><h2>J'ai déjà un compte</h2>
   <label for="loginEmail">E-mail</label><input id="loginEmail" type="email" placeholder="Ton e-mail">
@@ -227,12 +240,19 @@ body.feed-mode footer{display:none}
     <button class="vtab active" data-filter="pour-toi">Pour toi</button>
     <button class="vtab" data-filter="follows">Suivis</button>
    </div>
+   <button class="vbell" id="bellBtn" aria-label="Notifications"><i class="ti ti-bell" aria-hidden="true"></i><span class="vdot" id="bellDot" hidden></span></button>
    <div id="homeFeed" class="vfeed"></div>
   </section>
 
   <div id="creatorsPage" class="hidden">
    <h2>Créateurs</h2>
    <div id="creators" class="grid"></div>
+  </div>
+
+  <div id="notifsPage" class="hidden">
+   <h2>Notifications</h2>
+   <p>Tu reçois une alerte quand un créateur que tu suis publie ou lance un direct, si tu as activé sa cloche.</p>
+   <div id="notifsList"></div>
   </div>
 
   <div id="subscriptionsPage" class="hidden">
@@ -304,9 +324,8 @@ body.feed-mode footer{display:none}
   </div>
 
   <div id="creatorPosts">
+   <p class="small" style="margin:0 0 8px">Tape une publication pour l'ouvrir. Le bouton ⋯ permet de la supprimer.</p>
    <div id="creatorPostGrid" class="tiles"></div>
-   <h3 style="margin-top:18px">Gérer mes publications</h3>
-   <div id="creatorPostList"></div>
   </div>
 
   <div id="creatorStatuts" class="hidden">
@@ -371,7 +390,10 @@ body.feed-mode footer{display:none}
 
 <input id="avatarInput" type="file" accept="image/*" class="hidden">
 </main>
-<footer>AFRO LIVE Congo · Le numérique, c'est le futur.</footer>
+<footer>
+ <b>AFRO LIVE</b> · Gagne de l'argent chaque jour en faisant ton live<br>
+ Réservé aux 18 ans et plus
+</footer>
 
 <!-- Menu du bouton + -->
 <div id="createSheet" class="sheet-back hidden">
@@ -380,6 +402,15 @@ body.feed-mode footer{display:none}
   <button class="sheet-opt" onclick="closeSheet();openComposer('post')"><i class="ti ti-photo" aria-hidden="true"></i><span>Publication<small>Photo ou vidéo sur ton profil</small></span></button>
   <button class="sheet-opt" onclick="closeSheet();openComposer('status')"><i class="ti ti-circle-dashed" aria-hidden="true"></i><span>Statut<small>Visible pendant 24 h</small></span></button>
   <button class="sheet-opt" onclick="closeSheet();creatorPage('live')"><i class="ti ti-broadcast" aria-hidden="true"></i><span>Direct<small>Diffuser en direct</small></span></button>
+ </div>
+</div>
+
+<!-- Menu ⋯ d'une publication (espace créateur) -->
+<div id="moreSheet" class="sheet-back hidden">
+ <div class="sheet">
+  <div class="sheet-grab"></div>
+  <button class="sheet-opt" id="moreDelete" style="color:#ff8a8a"><i class="ti ti-trash" aria-hidden="true" style="color:#ff8a8a"></i><span>Supprimer la publication</span></button>
+  <button class="soft" style="width:100%;margin-top:8px" onclick="closeMoreSheet()">Annuler</button>
  </div>
 </div>
 
@@ -428,11 +459,11 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const LIVE_MAX_AGE_MS=12*3600*1000;
 let currentUser=null,currentProfile=null,liveRoom=null,currentLiveSessionId=null,liveMode=null,viewMode=null;
-let myFollows=new Set(),followsReady=false,facingMode="user",accountLoading=false,applicationFilled=false;
+let myFollows=new Set(),myNotify=new Set(),followsReady=false,facingMode="user",accountLoading=false,applicationFilled=false;
 let liveCreatorIds=new Set();
 let statusByCreator=new Map();
 const feedSources={};
-let feedObserver=null,homeObserver=null;
+let feedObserver=null,homeObserver=null,bellTimer=null,moreTarget=null;
 let homeFilter="pour-toi",homeMuted=true;
 let composerMode="post";
 let sv={group:null,index:0,timer:null};
@@ -481,6 +512,7 @@ function updateFollowsBadge(){
 /* AUTHENTIFICATION */
 async function signUp(){
  const name=$("signupName").value.trim(),username=$("signupUsername").value.trim().toLowerCase(),email=$("signupEmail").value.trim(),password=$("signupPassword").value;
+ if(!$("signupAge").checked)return authMessage("Tu dois avoir 18 ans ou plus pour utiliser AFRO LIVE.");
  if(!name||!username||!email||password.length<6)return authMessage("Remplis tous les champs. Le mot de passe doit contenir au moins 6 caractères.");
  if(!/^[a-z0-9_]{3,30}$/.test(username))return authMessage("Le nom d'utilisateur doit contenir 3 à 30 caractères : lettres, chiffres ou _.");
  const {data,error}=await db.auth.signUp({email,password,options:{data:{display_name:name,username}}});
@@ -501,9 +533,10 @@ async function signOut(){
  resetSession();
 }
 function resetSession(){
- currentUser=null;currentProfile=null;viewMode=null;myFollows=new Set();followsReady=false;liveCreatorIds=new Set();
+ currentUser=null;currentProfile=null;viewMode=null;myFollows=new Set();myNotify=new Set();followsReady=false;liveCreatorIds=new Set();
  statusByCreator=new Map();applicationFilled=false;
- pauseHomeFeed();closeViewer();closeStatusViewer();closeSheet();closeComposer();
+ clearInterval(bellTimer);bellTimer=null;
+ pauseHomeFeed();closeViewer();closeStatusViewer();closeSheet();closeComposer();closeMoreSheet();
  document.body.classList.remove("spectator","feed-mode");
  $("app").classList.add("hidden");$("auth").classList.remove("hidden");$("logout").classList.add("hidden");
  $("publicProfile").classList.add("hidden");
@@ -569,11 +602,14 @@ async function loadSpectatorData(){
  await refreshLiveIds();
  showPage("discover");
  loadStatuses();
+ refreshUnread();
+ clearInterval(bellTimer);
+ bellTimer=setInterval(refreshUnread,60000);
 }
 
 /* NAVIGATION SPECTATEUR */
 function showPage(page){
- const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",profile:"profilePage",subscriptions:"subscriptionsPage",application:"applicationPage"};
+ const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",profile:"profilePage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage"};
  Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
  $(pages[page]).classList.remove("hidden");
  document.body.classList.toggle("feed-mode",page==="discover");
@@ -591,6 +627,7 @@ function showPage(page){
  if(page==="follows")loadFollowsPage();
  if(page==="subscriptions")loadSubscriptions();
  if(page==="application")loadApplication();
+ if(page==="notifs")loadNotifications();
 }
 
 /* DIRECTS EN COURS (point vert) */
@@ -668,12 +705,14 @@ function closeStatusViewer(){
  sv={group:null,index:0,timer:null};
 }
 
-/* SUIVIS */
+/* SUIVIS ET CLOCHE (notifications par créateur) */
 async function loadMyFollows(){
  if(!currentUser)return;
- const {data,error}=await db.from("follows").select("creator_id").eq("spectator_id",currentUser.id);
- if(error){followsReady=false;myFollows=new Set();return}
- followsReady=true;myFollows=new Set(data.map(r=>r.creator_id));
+ const {data,error}=await db.from("follows").select("creator_id,notify").eq("spectator_id",currentUser.id);
+ if(error){followsReady=false;myFollows=new Set();myNotify=new Set();return}
+ followsReady=true;
+ myFollows=new Set(data.map(r=>r.creator_id));
+ myNotify=new Set(data.filter(r=>r.notify).map(r=>r.creator_id));
 }
 async function toggleFollow(creatorId){
  if(!currentUser)return message("Connecte-toi pour suivre un créateur.");
@@ -681,22 +720,39 @@ async function toggleFollow(creatorId){
  if(myFollows.has(creatorId)){
   const {error}=await db.from("follows").delete().eq("spectator_id",currentUser.id).eq("creator_id",creatorId);
   if(error)return message("Impossible de ne plus suivre : "+error.message);
+  myNotify.delete(creatorId);
  }else{
-  const {error}=await db.from("follows").insert({spectator_id:currentUser.id,creator_id:creatorId});
+  const {error}=await db.from("follows").insert({spectator_id:currentUser.id,creator_id:creatorId,notify:false});
   if(error)return message("Impossible de suivre : "+error.message);
  }
  await loadMyFollows();
- updateFollowButtons();
+ refreshFollowUI();
  if(homeFilter==="follows")loadHomeFeed();
  loadFollowsPage();
  if(!$("creatorsPage").classList.contains("hidden"))loadCreatorsPage();
  if(!$("publicProfile").classList.contains("hidden"))openProfile(creatorId);
 }
-function updateFollowButtons(){
+async function toggleNotify(creatorId){
+ if(!currentUser)return;
+ if(!myFollows.has(creatorId))return message("Abonne-toi d'abord à ce créateur.");
+ const on=!myNotify.has(creatorId);
+ const {error}=await db.from("follows").update({notify:on}).eq("spectator_id",currentUser.id).eq("creator_id",creatorId);
+ if(error)return message("Impossible de modifier la cloche : "+error.message);
+ if(on)myNotify.add(creatorId);else myNotify.delete(creatorId);
+ refreshFollowUI();
+ message(on?"Notifications activées pour ce créateur.":"Notifications désactivées pour ce créateur.",true);
+}
+function refreshFollowUI(){
  document.querySelectorAll(".vfollow").forEach(b=>{
   const on=myFollows.has(b.dataset.creator);
   b.classList.toggle("done",on);
   b.innerHTML=on?'<i class="ti ti-check" aria-hidden="true"></i>':'<i class="ti ti-plus" aria-hidden="true"></i>';
+ });
+ document.querySelectorAll("[data-notify-btn]").forEach(b=>{
+  const id=b.dataset.notifyBtn,following=myFollows.has(id),on=myNotify.has(id);
+  b.hidden=!following;
+  b.classList.toggle("on",on);
+  b.innerHTML=`<i class="ti ${on?"ti-bell-ringing":"ti-bell"}" aria-hidden="true"></i>`;
  });
 }
 async function getFollowerCount(creatorId){
@@ -715,7 +771,7 @@ async function loadFollowsPage(){
    ${avatarHTML(p,live)}
    <div>
     <h3>${escapeHTML(p.display_name||p.username)}${live?'<span class="tag-live">EN DIRECT</span>':""}</h3>
-    <p class="small">@${escapeHTML(p.username)}</p>
+    <p class="small">@${escapeHTML(p.username)}${myNotify.has(p.id)?' · <span class="follow-tag">Cloche activée</span>':""}</p>
    </div>
    <div class="card-actions">
     <button class="soft" onclick="openProfile('${p.id}')">Profil</button>
@@ -726,7 +782,35 @@ async function loadFollowsPage(){
  updateFollowsBadge();
 }
 
-/* ACCUEIL : PUBLICATIONS PLEIN ÉCRAN (une seule requête) */
+/* NOTIFICATIONS */
+async function refreshUnread(){
+ if(!currentUser)return;
+ const {count}=await db.from("notifications").select("id",{count:"exact",head:true}).eq("read",false);
+ $("bellDot").hidden=!count;
+}
+async function loadNotifications(){
+ const box=$("notifsList");
+ box.innerHTML="<p>Chargement...</p>";
+ const {data,error}=await db.from("notifications").select("id,creator_id,kind,created_at,read").order("created_at",{ascending:false}).limit(50);
+ if(error){box.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
+ if(!data.length){box.innerHTML="<p class='empty'>Aucune notification pour le moment.</p>";return}
+ const ids=[...new Set(data.map(n=>n.creator_id))];
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ const txt={post:"a publié une nouvelle publication",status:"a publié un statut",live:"est en direct"};
+ box.innerHTML=data.map(n=>{
+  const p=map[n.creator_id]||{id:n.creator_id,username:"créateur"};
+  return `<button class="notif${n.read?"":" unread"}" data-notif-creator="${escapeHTML(n.creator_id)}" data-notif-kind="${escapeHTML(n.kind)}">
+   ${avatarHTML(p)}
+   <div class="notif-text"><span><b>${escapeHTML(p.display_name||p.username)}</b> ${txt[n.kind]||""}</span>
+   <span class="small">${new Date(n.created_at).toLocaleString("fr-FR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"})}</span></div>
+  </button>`;
+ }).join("");
+ await db.from("notifications").update({read:true}).eq("read",false);
+ $("bellDot").hidden=true;
+}
+
+/* ACCUEIL : PUBLICATIONS PLEIN ÉCRAN */
 async function loadHomeFeed(){
  const box=$("homeFeed");
  box.innerHTML="<div class='vempty'>Chargement...</div>";
@@ -743,7 +827,7 @@ async function loadHomeFeed(){
 function vitemHTML(p){
  const prof={id:p.creator_id,username:p.username,display_name:p.display_name,avatar_url:p.avatar_url};
  const name=p.display_name||p.username||"";
- const live=liveCreatorIds.has(p.creator_id),isMe=currentUser?.id===p.creator_id,following=myFollows.has(p.creator_id);
+ const live=liveCreatorIds.has(p.creator_id),isMe=currentUser?.id===p.creator_id,following=myFollows.has(p.creator_id),notifyOn=myNotify.has(p.creator_id);
  const url=escapeHTML(mediaUrl(p.media_path));
  const media=p.kind==="video"
   ?`<video class="vmedia" src="${url}" loop muted playsinline preload="auto"></video>`
@@ -755,6 +839,7 @@ function vitemHTML(p){
   <div class="vside">
    <button class="vavatar" data-action="profile" data-creator="${escapeHTML(p.creator_id)}" aria-label="Voir le profil de ${escapeHTML(name)}">${avatarHTML(prof,live)}</button>
    ${isMe?"":`<button class="vfollow${following?" done":""}" data-action="follow" data-creator="${escapeHTML(p.creator_id)}" aria-label="Suivre">${following?'<i class="ti ti-check" aria-hidden="true"></i>':'<i class="ti ti-plus" aria-hidden="true"></i>'}</button>`}
+   ${isMe?"":`<button class="vbtn vnotify${notifyOn?" on":""}" data-action="notify" data-creator="${escapeHTML(p.creator_id)}" data-notify-btn="${escapeHTML(p.creator_id)}" ${following?"":"hidden"} aria-label="Notifications"><i class="ti ${notifyOn?"ti-bell-ringing":"ti-bell"}" aria-hidden="true"></i></button>`}
    <button class="vbtn${liked?" on":""}" data-action="like" data-post="${escapeHTML(p.id)}" data-liked="${liked?1:0}" aria-label="J'aime">
     <i class="ti ${liked?"ti-heart-filled":"ti-heart"}" aria-hidden="true"></i>
     <span class="vcount" data-n="${count}">${fmtCount(count)}</span>
@@ -830,25 +915,31 @@ async function loadCreatorsPage(){
  }
 }
 
-/* VISIONNEUSE DE GRILLE */
+/* VISIONNEUSE DE GRILLE (⋯ pour supprimer sur son propre espace) */
 function openFeedFrom(key,index){
  const list=feedSources[key]||[];
  if(!list.length)return;
+ const owner=key==="creator";
  const body=$("feedBody");
  body.innerHTML=`<div class="feed" id="feedScroll">${list.map(p=>`
-  <section class="feed-item">
+  <section class="feed-item" data-id="${escapeHTML(p.id||"")}">
    ${feedMediaHTML(p)}
    <div class="feed-shade"></div>
-   <div class="feed-side"><button class="sound-btn" type="button" aria-label="Activer le son"><i class="ti ti-volume-off" aria-hidden="true"></i></button></div>
+   <div class="feed-side">
+    ${owner?`<button class="feed-more" type="button" aria-label="Plus d'options"><i class="ti ti-dots" aria-hidden="true"></i></button>`:""}
+    <button class="sound-btn" type="button" aria-label="Activer le son"><i class="ti ti-volume-off" aria-hidden="true"></i></button>
+   </div>
    <div class="feed-meta">
     <b>@${escapeHTML(p.username||"")}</b>
     ${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}
-    <button class="feed-profile" type="button" data-creator="${escapeHTML(p.creator_id||"")}">Voir le profil</button>
+    ${owner?"":`<button class="feed-profile" type="button" data-creator="${escapeHTML(p.creator_id||"")}">Voir le profil</button>`}
    </div>
   </section>`).join("")}</div>`;
  const feed=$("feedScroll");
  $("viewer").classList.remove("hidden");
  feed.addEventListener("click",e=>{
+  const more=e.target.closest(".feed-more");
+  if(more){const id=more.closest(".feed-item").dataset.id;openMoreSheet(id);return}
   const profileBtn=e.target.closest(".feed-profile");
   if(profileBtn){closeViewer();openProfile(profileBtn.dataset.creator);return}
   const soundBtn=e.target.closest(".sound-btn");
@@ -873,6 +964,23 @@ function closeViewer(){
  document.querySelectorAll("#feedBody video").forEach(v=>v.pause());
  $("feedBody").innerHTML="";
  $("viewer").classList.add("hidden");
+}
+function openMoreSheet(postId){
+ moreTarget=(feedSources.creator||[]).find(p=>p.id===postId)||null;
+ if(!moreTarget)return;
+ $("moreSheet").classList.remove("hidden");
+}
+function closeMoreSheet(){moreTarget=null;$("moreSheet").classList.add("hidden")}
+async function deleteFromViewer(){
+ const p=moreTarget;if(!p)return;
+ if(!confirm("Supprimer cette publication ?"))return;
+ const {error}=await db.from("posts").delete().eq("id",p.id).eq("creator_id",currentUser.id);
+ if(error)return message("Suppression impossible : "+error.message);
+ try{await db.storage.from("creator-media").remove([p.media_path])}catch{}
+ closeMoreSheet();
+ closeViewer();
+ message("Publication supprimée.",true);
+ loadCreatorPosts();
 }
 
 /* PROFIL PUBLIC */
@@ -926,6 +1034,11 @@ async function openProfile(id){
   if(following)f.className="soft";
   f.onclick=()=>toggleFollow(id);
   actions.appendChild(f);
+  const bell=document.createElement("button");
+  bell.className="soft";bell.dataset.notifyBtn=id;bell.setAttribute("aria-label","Notifications");
+  bell.hidden=!following;
+  bell.onclick=()=>toggleNotify(id);
+  actions.appendChild(bell);
  }
  if(p.is_live){
   const v=document.createElement("button");
@@ -933,6 +1046,7 @@ async function openProfile(id){
   v.onclick=()=>{closeProfile();showPage("lives")};
   actions.appendChild(v);
  }
+ refreshFollowUI();
  $("profileBack").onclick=closeProfile;
 }
 function closeProfile(){
@@ -1466,30 +1580,16 @@ async function publishFromComposer(){
  }finally{btn.disabled=false}
 }
 
-/* PUBLICATIONS DU CRÉATEUR */
+/* PUBLICATIONS DU CRÉATEUR (grille seule, suppression depuis la visionneuse) */
 async function loadCreatorPosts(){
- const grid=$("creatorPostGrid"),manage=$("creatorPostList");
+ const grid=$("creatorPostGrid");
  const {data,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id").eq("creator_id",currentUser.id).order("created_at",{ascending:false});
- if(error){grid.innerHTML="";manage.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
+ if(error){grid.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
  feedSources.creator=(data||[]).map(p=>({...p,username:currentProfile.username}));
- if(!data.length){grid.innerHTML="<p class='empty' style='grid-column:1/-1'>Tu n'as pas encore publié de contenu.</p>";manage.innerHTML="";return}
+ if(!data.length){grid.innerHTML="<p class='empty' style='grid-column:1/-1'>Tu n'as pas encore publié de contenu.</p>";return}
  grid.innerHTML=feedSources.creator.map((p,i)=>
   `<button class="tile" onclick="openFeedFrom('creator',${i})">${thumbHTML(p)}${p.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play" aria-hidden="true"></i></span>':""}</button>`
  ).join("");
- manage.innerHTML=data.map(p=>`
-  <div class="row-item">
-   <div class="row-thumb">${thumbHTML(p)}</div>
-   <div class="row-text">${escapeHTML(p.caption||(p.kind==="video"?"Vidéo":"Photo"))}</div>
-   <button class="danger" onclick="deletePost('${p.id}','${p.media_path}')">Supprimer</button>
-  </div>`).join("");
-}
-async function deletePost(id,path){
- if(!confirm("Supprimer cette publication ?"))return;
- const {error}=await db.from("posts").delete().eq("id",id).eq("creator_id",currentUser.id);
- if(error)return message("Suppression impossible : "+error.message);
- try{await db.storage.from("creator-media").remove([path])}catch{}
- message("Publication supprimée.",true);
- loadCreatorPosts();
 }
 
 /* STATUTS DU CRÉATEUR */
@@ -1627,6 +1727,7 @@ $("creatorApplicationForm").addEventListener("submit",submitCreatorApplication);
 $("openCreateSheet").addEventListener("click",openSheet);
 $("composerFile").addEventListener("change",e=>previewComposer(e.target.files[0]));
 $("composerSubmit").addEventListener("click",publishFromComposer);
+$("moreDelete").addEventListener("click",deleteFromViewer);
 $("avatarInput").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";uploadAvatar(f)});
 $("startLiveButton").addEventListener("click",startCreatorLive);
 $("openMyProfile").addEventListener("click",()=>{if(currentUser)openProfile(currentUser.id)});
@@ -1635,6 +1736,12 @@ $("viewerClose").addEventListener("click",closeViewer);
 $("svClose").addEventListener("click",closeStatusViewer);
 $("svPrev").addEventListener("click",prevStatus);
 $("svNext").addEventListener("click",nextStatus);
+$("bellBtn").addEventListener("click",()=>showPage("notifs"));
+$("notifsList").addEventListener("click",e=>{
+ const b=e.target.closest(".notif");if(!b)return;
+ if(b.dataset.notifKind==="live")showPage("lives");
+ else openProfile(b.dataset.notifCreator);
+});
 document.querySelectorAll(".vtab").forEach(b=>b.addEventListener("click",()=>{
  homeFilter=b.dataset.filter;
  document.querySelectorAll(".vtab").forEach(x=>x.classList.toggle("active",x===b));
@@ -1648,6 +1755,7 @@ $("homeFeed").addEventListener("click",e=>{
   const action=btn.dataset.action;
   if(action==="profile"){openProfile(btn.dataset.creator);return}
   if(action==="follow"){toggleFollow(btn.dataset.creator);return}
+  if(action==="notify"){toggleNotify(btn.dataset.creator);return}
   if(action==="like"){toggleLike(btn);return}
   if(action==="sound"){
    homeMuted=!homeMuted;
