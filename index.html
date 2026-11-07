@@ -410,6 +410,7 @@ body.feed-mode footer{display:none}
  <div class="sheet">
   <div class="sheet-grab"></div>
   <button class="sheet-opt" id="moreDelete" style="color:#ff8a8a"><i class="ti ti-trash" aria-hidden="true" style="color:#ff8a8a"></i><span>Supprimer la publication</span></button>
+  <p id="moreNote" class="small" style="color:#ffb47c;min-height:18px;margin:8px 4px"></p>
   <button class="soft" style="width:100%;margin-top:8px" onclick="closeMoreSheet()">Annuler</button>
  </div>
 </div>
@@ -968,14 +969,30 @@ function closeViewer(){
 function openMoreSheet(postId){
  moreTarget=(feedSources.creator||[]).find(p=>p.id===postId)||null;
  if(!moreTarget)return;
+ resetDeleteBtn();
+ $("moreNote").textContent="";
  $("moreSheet").classList.remove("hidden");
 }
-function closeMoreSheet(){moreTarget=null;$("moreSheet").classList.add("hidden")}
+function closeMoreSheet(){moreTarget=null;resetDeleteBtn();$("moreSheet").classList.add("hidden")}
+function resetDeleteBtn(){
+ const btn=$("moreDelete");
+ btn.dataset.confirm="";
+ btn.disabled=false;
+ btn.querySelector("span").textContent="Supprimer la publication";
+}
 async function deleteFromViewer(){
- const p=moreTarget;if(!p)return;
- if(!confirm("Supprimer cette publication ?"))return;
- const {error}=await db.from("posts").delete().eq("id",p.id).eq("creator_id",currentUser.id);
- if(error)return message("Suppression impossible : "+error.message);
+ const p=moreTarget,btn=$("moreDelete"),note=$("moreNote");
+ if(!p)return;
+ if(btn.dataset.confirm!=="1"){
+  btn.dataset.confirm="1";
+  btn.querySelector("span").textContent="Appuie encore pour confirmer";
+  return;
+ }
+ btn.disabled=true;
+ note.textContent="Suppression en cours...";
+ const {data,error}=await db.from("posts").delete().eq("id",p.id).eq("creator_id",currentUser.id).select("id");
+ if(error){note.textContent="Erreur : "+error.message;resetDeleteBtn();return}
+ if(!data?.length){note.textContent="La base a refusé la suppression. Vérifie la règle « createur supprime ses posts » dans Supabase.";resetDeleteBtn();return}
  try{await db.storage.from("creator-media").remove([p.media_path])}catch{}
  closeMoreSheet();
  closeViewer();
