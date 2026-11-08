@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>AFRO LIVE</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.5.8/dist/livekit-client.umd.min.js"></script>
@@ -98,6 +102,25 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .vmeta p{color:#fff;font-size:14px;margin:6px 0 0}
 .vempty{color:#ccc;text-align:center;padding:45% 20px;position:relative;z-index:2}
 
+/* Directs en plein écran */
+#livesPage.lfull{position:fixed;inset:0;z-index:30;background:#000;overflow:hidden}
+.lf-item{position:relative;height:100%;width:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#000}
+.lf-preview{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000}
+.lf-preview .live-video{position:absolute;inset:0;width:100%;height:100%;max-height:none;border-radius:0;object-fit:cover}
+.lf-info{position:absolute;left:14px;right:14px;bottom:88px;z-index:4;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.lf-who{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.lf-who b{font-size:16px}
+.lf-who .avatar{width:48px;height:48px;font-size:16px;border:2px solid #fff}
+.lf-watch{width:100%;padding:14px;font-size:16px;border-radius:14px}
+
+/* Visionneuse de direct (plein écran) */
+.lv{position:fixed;inset:0;z-index:100003;background:#000}
+.lv-stage{position:absolute;inset:0;background:#000;overflow:hidden}
+.lv-stage .live-video{position:absolute;inset:0;width:100%;height:100%;max-height:none;border-radius:0;object-fit:contain;background:#000}
+.lv-stage .live-tools{padding-top:max(56px,env(safe-area-inset-top))}
+.lv-close{position:absolute;top:max(10px,env(safe-area-inset-top));right:10px;z-index:30;background:rgba(0,0,0,.5);width:40px;height:40px;border-radius:50%;padding:0;font-size:18px;display:flex;align-items:center;justify-content:center}
+.lv-status{position:absolute;left:20px;right:20px;top:50%;transform:translateY(-50%);z-index:20;text-align:center;color:#fff;font-size:15px;text-shadow:0 1px 4px #000}
+
 /* Notifications */
 .notif{display:flex;gap:12px;align-items:center;width:100%;background:var(--surface);color:var(--text);text-align:left;border-radius:14px;padding:12px;margin:8px 0;font-weight:400}
 .notif.unread{box-shadow:inset 3px 0 0 var(--red)}
@@ -112,8 +135,8 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .c-stats span{font-size:12px;color:var(--muted)}
 .c-name b{display:block;font-size:15px}
 .c-name p{font-size:14px;margin:4px 0;color:var(--text)}
-.c-actions{display:flex;gap:8px;margin:12px 0}
-.c-actions button{flex:1;background:var(--surface2);color:var(--text)}
+.c-actions{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.c-actions button{flex:1 1 40%;background:var(--surface2);color:var(--text)}
 .c-tabs{display:flex;justify-content:space-around;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:10px -16px 14px}
 .c-tabs button{flex:1;background:none;border-radius:0;padding:13px 0;color:var(--muted);font-size:20px}
 .c-tabs button.active{color:var(--text);box-shadow:inset 0 -2px 0 var(--text)}
@@ -169,7 +192,7 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .sv-tap.prev{left:0}.sv-tap.next{right:0}
 .sv-caption{position:absolute;left:0;right:0;bottom:0;padding:18px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.7));z-index:1;text-align:center}
 
-/* Direct */
+/* Direct (création et aperçus) */
 .live-video{width:100%;max-height:65vh;background:#000;border-radius:12px;object-fit:contain}
 .live-player{background:#080808;border-radius:12px;overflow:hidden}
 .live-preview{margin-top:10px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
@@ -250,6 +273,10 @@ body.feed-mode footer{display:none}
    <div id="creators" class="grid"></div>
   </div>
 
+  <div id="livesPage" class="hidden">
+   <div id="liveList" class="vfeed"></div>
+  </div>
+
   <div id="notifsPage" class="hidden">
    <h2>Notifications</h2>
    <p>Tu reçois une alerte quand un créateur que tu suis publie ou lance un direct, si tu as activé sa cloche.</p>
@@ -260,12 +287,6 @@ body.feed-mode footer{display:none}
    <h2>Mes abonnements</h2>
    <p>Les abonnements durent 30 jours. Le renouvellement est manuel.</p>
    <div id="mySubscriptions"></div>
-  </div>
-
-  <div id="livesPage" class="hidden">
-   <h2>Directs en cours</h2>
-   <p>Retrouve les créateurs actuellement en direct.</p>
-   <div id="liveList"></div>
   </div>
 
   <div id="followsPage" class="hidden">
@@ -280,6 +301,7 @@ body.feed-mode footer{display:none}
     <p id="myProfile"></p>
     <div class="card-actions">
      <button id="openMyProfile">Voir mon profil public</button>
+     <button class="soft" onclick="installApp()"><i class="ti ti-download" aria-hidden="true"></i> Ajouter à l'écran d'accueil</button>
      <button class="soft" onclick="showPage('subscriptions')">Mes abonnements</button>
      <button class="soft" onclick="showPage('application')">Devenir créateur</button>
      <button class="soft hidden" id="backCreatorBtn" onclick="setViewMode('creator')">Espace créateur</button>
@@ -396,6 +418,13 @@ body.feed-mode footer{display:none}
  Réservé aux 18 ans et plus
 </footer>
 
+<!-- Visionneuse de direct (plein écran) -->
+<div id="liveViewer" class="lv hidden">
+ <div id="lvStage" class="lv-stage"></div>
+ <div id="lvStatus" class="lv-status"></div>
+ <button id="lvClose" class="lv-close" aria-label="Fermer le direct"><i class="ti ti-x" aria-hidden="true"></i></button>
+</div>
+
 <!-- Menu du bouton + -->
 <div id="createSheet" class="sheet-back hidden">
  <div class="sheet">
@@ -406,7 +435,7 @@ body.feed-mode footer{display:none}
  </div>
 </div>
 
-<!-- Menu ⋯ d'une publication (espace créateur) -->
+<!-- Menu ⋯ d'une publication -->
 <div id="moreSheet" class="sheet-back hidden">
  <div class="sheet">
   <div class="sheet-grab"></div>
@@ -469,6 +498,11 @@ let feedObserver=null,homeObserver=null,bellTimer=null,moreTarget=null;
 let homeFilter="pour-toi",homeMuted=true;
 let composerMode="post";
 let sv={group:null,index:0,timer:null};
+let installPrompt=null;
+
+/* Lien partagé : ?c=pseudo ouvre directement le profil du créateur */
+let pendingDeepLink=new URLSearchParams(location.search).get("c");
+if(pendingDeepLink){history.replaceState(null,"",location.pathname)}
 
 const $=id=>document.getElementById(id);
 const cap=s=>s[0].toUpperCase()+s.slice(1);
@@ -511,6 +545,29 @@ function updateFollowsBadge(){
  if(dot)dot.hidden=![...liveCreatorIds].some(id=>myFollows.has(id));
 }
 
+/* PARTAGE, LIEN ET INSTALLATION */
+function creatorLink(username){return location.origin+location.pathname+"?c="+encodeURIComponent(username)}
+async function shareCreator(username,label){
+ const url=creatorLink(username);
+ if(navigator.share){try{await navigator.share({title:"AFRO LIVE",text:"Regarde "+(label||username)+" sur AFRO LIVE",url});return}catch{}}
+ try{await navigator.clipboard.writeText(url);message("Lien copié : "+url,true)}
+ catch{prompt("Copie ce lien :",url)}
+}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e});
+window.addEventListener("appinstalled",()=>{installPrompt=null;message("AFRO LIVE est ajouté à l'écran d'accueil.",true)});
+async function installApp(){
+ if(installPrompt){
+  installPrompt.prompt();
+  await installPrompt.userChoice.catch(()=>{});
+  installPrompt=null;
+  return;
+ }
+ message("Sur Android : ouvre le menu ⋮ de Chrome, puis choisis « Ajouter à l'écran d'accueil ».",true);
+}
+if("serviceWorker" in navigator){
+ window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));
+}
+
 /* AUTHENTIFICATION */
 async function signUp(){
  const name=$("signupName").value.trim(),username=$("signupUsername").value.trim().toLowerCase(),email=$("signupEmail").value.trim(),password=$("signupPassword").value;
@@ -530,7 +587,7 @@ async function signIn(){
 }
 async function signOut(){
  stopAllPreviews();
- if(liveRoom){const r=liveRoom;liveRoom=null;currentLiveSessionId=null;liveMode=null;await r.disconnect().catch(()=>{})}
+ await closeLiveViewer();
  await db.auth.signOut();
  resetSession();
 }
@@ -540,6 +597,7 @@ function resetSession(){
  clearInterval(bellTimer);bellTimer=null;
  pauseHomeFeed();closeViewer();closeStatusViewer();closeSheet();closeComposer();closeMoreSheet();
  document.body.classList.remove("spectator","feed-mode");
+ $("liveViewer").classList.add("hidden");
  $("app").classList.add("hidden");$("auth").classList.remove("hidden");$("logout").classList.add("hidden");
  $("publicProfile").classList.add("hidden");
  $("navigation").className="pills";$("navigation").innerHTML="";
@@ -585,6 +643,7 @@ function renderView(){
   $("creatorTitle").textContent="@"+currentProfile.username;
   creatorPage("posts");
   loadCreator();
+  if(pendingDeepLink)openDeepLink();
   return;
  }
  document.body.classList.add("spectator");
@@ -602,8 +661,8 @@ function renderView(){
 async function loadSpectatorData(){
  await loadMyFollows();
  await refreshLiveIds();
- showPage("discover");
- loadStatuses();
+ await loadStatuses();
+ if(pendingDeepLink){await openDeepLink()}else{showPage("discover")}
  refreshUnread();
  clearInterval(bellTimer);
  bellTimer=setInterval(refreshUnread,60000);
@@ -614,9 +673,10 @@ function showPage(page){
  const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",profile:"profilePage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage"};
  Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
  $(pages[page]).classList.remove("hidden");
- document.body.classList.toggle("feed-mode",page==="discover");
+ $("livesPage").classList.toggle("lfull",page==="lives");
+ document.body.classList.toggle("feed-mode",page==="discover"||page==="lives");
  const nav=$("navigation");
- nav.classList.toggle("over",page==="discover");
+ nav.classList.toggle("over",page==="discover"||page==="lives");
  nav.querySelectorAll("button[data-page]").forEach(b=>{
   const active=b.dataset.page===page||(b.dataset.page==="profile"&&(page==="subscriptions"||page==="application"));
   b.classList.toggle("active",active);
@@ -625,7 +685,7 @@ function showPage(page){
  if(page!=="lives")stopAllPreviews();
  if(page==="discover")loadHomeFeed();
  if(page==="creators")loadCreatorsPage();
- if(page==="lives"&&liveMode!=="spectator")loadLives();
+ if(page==="lives")loadLives();
  if(page==="follows")loadFollowsPage();
  if(page==="subscriptions")loadSubscriptions();
  if(page==="application")loadApplication();
@@ -917,7 +977,7 @@ async function loadCreatorsPage(){
  }
 }
 
-/* VISIONNEUSE DE GRILLE (⋯ pour supprimer sur son propre espace) */
+/* VISIONNEUSE DE GRILLE */
 function openFeedFrom(key,index){
  const list=feedSources[key]||[];
  if(!list.length)return;
@@ -1001,13 +1061,35 @@ async function deleteFromViewer(){
  loadCreatorPosts();
 }
 
+/* LIEN PARTAGÉ : ouvre le profil du créateur (et son direct s'il est en ligne) */
+async function openDeepLink(){
+ if(!pendingDeepLink)return false;
+ const username=pendingDeepLink.toLowerCase();
+ pendingDeepLink=null;
+ const {data:id,error}=await db.rpc("creator_id_by_username",{p_username:username});
+ if(error||!id){
+  if(currentUser)message("Ce créateur est introuvable.");
+  else authMessage("Ce créateur est introuvable.");
+  return false;
+ }
+ if(!currentUser){$("auth").classList.add("hidden");$("app").classList.remove("hidden")}
+ await openProfile(id);
+ return true;
+}
+function guestToAuth(){
+ $("publicProfile").classList.add("hidden");
+ $("app").classList.add("hidden");
+ $("auth").classList.remove("hidden");
+}
+
 /* PROFIL PUBLIC */
 async function openProfile(id){
  if(!id)return;
  pauseHomeFeed();
  ["spectator","creator","admin"].forEach(s=>$(s).classList.add("hidden"));
- document.body.classList.remove("feed-mode");
+ document.body.classList.remove("feed-mode","spectator");
  $("navigation").classList.remove("over");
+ $("livesPage").classList.remove("lfull");
  const profile=$("publicProfile");
  profile.classList.remove("hidden");
  profile.innerHTML="<p>Chargement...</p>";
@@ -1017,6 +1099,11 @@ async function openProfile(id){
  const {data:posts}=await db.from("posts").select("id,kind,media_path,caption").eq("creator_id",id).order("created_at",{ascending:false});
  const list=(posts||[]).map(x=>({...x,username:p.username,creator_id:id}));
  feedSources.profile=list;
+ let liveSessionId=null;
+ if(p.is_live){
+  const {data:s}=await db.from("live_sessions").select("id").eq("creator_id",id).eq("status","live").gte("started_at",liveSinceIso()).order("started_at",{ascending:false}).limit(1).maybeSingle();
+  liveSessionId=s?.id||null;
+ }
  const hasStatus=statusByCreator.has(id);
  const following=myFollows.has(id),isMe=currentUser?.id===id;
  const avatarBlock=hasStatus
@@ -1040,12 +1127,17 @@ async function openProfile(id){
     <div class="card-actions" id="profileActions"></div>
    </div>
   </div>
+  ${currentUser?"":`<div class="notice">Connecte-toi ou crée un compte pour suivre ce créateur et regarder ses directs.</div><button class="soft" onclick="guestToAuth()" style="width:100%">Se connecter / créer un compte</button>`}
   <div class="tiles" style="margin-top:14px">${list.length?list.map((x,i)=>
    `<button class="tile" onclick="openFeedFrom('profile',${i})">${thumbHTML(x)}${x.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play" aria-hidden="true"></i></span>':""}</button>`
   ).join(""):"<p class='empty' style='grid-column:1/-1'>Aucune publication.</p>"}</div>
   <div style="margin-top:14px"><button class="soft" id="profileBack">Retour</button></div>`;
 
  const actions=$("profileActions");
+ const share=document.createElement("button");
+ share.className="soft";share.innerHTML='<i class="ti ti-share" aria-hidden="true"></i> Partager';
+ share.onclick=()=>shareCreator(p.username,p.display_name||p.username);
+ actions.appendChild(share);
  if(!isMe){
   const f=document.createElement("button");
   f.textContent=following?"Ne plus suivre":"Suivre";
@@ -1058,10 +1150,10 @@ async function openProfile(id){
   bell.onclick=()=>toggleNotify(id);
   actions.appendChild(bell);
  }
- if(p.is_live){
+ if(liveSessionId){
   const v=document.createElement("button");
   v.textContent="Voir le direct";
-  v.onclick=()=>{closeProfile();showPage("lives")};
+  v.onclick=()=>joinLive(liveSessionId);
   actions.appendChild(v);
  }
  refreshFollowUI();
@@ -1069,7 +1161,8 @@ async function openProfile(id){
 }
 function closeProfile(){
  $("publicProfile").classList.add("hidden");
- renderView();
+ if(currentProfile)renderView();
+ else{$("app").classList.add("hidden");$("auth").classList.remove("hidden")}
 }
 
 /* CANDIDATURE CRÉATEUR */
@@ -1150,7 +1243,7 @@ function attachLiveTrack(track,container){
  }
 }
 
-/* APERÇUS SILENCIEUX (3 maximum, seulement à l'écran) */
+/* APERÇUS SILENCIEUX DANS LA LISTE PLEIN ÉCRAN (3 maximum) */
 const previewRooms=new Map();
 const PREVIEW_LIMIT=3;
 let previewObserver=null;
@@ -1183,7 +1276,7 @@ async function startPreview(sessionId){
  }catch(error){
   if(room)room.disconnect().catch(()=>{});
   previewRooms.delete(sessionId);
-  if(box&&!box.querySelector(".live-stage"))box.innerHTML="<p class='small'>Aperçu indisponible</p>";
+  if(box&&!box.querySelector(".live-video"))box.innerHTML="<p class='small'>Aperçu indisponible</p>";
  }
 }
 function stopPreview(sessionId){
@@ -1192,7 +1285,7 @@ function stopPreview(sessionId){
  if(room)room.disconnect().catch(()=>{});
  if(liveMode==="spectator"&&sessionId===currentLiveSessionId)return;
  const box=$("livePreview_"+sessionId);
- if(box&&!box.querySelector(".live-stage"))box.innerHTML="<p class='small'>Aperçu en pause</p>";
+ if(box&&!box.querySelector(".live-video"))box.innerHTML="<p class='small'>Aperçu en pause</p>";
 }
 function stopAllPreviews(){[...previewRooms.keys()].forEach(stopPreview)}
 function observeLivePreviews(lives){
@@ -1203,7 +1296,7 @@ function observeLivePreviews(lives){
    if(liveMode==="spectator"&&id===currentLiveSessionId)return;
    if(e.isIntersecting)startPreview(id);else stopPreview(id);
   });
- },{threshold:0.6});
+ },{root:$("liveList"),threshold:0.6});
  lives.forEach(l=>{const el=$("livePreview_"+l.id);if(el)previewObserver.observe(el)});
 }
 
@@ -1323,7 +1416,7 @@ function cleanLiveInterface(stage){
 document.addEventListener("visibilitychange",()=>{
  if(document.hidden||!liveRoom)return;
  liveRoom.startAudio?.().catch(()=>{});
- document.querySelectorAll(".live-stage video").forEach(v=>v.play?.().catch(()=>{}));
+ document.querySelectorAll(".live-stage video, .lv-stage video").forEach(v=>v.play?.().catch(()=>{}));
 });
 
 async function switchCamera(room,btn){
@@ -1341,55 +1434,47 @@ async function switchCamera(room,btn){
  finally{btn.disabled=false}
 }
 
-/* LISTE DES DIRECTS */
+/* LISTE DES DIRECTS EN PLEIN ÉCRAN */
 async function loadLives(){
  const box=$("liveList");
- box.innerHTML="<p>Chargement des directs...</p>";
+ box.innerHTML="<div class='vempty'>Chargement des directs...</div>";
  stopAllPreviews();
  const {data:lives,error}=await db.from("live_sessions").select("id,title,status,creator_id").eq("status","live").gte("started_at",liveSinceIso()).order("started_at",{ascending:false}).limit(30);
- if(error){box.textContent="Impossible de charger les directs : "+error.message;return}
+ if(error){box.innerHTML=`<div class="vempty">Impossible de charger les directs : ${escapeHTML(error.message)}</div>`;return}
  liveCreatorIds=new Set(lives.map(l=>l.creator_id));
  updateFollowsBadge();
- if(!lives.length){box.innerHTML="<p>Aucun direct en cours. Reviens bientôt !</p>";return}
+ if(!lives.length){box.innerHTML="<div class='vempty'>Aucun direct en cours. Reviens bientôt !</div>";return}
  const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",lives.map(l=>l.creator_id));
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
  box.innerHTML=lives.map(l=>{
   const p=map[l.creator_id]||{id:l.creator_id};
-  return `<div class="card">
-   <div class="live-head">${avatarHTML(p,true)}<div><h3>${escapeHTML(l.title)}</h3>
-   <p class="small">${escapeHTML(p.display_name||p.username||"Créateur")}${myFollows.has(l.creator_id)?' <span class="follow-tag">Suivi</span>':""}</p></div></div>
-   <div id="livePreview_${l.id}" class="live-player live-preview"><p class="small">Aperçu...</p></div>
-   <button onclick="joinLive('${l.id}')" style="width:100%;margin-top:10px">Regarder le direct</button>
-  </div>`;
+  return `<section class="lf-item">
+   <div id="livePreview_${l.id}" class="lf-preview"><p class="small">Aperçu...</p></div>
+   <div class="vshade"></div>
+   <div class="lf-info">
+    <div class="lf-who">${avatarHTML(p,true)}<div><b>${escapeHTML(p.display_name||p.username||"Créateur")}</b> <span class="tag-live">EN DIRECT</span><div class="small">${escapeHTML(l.title)}</div></div></div>
+    <button class="lf-watch" onclick="joinLive('${l.id}')">Regarder en direct</button>
+   </div>
+  </section>`;
  }).join("");
  observeLivePreviews(lives);
 }
 
-/* DIRECT SPECTATEUR */
+/* DIRECT SPECTATEUR EN PLEIN ÉCRAN */
 async function joinLive(sessionId){
  if(!currentUser)return message("Connecte-toi pour regarder ce direct.");
- const previousId=currentLiveSessionId;
- stopPreview(sessionId);
- if(previewObserver){const el=$("livePreview_"+sessionId);if(el)previewObserver.unobserve(el)}
- if(liveRoom){
-  const previous=liveRoom;
-  liveRoom=null;currentLiveSessionId=null;liveMode=null;
-  await previous.disconnect().catch(()=>{});
-  const oldBox=previousId&&$("livePreview_"+previousId);
-  if(oldBox)oldBox.innerHTML="<p class='small'>Tu as quitté ce direct.</p>";
- }
- const box=$("livePreview_"+sessionId);if(!box)return;
- box.innerHTML="<p>Connexion au direct...</p>";
+ if(liveRoom&&liveMode==="spectator"&&currentLiveSessionId===sessionId){$("liveViewer").classList.remove("hidden");return}
+ if(liveRoom)await closeLiveViewer();
+ stopAllPreviews();
+ const viewer=$("liveViewer"),stage=$("lvStage"),status=$("lvStatus");
+ stage.innerHTML="";
+ status.hidden=false;status.textContent="Connexion au direct...";
+ viewer.classList.remove("hidden");
  let room=null;
  try{
   const credentials=await getLiveToken(sessionId);
   room=createLiveRoom();
   liveRoom=room;currentLiveSessionId=sessionId;liveMode="spectator";
-  box.innerHTML="";
-  const stage=document.createElement("div");stage.className="live-stage";
-  const video=document.createElement("video");video.className="live-video";video.autoplay=true;video.playsInline=true;
-  stage.appendChild(video);box.appendChild(stage);
-
   room.on(LivekitClient.RoomEvent.TrackSubscribed,track=>attachLiveTrack(track,stage));
   room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>{
    if(track.kind===LivekitClient.Track.Kind.Video){
@@ -1398,37 +1483,40 @@ async function joinLive(sessionId){
    }else{track.detach().forEach(el=>el.remove())}
   });
   room.on(LivekitClient.RoomEvent.Disconnected,()=>{
-   if(liveMode==="spectator"&&liveRoom===room){
-    cleanLiveInterface(stage);
-    box.innerHTML="<p>Le direct s'est terminé ou la connexion a été interrompue.</p>";
-    liveRoom=null;currentLiveSessionId=null;liveMode=null;
+   if(liveRoom===room){
+    closeLiveViewer().then(()=>message("Le direct s'est terminé ou la connexion a été interrompue."));
    }
   });
-
   await room.connect(credentials.livekit_url,credentials.token);
   try{await room.startAudio()}catch(error){console.log("Activation audio différée par le navigateur.",error)}
   for(const participant of room.remoteParticipants.values())
    for(const publication of participant.trackPublications.values())
     if(publication.track)attachLiveTrack(publication.track,stage);
   installLiveInterface(stage,room,"spectator");
-  message("Tu es connecté au direct.",true);
+  status.hidden=true;
  }catch(error){
   console.error("Erreur spectateur LiveKit :",error);
   if(room)room.disconnect().catch(()=>{});
-  liveRoom=null;currentLiveSessionId=null;liveMode=null;
-  box.innerHTML="<p>Impossible de rejoindre : "+escapeHTML(error.message||"Erreur inconnue")+"</p>";
+  if(liveRoom===room){liveRoom=null;currentLiveSessionId=null;liveMode=null}
+  status.hidden=false;
+  status.textContent="Impossible de rejoindre ce direct : "+(error.message||"erreur inconnue");
  }
 }
-async function leaveSpectatorLive(){
- if(liveMode!=="spectator"||!liveRoom)return;
- const room=liveRoom;const id=currentLiveSessionId;
+async function closeLiveViewer(){
+ const room=liveRoom;
  liveRoom=null;currentLiveSessionId=null;liveMode=null;
- await room.disconnect().catch(()=>{});
- document.querySelectorAll(".live-stage").forEach(stage=>cleanLiveInterface(stage));
- const box=id&&$("livePreview_"+id);
- if(box)box.innerHTML="<p class='small'>Tu as quitté ce direct.</p>";
- message("Tu as quitté le direct.");
+ if(room)await room.disconnect().catch(()=>{});
+ const stage=$("lvStage");
+ cleanLiveInterface(stage);
+ stage.innerHTML="";
+ $("liveViewer").classList.add("hidden");
+ if(currentUser&&!$("livesPage").classList.contains("hidden"))loadLives();
 }
+async function leaveSpectatorLive(){
+ if(liveMode!=="spectator")return;
+ await closeLiveViewer();
+}
+$("lvClose").addEventListener("click",()=>closeLiveViewer());
 
 /* DIRECT CRÉATEUR */
 function updateLiveParticipantCount(){
@@ -1538,6 +1626,7 @@ async function loadCreator(){
   <div class="c-actions">
    <button onclick="$('avatarInput').click()">Changer la photo</button>
    <button onclick="openProfile('${currentUser.id}')">Voir mon profil public</button>
+   <button class="soft" onclick="shareCreator('${escapeHTML(currentProfile.username)}','${escapeHTML(name)}')"><i class="ti ti-share" aria-hidden="true"></i> Partager mon lien</button>
   </div>`;
 }
 async function savePrice(){
@@ -1598,7 +1687,7 @@ async function publishFromComposer(){
  }finally{btn.disabled=false}
 }
 
-/* PUBLICATIONS DU CRÉATEUR (grille seule, suppression depuis la visionneuse) */
+/* PUBLICATIONS DU CRÉATEUR */
 async function loadCreatorPosts(){
  const grid=$("creatorPostGrid");
  const {data,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id").eq("creator_id",currentUser.id).order("created_at",{ascending:false});
@@ -1787,7 +1876,10 @@ $("homeFeed").addEventListener("click",e=>{
 });
 
 /* SESSION */
-db.auth.getSession().then(({data})=>{if(data.session)loadAccount()});
+db.auth.getSession().then(({data})=>{
+ if(data.session)loadAccount();
+ else if(pendingDeepLink)openDeepLink();
+});
 db.auth.onAuthStateChange((event,session)=>{
  if(session&&!currentUser)setTimeout(loadAccount,0);
  if(!session&&currentUser){
