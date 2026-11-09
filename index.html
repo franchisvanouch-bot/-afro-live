@@ -1720,7 +1720,7 @@ async function savePrice(){
  await loadCreatorEarnings();
 }
 function normalizeCongoPhoneClient(value){
- const digits=String(value||"").replace(/\\D/g,"");
+ const digits=String(value||"").replace(/[^0-9]/g,"");
  if(/^242[0-9]{9}$/.test(digits))return digits;
  if(/^[0-9]{9}$/.test(digits))return "242"+digits;
  return null;
@@ -1739,7 +1739,7 @@ async function savePayoutAccount(){
 async function loadCreatorEarnings(){
  if(!currentUser)return;
  const [ledgerResult,withdrawalResult,accountResult]=await Promise.all([
-  db.from("creator_ledger").select("entry_type,amount_fcfa,note,created_at").eq("creator_id",currentUser.id).order("created_at",{ascending:false}).limit(30),
+  db.from("creator_ledger").select("entry_type,amount_fcfa,note,created_at").eq("creator_id",currentUser.id).order("created_at",{ascending:false}).limit(1000),
   db.from("withdrawal_requests").select("id,amount_fcfa,status,method,phone,requested_at,processed_at").eq("creator_id",currentUser.id).order("requested_at",{ascending:false}).limit(10),
   db.from("creator_payout_accounts").select("payout_method,payout_phone,payout_name").eq("creator_id",currentUser.id).maybeSingle()
  ]);
