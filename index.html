@@ -408,7 +408,6 @@ body.feed-mode footer{display:none}
     <label for="creatorMonthlyPrice">30 jours · FCFA</label>
     <input id="creatorMonthlyPrice" type="number" min="100" max="1000000" inputmode="numeric" placeholder="Exemple : 3000">
     <label class="checkline"><input id="acceptSubscriptions" type="checkbox"> J'accepte les abonnements</label>
-    <p class="small">Développe ta communauté avec les likes et les directs, et gagne de l’argent grâce aux abonnements et aux cadeaux de tes spectateurs.</p>
     <button id="savePrice" style="width:100%">Enregistrer mes tarifs</button>
    </div>
    <div class="card">
@@ -1383,7 +1382,7 @@ function addChatMessage(list,name,text,isMine=false){
  list.scrollTop=list.scrollHeight;
  setTimeout(()=>row.remove(),5000);
 }
-function installLiveInterface(stage,room,mode){
+function installLiveInterface(stage,room,mode,creatorId=null){
  if(!stage||!room)return;
  const old=stage.querySelector(".live-overlay-tools");if(old)old.remove();
 
@@ -1437,6 +1436,11 @@ function installLiveInterface(stage,room,mode){
  const input=document.createElement("input");
  input.type="text";input.maxLength=300;input.placeholder="Écris un message...";input.autocomplete="off";
  input.enterKeyHint="send";input.setAttribute("aria-label","Message du chat");
+ if(mode==="spectator"&&creatorId&&creatorId!==currentUser?.id){
+  const gift=document.createElement("button");gift.type="button";gift.className="soft live-gift-button";gift.textContent="🎁";gift.title="Envoyer un cadeau";gift.setAttribute("aria-label","Envoyer un cadeau au créateur");
+  gift.addEventListener("click",()=>openMbotePay(creatorId,"tip",null,null));
+  form.appendChild(gift);
+ }
  const send=document.createElement("button");send.type="submit";send.textContent="Envoyer";
  form.append(input,send);chat.append(title,list,form);
  tools.append(bar,chat);stage.appendChild(tools);
@@ -1541,6 +1545,8 @@ async function joinLive(sessionId){
  viewer.classList.remove("hidden");
  let room=null;
  try{
+  const {data:liveInfo,error:liveInfoError}=await db.from("live_sessions").select("creator_id").eq("id",sessionId).maybeSingle();
+  if(liveInfoError||!liveInfo?.creator_id)throw new Error("Impossible d’identifier le créateur de ce direct.");
   const credentials=await getLiveToken(sessionId);
   room=createLiveRoom();
   liveRoom=room;currentLiveSessionId=sessionId;liveMode="spectator";
@@ -1561,7 +1567,7 @@ async function joinLive(sessionId){
   for(const participant of room.remoteParticipants.values())
    for(const publication of participant.trackPublications.values())
     if(publication.track)attachLiveTrack(publication.track,stage);
-  installLiveInterface(stage,room,"spectator");
+  installLiveInterface(stage,room,"spectator",liveInfo.creator_id);
   status.hidden=true;
  }catch(error){
   console.error("Erreur spectateur LiveKit :",error);
