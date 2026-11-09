@@ -219,6 +219,22 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .live-fullscreen .live-chat{padding-bottom:max(12px,env(safe-area-inset-bottom))}
 .live-fullscreen .live-chat-messages{max-height:20dvh}
 
+.checkline{display:flex;align-items:center;gap:9px;margin:12px 0;color:var(--text)}
+.checkline input{width:auto;margin:0;accent-color:var(--orange)}
+.earnings-balance{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0}
+.earnings-balance strong{font-size:22px;color:var(--green)}
+.ledger-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.ledger-positive{color:var(--green)}.ledger-negative{color:#ff8a8a}
+.payment-back{position:fixed;inset:0;z-index:100020;background:rgba(0,0,0,.78);display:flex;align-items:flex-end;justify-content:center;padding:12px}
+.payment-back.hidden{display:none}
+.payment-sheet{position:relative;width:min(100%,520px);max-height:88dvh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px 16px calc(20px + env(safe-area-inset-bottom))}
+.payment-close{position:absolute;right:12px;top:8px;font-size:28px;background:transparent;padding:4px 10px}
+.payment-sheet h3{padding-right:35px}
+.payment-sheet .notice{margin:12px 0}
+.profile-pay-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.profile-pay-actions button{flex:1;min-width:120px}
+.payment-status-error{color:#ff8a8a}.payment-status-ok{color:var(--green)}
+
 /* Profil public */
 .p-top{display:flex;gap:18px;align-items:center;flex-wrap:wrap;padding:8px 0 4px}
 .p-info{flex:1;min-width:200px}
@@ -383,16 +399,38 @@ body.feed-mode footer{display:none}
 
   <div id="creatorEarnings" class="hidden">
    <div class="card">
-    <h3>Mon tarif mensuel</h3>
-    <p class="small">Entre 100 et 1 000 000 FCFA, pour 30 jours.</p>
-    <label for="creatorPriceInput">Prix en FCFA</label>
-    <input id="creatorPriceInput" type="number" min="100" max="1000000" placeholder="Exemple : 2000">
-    <button id="savePrice" style="width:100%">Enregistrer mon tarif</button>
+    <h3>Mes tarifs d'abonnement</h3>
+    <p class="small">Tu fixes le prix pour 1 jour, 7 jours et 30 jours. Les directs restent gratuits à regarder.</p>
+    <label for="creatorDailyPrice">1 jour · FCFA</label>
+    <input id="creatorDailyPrice" type="number" min="100" max="1000000" inputmode="numeric" placeholder="Exemple : 500">
+    <label for="creatorWeeklyPrice">7 jours · FCFA</label>
+    <input id="creatorWeeklyPrice" type="number" min="100" max="1000000" inputmode="numeric" placeholder="Exemple : 1500">
+    <label for="creatorMonthlyPrice">30 jours · FCFA</label>
+    <input id="creatorMonthlyPrice" type="number" min="100" max="1000000" inputmode="numeric" placeholder="Exemple : 3000">
+    <label class="checkline"><input id="acceptSubscriptions" type="checkbox"> J'accepte les abonnements</label>
+    <p class="small">AFRO LIVE reçoit 30 % et tu reçois 70 % des paiements confirmés.</p>
+    <button id="savePrice" style="width:100%">Enregistrer mes tarifs</button>
    </div>
    <div class="card">
-    <h3>Revenus</h3>
-    <p>Calculés à partir des paiements réellement confirmés.</p>
-    <div class="notice">Les paiements MTN Mobile Money, Airtel Money et les retraits nécessitent une intégration serveur.</div>
+    <h3>Mon compte de retrait</h3>
+    <label for="payoutMethod">Opérateur au Congo-Brazzaville</label>
+    <select id="payoutMethod"><option value="airtel_money">Airtel Money</option><option value="mtn_momo">MTN Mobile Money</option></select>
+    <label for="payoutPhone">Numéro Mobile Money (9 chiffres)</label>
+    <input id="payoutPhone" type="tel" inputmode="numeric" maxlength="12" placeholder="Exemple : 06XXXXXXX">
+    <label for="payoutName">Nom du titulaire (facultatif)</label>
+    <input id="payoutName" type="text" maxlength="100" placeholder="Nom du titulaire">
+    <button id="savePayoutAccount" class="soft" style="width:100%">Enregistrer mon compte</button>
+   </div>
+   <div class="card">
+    <h3>Mes revenus</h3>
+    <div class="earnings-balance"><span>Solde disponible</span><strong id="creatorAvailableBalance">0 FCFA</strong></div>
+    <p class="small">Solde basé sur les paiements confirmés. Retrait minimum : 5 000 FCFA.</p>
+    <label for="withdrawAmount">Montant à retirer · FCFA</label>
+    <input id="withdrawAmount" type="number" min="5000" max="10000000" step="1" inputmode="numeric" placeholder="5000">
+    <button id="requestWithdrawal" style="width:100%">Demander un retrait</button>
+    <p id="withdrawMessage" class="small" aria-live="polite"></p>
+    <h4>Derniers mouvements</h4><div id="creatorLedgerList"><p class="small">Chargement...</p></div>
+    <h4>Demandes de retrait</h4><div id="creatorWithdrawalsList"><p class="small">Chargement...</p></div>
    </div>
   </div>
  </section>
@@ -410,6 +448,22 @@ body.feed-mode footer{display:none}
 
  <section id="publicProfile" class="hidden"></section>
 </section>
+<div id="mbotePayModal" class="payment-back hidden" role="dialog" aria-modal="true" aria-labelledby="mbotePayTitle">
+ <div class="payment-sheet">
+  <button type="button" class="payment-close" onclick="closeMbotePay()" aria-label="Fermer">×</button>
+  <h3 id="mbotePayTitle">Paiement Mobile Money</h3>
+  <p id="mbotePayDescription" class="small"></p>
+  <div id="mbotePayPlanInfo" class="notice"></div>
+  <div id="mbotePayTipField" class="hidden"><label for="mbotePayAmount">Montant du cadeau · FCFA</label><input id="mbotePayAmount" type="number" min="100" max="1000000" step="1" inputmode="numeric" placeholder="1000"></div>
+  <label for="mbotePayOperator">Opérateur</label>
+  <select id="mbotePayOperator"><option value="airtel_money">Airtel Money</option><option value="mtn_momo">MTN Mobile Money</option></select>
+  <label for="mbotePayPhone">Numéro Mobile Money au Congo (9 chiffres)</label>
+  <input id="mbotePayPhone" type="tel" inputmode="numeric" maxlength="12" placeholder="Exemple : 06XXXXXXX">
+  <p id="mbotePayStatus" class="small" aria-live="polite"></p>
+  <button id="mbotePaySubmit" type="button" style="width:100%" onclick="submitMbotePay()">Continuer vers le paiement</button>
+  <p class="small">Valide la demande sur ton téléphone. Ne partage jamais ton code secret Mobile Money.</p>
+ </div>
+</div>
 
 <input id="avatarInput" type="file" accept="image/*" class="hidden">
 </main>
@@ -1096,7 +1150,10 @@ async function openProfile(id){
  const {data,error}=await db.rpc("public_profile",{p_id:id});
  const p=data?.[0];
  if(error||!p){profile.innerHTML="<p>Profil introuvable.</p><button class='soft' id='profileBack'>Retour</button>";$("profileBack").onclick=closeProfile;return}
- const {data:posts}=await db.from("posts").select("id,kind,media_path,caption").eq("creator_id",id).order("created_at",{ascending:false});
+ const [{data:posts},{data:creatorSettings}]=await Promise.all([
+  db.from("posts").select("id,kind,media_path,caption").eq("creator_id",id).order("created_at",{ascending:false}),
+  db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",id).maybeSingle()
+ ]);
  const list=(posts||[]).map(x=>({...x,username:p.username,creator_id:id}));
  feedSources.profile=list;
  let liveSessionId=null;
@@ -1138,12 +1195,24 @@ async function openProfile(id){
  share.className="soft";share.innerHTML='<i class="ti ti-share" aria-hidden="true"></i> Partager';
  share.onclick=()=>shareCreator(p.username,p.display_name||p.username);
  actions.appendChild(share);
+ if(!isMe&&creatorSettings?.is_accepting_subscriptions){
+  const payBox=document.createElement("div");payBox.className="profile-pay-actions";
+  const plans=[["daily","1 jour",creatorSettings.daily_price_fcfa],["weekly","7 jours",creatorSettings.weekly_price_fcfa],["monthly","30 jours",creatorSettings.monthly_price_fcfa]];
+  plans.forEach(([plan,label,price])=>{
+   const amount=Number(price);if(!Number.isInteger(amount)||amount<100||amount>1000000)return;
+   const b=document.createElement("button");b.type="button";b.textContent=label+" · "+amount.toLocaleString("fr-FR")+" FCFA";
+   b.onclick=()=>openMbotePay(id,"subscription",plan,amount);payBox.appendChild(b);
+  });
+  if(payBox.children.length)actions.appendChild(payBox);
+ }
  if(!isMe){
   const f=document.createElement("button");
   f.textContent=following?"Ne plus suivre":"Suivre";
   if(following)f.className="soft";
   f.onclick=()=>toggleFollow(id);
   actions.appendChild(f);
+  const gift=document.createElement("button");gift.className="soft";gift.type="button";gift.textContent="Offrir un cadeau";
+  gift.onclick=()=>openMbotePay(id,"tip",null,null);actions.appendChild(gift);
   const bell=document.createElement("button");
   bell.className="soft";bell.dataset.notifyBtn=id;bell.setAttribute("aria-label","Notifications");
   bell.hidden=!following;
@@ -1598,6 +1667,7 @@ function creatorPage(page){
  if(page==="posts")loadCreatorPosts();
  if(page==="statuts")loadMyStatuses();
  if(page==="subscribers")loadCreatorFollowers();
+ if(page==="earnings")loadCreatorEarnings();
 }
 async function loadCreator(){
  if(liveMode!=="creator"){
@@ -1605,11 +1675,17 @@ async function loadCreator(){
   liveCreatorIds.delete(currentUser.id);
  }
  const [{data:price,error:pe},{data:stats}]=await Promise.all([
-  db.from("creator_settings").select("monthly_price_fcfa").eq("creator_id",currentUser.id).maybeSingle(),
+  db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",currentUser.id).maybeSingle(),
   db.rpc("public_profile",{p_id:currentUser.id})
  ]);
- if(pe)message("Tarif non chargé : "+pe.message);
- if(price)$("creatorPriceInput").value=price.monthly_price_fcfa;
+ if(pe)message("Tarifs non chargés : "+pe.message);
+ if(price){
+  $("creatorDailyPrice").value=price.daily_price_fcfa??"";
+  $("creatorWeeklyPrice").value=price.weekly_price_fcfa??"";
+  $("creatorMonthlyPrice").value=price.monthly_price_fcfa??"";
+  $("acceptSubscriptions").checked=price.is_accepting_subscriptions===true;
+ }
+ await loadCreatorEarnings();
  const s=stats?.[0]||{follower_count:0,video_count:0,photo_count:0};
  await loadStatuses();
  const name=currentProfile.display_name||currentProfile.username;
@@ -1630,11 +1706,109 @@ async function loadCreator(){
   </div>`;
 }
 async function savePrice(){
- const price=Number($("creatorPriceInput").value);
- if(!Number.isInteger(price)||price<100||price>1000000)return message("Choisis un prix entre 100 et 1 000 000 FCFA.");
- const {error}=await db.from("creator_settings").upsert({creator_id:currentUser.id,monthly_price_fcfa:price,is_accepting_subscriptions:true},{onConflict:"creator_id"});
+ const daily=Number($("creatorDailyPrice").value),weekly=Number($("creatorWeeklyPrice").value),monthly=Number($("creatorMonthlyPrice").value);
+ const accepting=$("acceptSubscriptions").checked;
+ if(accepting&&[daily,weekly,monthly].some(v=>!Number.isInteger(v)||v<100||v>1000000))
+  return message("Renseigne les trois tarifs entre 100 et 1 000 000 FCFA, ou désactive les abonnements.");
+ const valid=v=>Number.isInteger(v)&&v>=100&&v<=1000000?v:null;
+ const {error}=await db.from("creator_settings").upsert({
+  creator_id:currentUser.id,daily_price_fcfa:valid(daily),weekly_price_fcfa:valid(weekly),monthly_price_fcfa:valid(monthly),
+  is_accepting_subscriptions:accepting,updated_at:new Date().toISOString()
+ },{onConflict:"creator_id"});
  if(error)return message("Enregistrement refusé : "+error.message);
- message("Tarif enregistré : "+price.toLocaleString("fr-FR")+" FCFA.",true);
+ message(accepting?"Tes trois tarifs sont enregistrés.":"Les abonnements sont désactivés.",true);
+ await loadCreatorEarnings();
+}
+function normalizeCongoPhoneClient(value){
+ const digits=String(value||"").replace(/\\D/g,"");
+ if(/^242[0-9]{9}$/.test(digits))return digits;
+ if(/^[0-9]{9}$/.test(digits))return "242"+digits;
+ return null;
+}
+async function savePayoutAccount(){
+ const phone=normalizeCongoPhoneClient($("payoutPhone").value);
+ if(!phone)return message("Entre un numéro du Congo avec 9 chiffres.");
+ const {error}=await db.from("creator_payout_accounts").upsert({
+  creator_id:currentUser.id,payout_method:$("payoutMethod").value,payout_phone:phone,
+  payout_name:$("payoutName").value.trim().slice(0,100)||null,updated_at:new Date().toISOString()
+ },{onConflict:"creator_id"});
+ if(error)return message("Compte de retrait non enregistré : "+error.message);
+ $("payoutPhone").value=phone;
+ message("Compte de retrait enregistré.",true);
+}
+async function loadCreatorEarnings(){
+ if(!currentUser)return;
+ const [ledgerResult,withdrawalResult,accountResult]=await Promise.all([
+  db.from("creator_ledger").select("entry_type,amount_fcfa,note,created_at").eq("creator_id",currentUser.id).order("created_at",{ascending:false}).limit(30),
+  db.from("withdrawal_requests").select("id,amount_fcfa,status,method,phone,requested_at,processed_at").eq("creator_id",currentUser.id).order("requested_at",{ascending:false}).limit(10),
+  db.from("creator_payout_accounts").select("payout_method,payout_phone,payout_name").eq("creator_id",currentUser.id).maybeSingle()
+ ]);
+ if(ledgerResult.error)message("Revenus non chargés : "+ledgerResult.error.message);
+ const ledger=ledgerResult.data||[];
+ const balance=ledger.reduce((sum,row)=>sum+Number(row.amount_fcfa||0),0);
+ $("creatorAvailableBalance").textContent=balance.toLocaleString("fr-FR")+" FCFA";
+ $("creatorLedgerList").innerHTML=ledger.length?ledger.slice(0,12).map(row=>{
+  const amount=Number(row.amount_fcfa||0),positive=amount>=0;
+  const labels={subscription_credit:"Abonnement confirmé",tip_credit:"Cadeau reçu",withdrawal_debit:"Retrait réservé",withdrawal_refund:"Retrait remboursé",adjustment:"Ajustement"};
+  const label=labels[row.entry_type]||row.entry_type||"Mouvement";
+  return "<div class='ledger-row'><span>"+escapeHTML(label)+"<br><span class='small'>"+new Date(row.created_at).toLocaleDateString("fr-FR")+"</span></span><strong class='"+(positive?"ledger-positive":"ledger-negative")+"'>"+(positive?"+":"")+amount.toLocaleString("fr-FR")+" FCFA</strong></div>";
+ }).join(""):"<p class='small'>Aucun revenu confirmé pour le moment.</p>";
+ const withdrawals=withdrawalResult.data||[];
+ const statuses={requested:"Demandé",processing:"En traitement",paid:"Payé",rejected:"Refusé",failed:"Échoué"};
+ $("creatorWithdrawalsList").innerHTML=withdrawals.length?withdrawals.map(row=>
+  "<div class='ledger-row'><span>"+escapeHTML(statuses[row.status]||row.status)+"<br><span class='small'>"+new Date(row.requested_at).toLocaleDateString("fr-FR")+" · "+escapeHTML(row.method||"")+"</span></span><strong>"+Number(row.amount_fcfa||0).toLocaleString("fr-FR")+" FCFA</strong></div>"
+ ).join(""):"<p class='small'>Aucune demande de retrait.</p>";
+ if(accountResult.data){
+  $("payoutMethod").value=accountResult.data.payout_method||"airtel_money";
+  $("payoutPhone").value=accountResult.data.payout_phone||"";
+  $("payoutName").value=accountResult.data.payout_name||"";
+ }
+}
+async function requestCreatorWithdrawal(){
+ const amount=Number($("withdrawAmount").value),status=$("withdrawMessage");
+ if(!Number.isInteger(amount)||amount<5000||amount>10000000){status.textContent="Le retrait minimum est de 5 000 FCFA.";return}
+ if(!normalizeCongoPhoneClient($("payoutPhone").value)){status.textContent="Enregistre d'abord un numéro Mobile Money valide.";return}
+ if(!confirm("Demander le retrait de "+amount.toLocaleString("fr-FR")+" FCFA vers ton compte enregistré ?"))return;
+ const button=$("requestWithdrawal");button.disabled=true;status.textContent="Demande en cours...";
+ try{
+  const {data,error}=await db.functions.invoke("request-mbotepay-payout",{body:{amount_fcfa:amount}});
+  if(error||!data?.ok)throw new Error(data?.error||error?.message||"Impossible d'envoyer la demande.");
+  status.textContent=data.message||"Demande de retrait transmise."; $("withdrawAmount").value="";
+  await loadCreatorEarnings();
+ }catch(error){status.textContent=error.message||"Erreur pendant la demande de retrait."}
+ finally{button.disabled=false}
+}
+let mbotePayContext=null;
+function openMbotePay(creatorId,paymentType,planType,price){
+ if(!currentUser){guestToAuth();return}
+ if(!creatorId||creatorId===currentUser.id)return message("Tu ne peux pas payer ton propre compte.");
+ mbotePayContext={creatorId,paymentType,planType};
+ $("mbotePayTitle").textContent=paymentType==="tip"?"Envoyer un cadeau":"S'abonner au créateur";
+ $("mbotePayDescription").textContent=paymentType==="tip"?"Soutiens ce créateur avec un cadeau Mobile Money.":"Valide le paiement sur ton téléphone pour activer ton abonnement.";
+ $("mbotePayTipField").classList.toggle("hidden",paymentType!=="tip");
+ $("mbotePayPlanInfo").textContent=paymentType==="tip"?"Le montant sera choisi ci-dessous.":("Accès : "+(planType==="daily"?"1 jour":planType==="weekly"?"7 jours":"30 jours")+" · "+Number(price||0).toLocaleString("fr-FR")+" FCFA");
+ $("mbotePayAmount").value="";$("mbotePayPhone").value="";$("mbotePayStatus").textContent="";
+ $("mbotePayStatus").className="small";$("mbotePaySubmit").disabled=false;$("mbotePaySubmit").textContent="Continuer vers le paiement";
+ $("mbotePayModal").classList.remove("hidden");
+}
+function closeMbotePay(){$("mbotePayModal").classList.add("hidden");mbotePayContext=null}
+async function submitMbotePay(){
+ if(!mbotePayContext)return;
+ const phone=normalizeCongoPhoneClient($("mbotePayPhone").value);
+ if(!phone){$("mbotePayStatus").textContent="Entre un numéro du Congo avec 9 chiffres.";return}
+ const body={creator_id:mbotePayContext.creatorId,payment_type:mbotePayContext.paymentType,plan_type:mbotePayContext.planType,operator:$("mbotePayOperator").value,phone};
+ if(mbotePayContext.paymentType==="tip"){
+  const amount=Number($("mbotePayAmount").value);
+  if(!Number.isInteger(amount)||amount<100||amount>1000000){$("mbotePayStatus").textContent="Le cadeau doit être entre 100 et 1 000 000 FCFA.";return}
+  body.amount_fcfa=amount;
+ }
+ const button=$("mbotePaySubmit"),status=$("mbotePayStatus");button.disabled=true;status.textContent="Connexion à MbotePay...";
+ try{
+  const {data,error}=await db.functions.invoke("create-mbotepay-payin",{body});
+  if(error||!data?.ok)throw new Error(data?.error||error?.message||"Le paiement n'a pas pu être lancé.");
+  status.className="small payment-status-ok";status.textContent=data.message||"Valide la demande sur ton téléphone.";
+  button.textContent="Demande envoyée";button.disabled=true;
+ }catch(error){status.className="small payment-status-error";status.textContent=error.message||"Erreur de paiement.";button.disabled=false}
 }
 
 /* MENUS ET COMPOSITION */
@@ -1830,6 +2004,8 @@ $("login").addEventListener("click",signIn);
 $("logout").addEventListener("click",signOut);
 $("logoutProfile").addEventListener("click",signOut);
 $("savePrice").addEventListener("click",savePrice);
+$("savePayoutAccount").addEventListener("click",savePayoutAccount);
+$("requestWithdrawal").addEventListener("click",requestCreatorWithdrawal);
 $("creatorApplicationForm").addEventListener("submit",submitCreatorApplication);
 $("openCreateSheet").addEventListener("click",openSheet);
 $("composerFile").addEventListener("change",e=>previewComposer(e.target.files[0]));
