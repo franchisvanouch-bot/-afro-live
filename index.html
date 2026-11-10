@@ -2252,18 +2252,27 @@ function attachLiveTrack(track,container){
   let video=container.querySelector("video.live-video");
   if(!video){
    video=document.createElement("video");
-   video.className="live-video";video.autoplay=true;video.playsInline=true;
+   video.className="live-video";
+   video.autoplay=true;
+   video.playsInline=true;
+   video.muted=true;
+   video.setAttribute("muted","");
+   video.setAttribute("playsinline","");
+   video.setAttribute("autoplay","");
    container.prepend(video);
   }
-  if(track.attachedElements?.includes(video))return;
-  track.attach(video);
+  if(!track.attachedElements?.includes(video))track.attach(video);
+  video.play?.().catch(error=>console.warn("Lecture vidéo du direct bloquée par le navigateur.",error));
   return;
  }
  if(track.kind===LivekitClient.Track.Kind.Audio){
   if(track.attachedElements?.length)return;
   const audio=track.attach();
-  audio.autoplay=true;audio.style.display="none";
+  audio.autoplay=true;
+  audio.playsInline=true;
+  audio.style.display="none";
   container.appendChild(audio);
+  audio.play?.().catch(error=>console.warn("Audio du direct en attente d'une interaction.",error));
  }
 }
 
