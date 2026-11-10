@@ -2798,6 +2798,7 @@ function installLiveInterface(stage,room,mode,creatorId=null){
  bar.appendChild(count);
 
  if(mode==="creator"){
+  const studio=document.createElement("button");studio.className="soft";studio.type="button";studio.setAttribute("aria-label","Ouvrir le Studio de diffusion");studio.innerHTML='<i class="ti ti-device-tv" aria-hidden="true"></i> Studio';studio.addEventListener("click",()=>window.open("studio.html?session_id="+encodeURIComponent(currentLiveSessionId),"_blank","noopener"));bar.appendChild(studio);
   const invite=document.createElement("button");invite.className="soft live-ic-invite";invite.type="button";invite.setAttribute("aria-label","Inviter");invite.innerHTML='<i class="ti ti-user-plus" aria-hidden="true"></i>';
   invite.addEventListener("click",()=>openInvitePanel(currentLiveSessionId));
   bar.appendChild(invite);
