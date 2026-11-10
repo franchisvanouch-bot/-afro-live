@@ -771,8 +771,8 @@ header{background:#000;border-bottom:0}
  <div class="sheet">
   <button type="button" class="sheet-exit" onclick="closeSheet()" aria-label="Fermer">×</button>
   <div class="sheet-grab"></div>
-  <button class="sheet-opt" onclick="closeSheet();openComposer('post')"><i class="ti ti-photo" aria-hidden="true"></i><span>Publication<small>Photo ou vidéo sur ton profil</small></span></button>
-  <button class="sheet-opt" onclick="closeSheet();openComposer('status')"><i class="ti ti-circle-dashed" aria-hidden="true"></i><span>Statut<small>Visible pendant 24 h</small></span></button>
+  <button class="sheet-opt" onclick="closeSheet();openGallery('post')"><i class="ti ti-photo" aria-hidden="true"></i><span>Publication<small>Photo ou vidéo sur ton profil</small></span></button>
+  <button class="sheet-opt" onclick="closeSheet();openGallery('status')"><i class="ti ti-circle-dashed" aria-hidden="true"></i><span>Statut<small>Visible pendant 24 h</small></span></button>
   <button class="sheet-opt" onclick="closeSheet();creatorPage('live')"><i class="ti ti-broadcast" aria-hidden="true"></i><span>Direct<small>Diffuser en direct</small></span></button>
  </div>
 </div>
@@ -803,6 +803,7 @@ header{background:#000;border-bottom:0}
   <button class="soft" style="width:100%;margin-top:8px" onclick="closeComposer()">Annuler</button>
  </div>
 </div>
+<input id="galleryInput" type="file" accept="image/*,video/*" class="hidden">
 
 <!-- Visionneuse de grille -->
 <div id="viewer" class="viewer hidden">
@@ -2462,8 +2463,8 @@ function closeCreateScreen(){
  $("createScreen").classList.add("hidden");
 }
 function csSoon(name){message(name+" : bientôt disponible.")}
-function csOpen(mode){closeCreateScreen();openComposer(mode)}
-function csFromGallery(){csOpen("post")}
+function csOpen(mode){closeCreateScreen();openGallery(mode)}
+function csFromGallery(){closeCreateScreen();openGallery("post")}
 function csGoLive(){closeCreateScreen();setViewMode("creator");creatorPage("live")}
 function csTab(name){
  const map={camera:"csPageCamera",creer:"csPageCreer",live:"csPageLive"};
@@ -2569,6 +2570,45 @@ function openComposer(mode){
  $("composer").classList.remove("hidden");
 }
 function closeComposer(){$("composer").classList.add("hidden")}
+
+/* GALERIE : publication directe ou statut de 24 h */
+let galleryMode="post";
+function openGallery(mode){
+ if(!currentUser)return guestToAuth();
+ if(currentProfile?.role!=="creator"){showPage("application");return}
+ closeOtherSheets();
+ galleryMode=mode==="status"?"status":"post";
+ const input=$("galleryInput");
+ input.value="";
+ input.click();
+}
+async function uploadFromGallery(file){
+ if(!file)return;
+ if(!currentUser||currentProfile?.role!=="creator")return message("Réservé aux créateurs.");
+ const isStatus=galleryMode==="status";
+ if(file.size>200*1024*1024)return message("Fichier trop lourd (200 Mo max).");
+ const info=fileInfo(file);
+ if(!info)return message("Format non accepté.");
+ message(isStatus?"Envoi du statut en cours...":"Envoi de la publication en cours...");
+ try{
+  const path=`${currentUser.id}/${isStatus?"status-":""}${crypto.randomUUID()}.${info.ext}`;
+  const {error:se}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type});
+  if(se)return message("Envoi impossible : "+se.message);
+  const table=isStatus?"statuses":"posts";
+  const {error}=await db.from(table).insert({creator_id:currentUser.id,kind:info.kind,media_path:path,caption:null});
+  if(error)return message((isStatus?"Statut":"Publication")+" refusé : "+error.message);
+  if(isStatus){
+   message("Statut publié pour 24 h.",true);
+   await loadStatuses();
+   loadMyStatuses();
+  }else{
+   message("Publication en ligne.",true);
+   loadCreatorPosts();
+  }
+ }catch(e){
+  message("Erreur : "+(e.message||e));
+ }
+}
 function previewComposer(file){
  const box=$("composerPreview");box.innerHTML="";
  const info=fileInfo(file);if(!info)return;
@@ -2755,6 +2795,11 @@ $("creatorApplicationForm").addEventListener("submit",submitCreatorApplication);
 $("openCreateSheet").addEventListener("click",openSheet);
 $("composerFile").addEventListener("change",e=>previewComposer(e.target.files[0]));
 $("composerSubmit").addEventListener("click",publishFromComposer);
+$("galleryInput").addEventListener("change",e=>{
+ const file=e.target.files[0];
+ e.target.value="";
+ uploadFromGallery(file);
+});
 $("moreDelete").addEventListener("click",deleteFromViewer);
 $("avatarInput").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";uploadAvatar(f)});
 $("startLiveButton").addEventListener("click",startCreatorLive);
