@@ -1947,21 +1947,32 @@ async function submitMbotePay(){
  }catch(error){status.className="small payment-status-error";status.textContent=error.message||"Erreur de paiement.";button.disabled=false}
 }
 
+const AFRO_GIFT_TEST_MODE=true;
 const AFRO_GIFTS=[
- {code:"rose",name:"Rose du pays",art:"🌹",coins:100},
- {code:"drum",name:"Tambour africain",art:"🥁",coins:250},
- {code:"bracelet",name:"Bracelet africain",art:"📿",coins:500},
- {code:"mask",name:"Masque traditionnel",art:"🎭",coins:1000},
- {code:"lion",name:"Lion royal",art:"🦁",coins:2000},
- {code:"dancer",name:"Danseur",art:"💃🏿",coins:3000},
- {code:"panther",name:"Panthère",art:"🐆",coins:4000},
- {code:"elephant",name:"Éléphant",art:"🐘",coins:5000},
- {code:"gorilla",name:"Gorille",art:"🦍",coins:7500},
- {code:"baobab",name:"Baobab",art:"🌳",coins:10000},
- {code:"kora",name:"Kora",art:"🪕",coins:15000}
+ {code:"rose",name:"Petite rose",art:"🌹",coins:10},
+ {code:"drum",name:"Tambour",art:"🥁",coins:20},
+ {code:"bracelet",name:"Bracelet",art:"📿",coins:50},
+ {code:"mask",name:"Masque africain",art:"🎭",coins:100},
+ {code:"lion",name:"Lion royal",art:"🦁",coins:250},
+ {code:"dancer",name:"Danseur",art:"💃🏿",coins:500},
+ {code:"panther",name:"Panthère",art:"🐆",coins:750},
+ {code:"elephant",name:"Éléphant",art:"🐘",coins:1000},
+ {code:"gorilla",name:"Gorille",art:"🦍",coins:1500},
+ {code:"baobab",name:"Baobab",art:"🌳",coins:2500},
+ {code:"kora",name:"Kora",art:"🪕",coins:5000},
+ {code:"calebasse",name:"Calebasse",art:"🏺",coins:75},
+ {code:"fire",name:"Feu africain",art:"🔥",coins:150},
+ {code:"crown",name:"Couronne du roi",art:"👑",coins:300},
+ {code:"flag",name:"Drapeau du Congo",art:"🇨🇬",coins:400},
+ {code:"giraffe",name:"Girafe",art:"🦒",coins:600},
+ {code:"zebra",name:"Zèbre",art:"🦓",coins:800},
+ {code:"rhino",name:"Rhinocéros",art:"🦏",coins:1200},
+ {code:"gorilla_gold",name:"Gorille doré",art:"🦍✨",coins:3000},
+ {code:"africa_star",name:"Étoile d’Afrique",art:"🌟",coins:10000}
 ];
 let giftPickerCreatorId=null,selectedAfroGift="rose";
 async function refreshAfroCoinBalance(){
+ if(AFRO_GIFT_TEST_MODE){$("giftCoinBalance").textContent="🧪 ESSAI GRATUIT";$("giftCoinBalance").dataset.balance="0";return}
  if(!currentUser)return;
  const {data,error}=await db.from("coin_wallets").select("balance").eq("user_id",currentUser.id).maybeSingle();
  const balance=error?0:Number(data?.balance||0);
@@ -1973,13 +1984,13 @@ function renderAfroGiftGrid(){
  AFRO_GIFTS.forEach(gift=>{
   const card=document.createElement("button");card.type="button";
   card.className="gift-card"+(gift.code===selectedAfroGift?" selected":"");
-  card.innerHTML='<span class="gift-art">'+gift.art+'</span><span class="gift-name">'+gift.name+'</span><span class="gift-price">🪙 '+gift.coins.toLocaleString("fr-FR")+'</span>';
+  card.innerHTML='<span class="gift-art">'+gift.art+'</span><span class="gift-name">'+gift.name+'</span><span class="gift-price">'+gift.coins.toLocaleString("fr-FR")+' FCFA · gratuit</span>';
   card.addEventListener("click",()=>{selectedAfroGift=gift.code;renderAfroGiftGrid()});
   grid.appendChild(card);
  });
  const selected=AFRO_GIFTS.find(g=>g.code===selectedAfroGift)||AFRO_GIFTS[0];
  $("giftSelectedLabel").textContent=selected.art+" "+selected.name;
- $("giftSelectedPrice").textContent=selected.coins.toLocaleString("fr-FR")+" pièces";
+ $("giftSelectedPrice").textContent=selected.coins.toLocaleString("fr-FR")+" FCFA · GRATUIT";
 }
 function openGiftPicker(creatorId){
  if(!currentUser){guestToAuth();return}
@@ -1997,28 +2008,46 @@ function openCoinPurchase(coins){
 }
 async function sendSelectedAfroGift(){
  if(!giftPickerCreatorId||!currentUser)return;
- const gift=AFRO_GIFTS.find(g=>g.code===selectedAfroGift);
- if(!gift)return;
+ const gift=AFRO_GIFTS.find(g=>g.code===selectedAfroGift);if(!gift)return;
  const button=$("giftSendButton"),status=$("giftPickerStatus");
- button.disabled=true;status.textContent="Envoi du cadeau...";
+ button.disabled=true;status.textContent="Envoi du cadeau gratuit...";
  try{
-  const {data,error}=await db.rpc("send_afro_gift",{p_creator_id:giftPickerCreatorId,p_gift_code:gift.code});
-  if(error)throw error;
-  if(!data?.ok&&data?.error==="insufficient_coins"){
-   status.textContent="Il te manque des pièces. Choisis un pack ci-dessous pour recharger ton compte.";
-   return;
+  if(!AFRO_GIFT_TEST_MODE){
+   const {data,error}=await db.rpc("send_afro_gift",{p_creator_id:giftPickerCreatorId,p_gift_code:gift.code});
+   if(error)throw error;
+   if(!data?.ok)throw new Error(data?.error==="insufficient_coins"?"Solde de pièces insuffisant.":"Le cadeau n'a pas pu être envoyé.");
+   $("giftCoinBalance").textContent="🪙 "+Number(data.balance||0).toLocaleString("fr-FR")+" pièces";
   }
-  if(!data?.ok)throw new Error("Le cadeau n'a pas pu être envoyé.");
-  $("giftCoinBalance").textContent="🪙 "+Number(data.balance||0).toLocaleString("fr-FR")+" pièces";
-  $("giftCoinBalance").dataset.balance=String(data.balance||0);
-  status.textContent="Cadeau envoyé ! Merci de soutenir ce créateur.";
+  status.textContent="🎉 Cadeau de test envoyé gratuitement ! Aucun paiement ni revenu réel.";
   const packet=new TextEncoder().encode(JSON.stringify({type:"afro_gift",code:gift.code,name:(currentProfile?.display_name||currentProfile?.username||"Spectateur").slice(0,35)}));
   if(liveRoom&&liveMode==="spectator"){
    try{await liveRoom.localParticipant.publishData(packet,{reliable:true})}catch(e){console.warn("Gift animation could not be broadcast",e)}
    showLiveGift($("lvStage"),gift.code,currentProfile?.display_name||currentProfile?.username||"Spectateur");
+   playAfroGiftSound();
   }
  }catch(error){status.textContent=error.message||"Erreur pendant l'envoi du cadeau."}
  finally{button.disabled=false}
+}
+function playAfroGiftSound(){
+ try{
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;if(!AudioCtx)return;
+  const ctx=new AudioCtx();if(ctx.state==="suspended")ctx.resume().catch(()=>{});
+  [660,880,1175].forEach((hz,i)=>{
+   const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type="sine";osc.frequency.value=hz;
+   gain.gain.setValueAtTime(.0001,ctx.currentTime+i*.09);gain.gain.exponentialRampToValueAtTime(.045,ctx.currentTime+i*.09+.02);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+i*.09+.14);
+   osc.connect(gain);gain.connect(ctx.destination);osc.start(ctx.currentTime+i*.09);osc.stop(ctx.currentTime+i*.09+.16);
+  });
+  setTimeout(()=>ctx.close().catch(()=>{}),700);
+ }catch(e){console.warn("Son du cadeau indisponible",e)}
+}
+function showLiveHeart(stage){
+ if(!stage)return;
+ let counter=stage.querySelector(".live-heart-counter");
+ if(!counter){counter=document.createElement("div");counter.className="live-heart-counter";counter.textContent="❤️ 0";stage.appendChild(counter)}
+ const total=Number(stage.dataset.afroTaps||0)+1;stage.dataset.afroTaps=String(total);counter.textContent="❤️ "+total.toLocaleString("fr-FR");
+ const heart=document.createElement("div");heart.className="live-floating-heart";heart.textContent=["❤️","💖","💕","💗"][Math.floor(Math.random()*4)];
+ heart.style.setProperty("--heart-x",(58+Math.random()*30)+"%");heart.style.setProperty("--heart-drift",(Math.random()*50-25)+"px");
+ stage.appendChild(heart);setTimeout(()=>heart.remove(),1450);
 }
 function showLiveGift(stage,code,sender){
  if(!stage)return;
@@ -2027,7 +2056,7 @@ function showLiveGift(stage,code,sender){
  const art=document.createElement("div");art.className="art";art.textContent=gift.art;
  const caption=document.createElement("div");caption.className="caption";caption.textContent=sender+" envoie "+gift.name;
  pop.append(art,caption);stage.appendChild(pop);
- setTimeout(()=>pop.remove(),2600);
+ setTimeout(()=>pop.remove(),2100);
 }
 
 
