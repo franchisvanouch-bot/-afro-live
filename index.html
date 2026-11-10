@@ -992,14 +992,12 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 /* AFRO LIVE — commandes LIVE compactes, verre transparent et lecteur immersif */
 #liveViewer .live-tools{position:absolute;top:0;left:0;right:0;display:flex;flex-wrap:nowrap;justify-content:flex-start;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 60px 0 12px;background:none!important;z-index:30}
 #liveViewer .live-tools button{width:40px;height:40px;min-width:40px;min-height:40px;padding:0!important;border-radius:50%;font-size:0!important;color:transparent!important;background:rgba(12,12,14,.36)!important;border:1px solid rgba(255,255,255,.14)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:inline-flex;align-items:center;justify-content:center;flex:0 0 40px}
-#liveViewer .live-tools button::before{font-family:"tabler-icons";font-size:20px;color:#fff;line-height:1}
-#liveViewer .live-tools button.live-ic-invite::before{content:"\eb4a"}
-#liveViewer .live-tools button.live-ic-mic::before{content:"\ed1b"}
-#liveViewer .live-tools button.live-ic-mic-off::before{content:"\ed1d"}
-#liveViewer .live-tools button.live-ic-cam::before{content:"\eb8b"}
-#liveViewer .live-tools button.live-ic-access::before{content:"\ea2a"}
-#liveViewer .live-tools button.live-ic-end::before,#liveViewer .live-tools button.live-ic-leave::before{content:"\eb55";color:#ff4d6d}
-#liveViewer .live-tools button.live-ic-full::before{content:"\ef6c"}
+#liveViewer .live-tools button::before{content:none!important}
+#liveViewer .live-tools button .ti{display:inline-block!important;font-family:"tabler-icons"!important;font-size:21px!important;font-style:normal!important;font-weight:normal!important;line-height:1!important;color:#fff!important;visibility:visible!important;opacity:1!important}
+#liveViewer .live-tools button.live-ic-end .ti,#liveViewer .live-tools button.live-ic-leave .ti{color:#ff4d6d!important}
+#liveViewer .live-tools button.live-ic-mic-off .ti{color:#ff7b86!important}
+#liveViewer .live-chat-form button::before{content:none!important}
+#liveViewer .live-chat-form button .ti{font-family:"tabler-icons"!important;font-size:19px!important;color:#111!important;display:inline-block!important}
 #liveViewer .live-tools .count{position:static!important;height:40px;min-width:40px;padding:0 12px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;font-size:13px!important;font-weight:800;background:rgba(255,49,91,.85)!important;color:#fff!important;border:0;backdrop-filter:blur(10px);flex:0 0 auto}
 #liveViewer .live-overlay-tools{background:none!important}
 #liveViewer .live-chat{position:absolute;left:0;right:0;bottom:0;margin-top:0;background:none!important;padding:0 12px calc(12px + env(safe-area-inset-bottom));z-index:25}
@@ -2791,19 +2789,20 @@ function installLiveInterface(stage,room,mode,creatorId=null){
  const bar=document.createElement("div");bar.className="live-tools";
  const count=document.createElement("span");count.className="count";
 
- const full=document.createElement("button");full.className="soft live-ic-full";full.type="button";full.setAttribute("aria-label","Plein écran");full.textContent="";
+ const full=document.createElement("button");full.className="soft live-ic-full";full.type="button";full.setAttribute("aria-label","Plein écran");full.innerHTML='<i class="ti ti-maximize" aria-hidden="true"></i>';
  full.addEventListener("click",()=>{
   const active=stage.classList.toggle("live-fullscreen");
-  full.textContent=active?"Réduire":"Plein écran";
+  full.setAttribute("aria-label",active?"Réduire":"Plein écran");
+   full.innerHTML=active?'<i class="ti ti-minimize" aria-hidden="true"></i>':'<i class="ti ti-maximize" aria-hidden="true"></i>';
  });
  bar.appendChild(count);
 
  if(mode==="creator"){
-  const invite=document.createElement("button");invite.className="soft live-ic-invite";invite.type="button";invite.setAttribute("aria-label","Inviter");invite.textContent="";
+  const invite=document.createElement("button");invite.className="soft live-ic-invite";invite.type="button";invite.setAttribute("aria-label","Inviter");invite.innerHTML='<i class="ti ti-user-plus" aria-hidden="true"></i>';
   invite.addEventListener("click",()=>openInvitePanel(currentLiveSessionId));
   bar.appendChild(invite);
   let micEnabled=true;
-  const mic=document.createElement("button");mic.className="soft live-ic-mic";mic.type="button";mic.setAttribute("aria-label","Micro activé");mic.textContent="";
+  const mic=document.createElement("button");mic.className="soft live-ic-mic";mic.type="button";mic.setAttribute("aria-label","Micro activé");mic.innerHTML='<i class="ti ti-microphone" aria-hidden="true"></i>';
   mic.addEventListener("click",async()=>{
    mic.disabled=true;
    try{
@@ -2813,6 +2812,7 @@ function installLiveInterface(stage,room,mode,creatorId=null){
     mic.setAttribute("aria-label",micEnabled?"Micro activé":"Micro coupé");
     mic.classList.toggle("live-ic-mic-off",!micEnabled);
     mic.classList.toggle("live-ic-mic",micEnabled);
+     mic.innerHTML=micEnabled?'<i class="ti ti-microphone" aria-hidden="true"></i>':'<i class="ti ti-microphone-off" aria-hidden="true"></i>';
     mic.classList.toggle("danger",!micEnabled);
    }catch(error){message("Impossible de modifier le microphone : "+(error.message||"Erreur"))}
    finally{mic.disabled=false}
@@ -2820,19 +2820,20 @@ function installLiveInterface(stage,room,mode,creatorId=null){
   bar.appendChild(mic);
 
   const cam=document.createElement("button");cam.className="soft live-ic-cam";cam.type="button";
-  cam.setAttribute("aria-label","Changer de caméra");cam.textContent="";
+  cam.setAttribute("aria-label","Changer de caméra");cam.innerHTML='<i class="ti ti-camera-rotate" aria-hidden="true"></i>';
   cam.addEventListener("click",()=>switchCamera(room,cam));
   bar.appendChild(cam);
 
-  const end=document.createElement("button");end.className="danger live-ic-end";end.type="button";end.setAttribute("aria-label","Terminer le direct");end.textContent="";
+  const end=document.createElement("button");end.className="danger live-ic-end";end.type="button";end.setAttribute("aria-label","Terminer le direct");end.innerHTML='<i class="ti ti-player-stop" aria-hidden="true"></i>';
   end.addEventListener("click",()=>{if(confirm("Veux-tu vraiment terminer ce direct ?"))stopCreatorLive()});
   const access=document.createElement("button");access.id="liveAccessToggle";access.className="soft live-ic-access";access.type="button";access.textContent=activeLiveAccessMode==="paid"?"Passer en mode gratuit":"Passer en mode payant";
-  access.addEventListener("click",()=>setLiveAccessMode(activeLiveAccessMode==="paid"?"free":"paid"));
+  access.setAttribute("aria-label","Modifier le mode du direct");access.innerHTML='<i class="ti ti-lock-open" aria-hidden="true"></i>';
+   access.addEventListener("click",()=>setLiveAccessMode(activeLiveAccessMode==="paid"?"free":"paid"));
   bar.appendChild(access);
   bar.appendChild(end);
  }
  if(mode==="spectator"){
-  const leave=document.createElement("button");leave.className="danger live-ic-leave";leave.type="button";leave.setAttribute("aria-label","Quitter le direct");leave.textContent="";
+  const leave=document.createElement("button");leave.className="danger live-ic-leave";leave.type="button";leave.setAttribute("aria-label","Quitter le direct");leave.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';
   leave.addEventListener("click",leaveSpectatorLive);
   bar.appendChild(leave);
  }
