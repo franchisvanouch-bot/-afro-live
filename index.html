@@ -622,7 +622,39 @@ button:focus-visible{outline:2px solid var(--af-gold);outline-offset:3px}
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-.csm{position:fixed;inset:0;z-index:100030;background:#000a;display:flex;align-items:flex-end;justify-content:center;color:#fff}.csm.hidden{display:none!important}.csm-sheet{width:100%;max-width:560px;max-height:86dvh;overflow:auto;background:#171719;border-radius:24px 24px 0 0;padding:20px 16px calc(18px + env(safe-area-inset-bottom))}.csm-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.csm-head b{display:block;font-size:19px}.csm-head small,.csm-track small{display:block;color:#aaa;font-size:12px;margin-top:3px}.csm-head button{background:#303034;color:#fff;border-radius:50%;width:36px;height:36px;font-size:24px}.csm-note{font-size:11px;line-height:1.45;color:#e2cfaa;background:#332b1c;padding:10px;border-radius:10px}.csm-list{display:grid;gap:7px}.csm-track{display:flex;align-items:center;gap:12px;text-align:left;background:#242427;color:#fff;padding:12px;border:1px solid transparent;border-radius:12px}.csm-track>span:first-child{font-size:25px}.csm-track>span:nth-child(2){flex:1}.csm-track i{opacity:0;color:#f2c56b}.csm-track.active{border-color:#c99b48;background:#30291f}.csm-track.active i{opacity:1}.csm-controls{display:flex;align-items:center;gap:14px;margin:14px 0}.csm-controls button{background:#39302a;color:#f5cf83;padding:11px;border-radius:10px}.csm-controls label{flex:1;font-size:12px}.csm-controls input{display:block;width:100%;accent-color:#d6a64e}.csm-status{font-size:12px;color:#aaa}.csm-apply{width:100%;padding:14px;border-radius:12px;background:#d5a64c;color:#17120a;font-weight:800}.csm-remove{width:100%;padding:11px;background:transparent;color:#ddd}</style>
+.csm{position:fixed;inset:0;z-index:100030;background:#000a;display:flex;align-items:flex-end;justify-content:center;color:#fff}.csm.hidden{display:none!important}.csm-sheet{width:100%;max-width:560px;max-height:86dvh;overflow:auto;background:#171719;border-radius:24px 24px 0 0;padding:20px 16px calc(18px + env(safe-area-inset-bottom))}.csm-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.csm-head b{display:block;font-size:19px}.csm-head small,.csm-track small{display:block;color:#aaa;font-size:12px;margin-top:3px}.csm-head button{background:#303034;color:#fff;border-radius:50%;width:36px;height:36px;font-size:24px}.csm-note{font-size:11px;line-height:1.45;color:#e2cfaa;background:#332b1c;padding:10px;border-radius:10px}.csm-list{display:grid;gap:7px}.csm-track{display:flex;align-items:center;gap:12px;text-align:left;background:#242427;color:#fff;padding:12px;border:1px solid transparent;border-radius:12px}.csm-track>span:first-child{font-size:25px}.csm-track>span:nth-child(2){flex:1}.csm-track i{opacity:0;color:#f2c56b}.csm-track.active{border-color:#c99b48;background:#30291f}.csm-track.active i{opacity:1}.csm-controls{display:flex;align-items:center;gap:14px;margin:14px 0}.csm-controls button{background:#39302a;color:#f5cf83;padding:11px;border-radius:10px}.csm-controls label{flex:1;font-size:12px}.csm-controls input{display:block;width:100%;accent-color:#d6a64e}.csm-status{font-size:12px;color:#aaa}.csm-apply{width:100%;padding:14px;border-radius:12px;background:#d5a64c;color:#17120a;font-weight:800}.csm-remove{width:100%;padding:11px;background:transparent;color:#ddd}
+/* Bouton + : relief 3D et symbole épais */
+#navigation.bottomnav .nav-create{
+ position:relative;isolation:isolate;flex:0 0 52px;width:52px;height:38px;
+ margin:0 7px;padding:0;border:1px solid rgba(255,255,255,.82);
+ border-radius:12px;background:linear-gradient(145deg,#ffb15c 0%,#ff790c 38%,#d94700 100%);
+ color:#fff;box-shadow:0 5px 0 #8f2d00,0 8px 16px rgba(255,91,0,.42),inset 0 2px 2px rgba(255,255,255,.55),inset 0 -3px 5px rgba(104,31,0,.35);
+ transform:translateY(-3px);transition:transform .12s ease,box-shadow .12s ease;
+}
+#navigation.bottomnav .nav-create::before{content:"";position:absolute;inset:3px;border-radius:9px;border:1px solid rgba(255,255,255,.24);pointer-events:none}
+#navigation.bottomnav .nav-create i{font-size:31px;font-weight:900;line-height:1;color:#fff;text-shadow:0 2px 0 #9d3900,0 0 8px rgba(255,255,255,.65);-webkit-text-stroke:1.2px #fff}
+#navigation.bottomnav .nav-create:active{transform:translateY(1px);box-shadow:0 1px 0 #8f2d00,0 3px 8px rgba(255,91,0,.35),inset 0 2px 4px rgba(104,31,0,.3)}
+.vbtn.vcomments{position:relative}
+.vbtn.vcomments .vcount{font-size:11px}
+.cm-back{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center}
+.cm-sheet{width:100%;max-width:650px;height:min(72vh,680px);background:#171719;border:1px solid #343438;border-bottom:0;border-radius:20px 20px 0 0;display:flex;flex-direction:column;padding:10px 14px max(12px,env(safe-area-inset-bottom));box-shadow:0 -12px 40px rgba(0,0,0,.45)}
+.cm-grab{width:42px;height:4px;border-radius:9px;background:#666;margin:0 auto 12px}
+.cm-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #303034;padding:0 2px 12px}
+.cm-head h3{margin:0;font-size:16px}.cm-close{background:transparent;color:#ddd;padding:5px 8px;font-size:23px}
+.cm-list{overflow-y:auto;overscroll-behavior:contain;flex:1;padding:12px 2px}
+.cm-empty{text-align:center;color:#aaa;padding:35px 10px;font-size:13px}
+.cm-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0}
+.cm-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:50%;object-fit:cover;background:#333}
+.cm-avatar-fallback{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+.cm-content{min-width:0;flex:1;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.cm-content b{display:block;color:#fff;margin-bottom:3px}.cm-content span{color:#e6e6e8}
+.cm-meta{font-size:10px;color:#888;margin-top:4px}
+.cm-delete{background:transparent;color:#999;padding:4px;font-size:11px}
+.cm-form{display:flex;gap:8px;align-items:center;padding-top:10px;border-top:1px solid #303034}
+.cm-form input{min-width:0;flex:1;border:1px solid #39393e;border-radius:22px;background:#252529;color:#fff;padding:12px 15px;font-size:14px;outline:none}
+.cm-form button{border-radius:22px;padding:10px 15px;font-weight:800}
+
+</style>
 </head>
 <body>
 <header><div class="logo">AFRO <span>LIVE</span></div><button id="logout" class="soft hidden">Déconnexion</button></header>
@@ -978,6 +1010,19 @@ button:focus-visible{outline:2px solid var(--af-gold);outline-offset:3px}
   <button class="sheet-opt" id="moreDelete" style="color:#ff8a8a"><i class="ti ti-trash" aria-hidden="true" style="color:#ff8a8a"></i><span>Supprimer la publication</span></button>
   <p id="moreNote" class="small" style="color:#ffb47c;min-height:18px;margin:8px 4px"></p>
   <button class="soft" style="width:100%;margin-top:8px" onclick="closeMoreSheet()">Annuler</button>
+ </div>
+</div>
+
+<!-- Commentaires de publication -->
+<div id="commentsSheet" class="cm-back hidden" role="dialog" aria-modal="true" aria-labelledby="cmTitle">
+ <div class="cm-sheet" id="cmSheet">
+  <div class="cm-grab"></div>
+  <div class="cm-head"><h3 id="cmTitle">Commentaires</h3><button class="cm-close" type="button" onclick="closeComments()" aria-label="Fermer">×</button></div>
+  <div id="cmList" class="cm-list"><div class="cm-empty">Chargement...</div></div>
+  <form id="cmForm" class="cm-form">
+   <input id="cmInput" type="text" maxlength="1000" placeholder="Écrire un commentaire..." autocomplete="off" required>
+   <button id="cmSend" type="submit">Envoyer</button>
+  </form>
  </div>
 </div>
 
@@ -1592,6 +1637,10 @@ async function loadHomeFeed(){
   box.innerHTML=`<div class="vempty">${homeFilter==="follows"?"Aucune publication de tes suivis pour le moment.":"Pas encore de publications."}</div>`;
   return;
  }
+ const postIds=data.map(p=>p.id);
+ const {data:commentRows}=await db.from("post_comments").select("post_id").in("post_id",postIds);
+ const commentCounts={};(commentRows||[]).forEach(row=>commentCounts[row.post_id]=(commentCounts[row.post_id]||0)+1);
+ data.forEach(p=>p.comment_count=commentCounts[p.id]||0);
  box.innerHTML=data.map(vitemHTML).join("");
  box.scrollTop=0;
  observeHomeVideos();
@@ -1616,6 +1665,7 @@ function vitemHTML(p){
     <i class="ti ${liked?"ti-heart-filled":"ti-heart"}" aria-hidden="true"></i>
     <span class="vcount" data-n="${count}">${fmtCount(count)}</span>
    </button>
+   <button class="vbtn vcomments" data-action="comments" data-post="${escapeHTML(p.id)}" aria-label="Commentaires"><i class="ti ti-message-circle" aria-hidden="true"></i><span class="vcount">${fmtCount(Number(p.comment_count)||0)}</span></button>
    <button class="vbtn" data-action="share" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Partager"><i class="ti ti-share-3" aria-hidden="true"></i><span class="vcount">Partager</span></button>
    <button class="vbtn" data-action="repost" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">Republier</span></button>
    <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}<span class="vcount">Son</span></button>
@@ -1661,6 +1711,81 @@ async function toggleLike(btn){
  const {error}=await req;
  if(error){setLikeUI(btn,wasLiked,n);message("Like impossible : "+error.message)}
  delete btn.dataset.busy;
+}
+
+
+/* COMMENTAIRES */
+let cmPostId=null,cmPostOwnerId=null,cmBusy=false;
+function openComments(postId){
+ if(!currentUser)return guestToAuth();
+ cmPostId=postId;cmPostOwnerId=null;cmBusy=false;
+ closeOtherSheets("commentsSheet");
+ $("cmList").innerHTML='<div class="cm-empty">Chargement des commentaires...</div>';
+ $("cmTitle").textContent="Commentaires";
+ $("cmInput").value="";
+ $("commentsSheet").classList.remove("hidden");
+ loadComments();
+}
+function closeComments(){
+ $("commentsSheet").classList.add("hidden");
+ cmPostId=null;cmPostOwnerId=null;cmBusy=false;
+}
+function cmAvatar(profile){
+ const url=safeHttpUrl(profile?.avatar_url);
+ if(url)return '<img class="cm-avatar" src="'+escapeHTML(url)+'" alt="">';
+ const initial=escapeHTML((profile?.display_name||profile?.username||"?").slice(0,1).toUpperCase());
+ return '<span class="cm-avatar cm-avatar-fallback">'+initial+'</span>';
+}
+async function loadComments(){
+ const postId=cmPostId;if(!postId)return;
+ const {data:post,error:postError}=await db.from("posts").select("creator_id").eq("id",postId).maybeSingle();
+ if(postError){$("cmList").innerHTML='<div class="cm-empty">Impossible de charger cette publication.</div>';return}
+ cmPostOwnerId=post?.creator_id||null;
+ const {data:rows,error}=await db.from("post_comments").select("id,post_id,user_id,content,created_at").eq("post_id",postId).order("created_at",{ascending:true}).limit(200);
+ if(error){$("cmList").innerHTML='<div class="cm-empty">Erreur : '+escapeHTML(error.message)+'</div>';return}
+ if(!rows?.length){$("cmList").innerHTML='<div class="cm-empty">Aucun commentaire pour le moment. Sois le premier !</div>';return}
+ const ids=[...new Set(rows.map(r=>r.user_id))];
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ const byId={};(profiles||[]).forEach(p=>byId[p.id]=p);
+ $("cmList").innerHTML=rows.map(r=>{
+  const p=byId[r.user_id]||{};
+  const label=p.display_name||p.username||"Utilisateur";
+  const canDelete=currentUser?.id===r.user_id||currentUser?.id===cmPostOwnerId;
+  const date=new Date(r.created_at).toLocaleString("fr-FR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+  return '<div class="cm-item" data-comment="'+escapeHTML(r.id)+'">'+cmAvatar(p)+'<div class="cm-content"><b>'+escapeHTML(label)+' <span style="font-weight:400;color:#888">@'+escapeHTML(p.username||"membre")+'</span></b><span>'+escapeHTML(r.content)+'</span><div class="cm-meta">'+escapeHTML(date)+'</div></div>'+(canDelete?'<button class="cm-delete" type="button" data-delete-comment="'+escapeHTML(r.id)+'" aria-label="Supprimer">Supprimer</button>':"")+'</div>';
+ }).join("");
+ $("cmList").scrollTop=$("cmList").scrollHeight;
+}
+async function submitComment(event){
+ event.preventDefault();
+ if(!currentUser)return guestToAuth();
+ if(!cmPostId||cmBusy)return;
+ const input=$("cmInput"),content=input.value.trim();
+ if(!content)return;
+ cmBusy=true;$("cmSend").disabled=true;
+ const postId=cmPostId;
+ const {error}=await db.from("post_comments").insert({post_id:postId,user_id:currentUser.id,content});
+ if(error){message("Commentaire non envoyé : "+error.message);cmBusy=false;$("cmSend").disabled=false;return}
+ input.value="";
+ await loadComments();
+ const card=document.querySelector('#homeFeed [data-post="'+CSS.escape(postId)+'"]');
+ if(card){
+  const count=card.querySelector('[data-action="comments"] .vcount');
+  if(count)count.textContent=fmtCount((Number(count.textContent.replace(/[^0-9]/g,""))||0)+1);
+ }
+ cmBusy=false;$("cmSend").disabled=false;
+}
+async function deleteComment(id){
+ if(!currentUser||!id)return;
+ const {error}=await db.from("post_comments").delete().eq("id",id);
+ if(error){message("Suppression impossible : "+error.message);return}
+ await loadComments();
+ if(cmPostId){
+  const {count}=await db.from("post_comments").select("id",{count:"exact",head:true}).eq("post_id",cmPostId);
+  const card=document.querySelector('#homeFeed [data-post="'+CSS.escape(cmPostId)+'"]');
+  const c=card?.querySelector('[data-action="comments"] .vcount');
+  if(c)c.textContent=fmtCount(count||0);
+ }
 }
 
 /* CRÉATEURS */
@@ -1741,7 +1866,7 @@ function closeViewer(){
  $("viewer").classList.add("hidden");
 }
 function closeOtherSheets(keepId=null){
- ["createScreen","createSheet","moreSheet","composer","giftPicker","mbotePayModal","menuSheet","galleryChoice"].forEach(id=>{
+ ["createScreen","createSheet","moreSheet","composer","giftPicker","mbotePayModal","menuSheet","galleryChoice","commentsSheet"].forEach(id=>{
   if(id!==keepId){const el=$(id);if(el)el.classList.add("hidden")}
  });
  if(keepId!=="moreSheet")moreTarget=null;
@@ -3234,6 +3359,12 @@ document.querySelectorAll(".vtab").forEach(b=>b.addEventListener("click",()=>{
 }));
 
 /* Délégation : clics dans le fil d'accueil */
+$("cmForm").addEventListener("submit",submitComment);
+$("cmList").addEventListener("click",e=>{
+ const b=e.target.closest("[data-delete-comment]");
+ if(b&&confirm("Supprimer ce commentaire ?"))deleteComment(b.dataset.deleteComment);
+});
+$("commentsSheet").addEventListener("click",e=>{if(e.target===$("commentsSheet"))closeComments()});
 $("homeFeed").addEventListener("click",e=>{
  const btn=e.target.closest("[data-action]");
  if(btn){
@@ -3242,6 +3373,7 @@ $("homeFeed").addEventListener("click",e=>{
   if(action==="follow"){toggleFollow(btn.dataset.creator);return}
   if(action==="notify"){toggleNotify(btn.dataset.creator);return}
   if(action==="like"){toggleLike(btn);return}
+  if(action==="comments"){openComments(btn.dataset.post);return}
   if(action==="share"){sharePostToNetwork(btn,false);return}
   if(action==="repost"){sharePostToNetwork(btn,true);return}
   if(action==="sound"){
