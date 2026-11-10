@@ -219,6 +219,13 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .live-fullscreen .live-chat{padding-bottom:max(12px,env(safe-area-inset-bottom))}
 .live-fullscreen .live-chat-messages{max-height:20dvh}
 
+.live-heart-counter{position:absolute;right:16px;top:72px;z-index:12;background:rgba(0,0,0,.42);color:#fff;border-radius:999px;padding:6px 10px;font-size:13px;font-weight:700;pointer-events:none;text-shadow:0 1px 3px #000}
+.live-floating-heart{position:absolute;z-index:18;left:var(--heart-x,72%);bottom:22%;font-size:26px;line-height:1;pointer-events:none;animation:afroHeartFloat 1.35s ease-out forwards;text-shadow:0 2px 8px rgba(0,0,0,.45)}
+@keyframes afroHeartFloat{0%{opacity:0;transform:translate3d(0,12px,0) scale(.55)}15%{opacity:1}100%{opacity:0;transform:translate3d(var(--heart-drift,-20px),-150px,0) scale(1.35)}}
+.live-gift-pop{top:38%;max-width:78%;padding:8px 12px;border-radius:16px;background:rgba(0,0,0,.24);backdrop-filter:blur(2px)}
+.live-gift-pop .art{font-size:clamp(38px,10vw,64px);filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+.live-gift-pop .caption{font-size:12px;padding:4px 8px;border-radius:999px;background:rgba(0,0,0,.55);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.gift-test-note{padding:9px 11px;border-radius:10px;background:#14271b;color:#b8f5c9;font-size:12px;line-height:1.4;margin:8px 0}
 .gift-back{position:fixed;inset:0;z-index:100030;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center}
 .gift-sheet{width:100%;max-width:560px;max-height:88dvh;overflow:auto;background:#171719;border:1px solid #34343a;border-radius:22px 22px 0 0;padding:14px 14px calc(18px + env(safe-area-inset-bottom))}
 .gift-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -403,11 +410,15 @@ body.feed-mode footer{display:none}
     <input id="liveTitle" maxlength="100" placeholder="Exemple : Discussion avec ma communauté">
     <label for="liveDescription">Description (facultatif)</label>
     <textarea id="liveDescription" maxlength="500" rows="3" placeholder="Présente ton direct..."></textarea>
+    <label for="liveAccessMode">Accès à ce direct</label>
+    <select id="liveAccessMode"><option value="free">Gratuit · tout le monde peut regarder</option><option value="paid">Payant · abonnement requis</option></select>
+    <p class="small">Tu peux changer ce choix pendant le direct. Le mode gratuit reste sélectionné par défaut.</p>
     <button id="startLiveButton" style="width:100%">Lancer le direct</button>
    </div>
    <div id="creatorLiveStatus" class="notice">Tu n'es pas actuellement en direct.</div>
    <div id="creatorLivePreview" class="card hidden">
     <h3>Ton direct est en cours <span class="dot-inline"></span></h3>
+    <div class="notice" id="creatorLiveAccessStatus">Accès gratuit : tout le monde peut regarder.</div>
     <div id="creatorLiveStage" class="live-stage"><video id="localLiveVideo" class="live-video" autoplay playsinline muted></video></div>
     <p id="liveParticipantCount">En attente de spectateurs...</p>
     <button class="danger" onclick="stopCreatorLive()" style="width:100%">Terminer le direct</button>
@@ -474,14 +485,15 @@ body.feed-mode footer{display:none}
   <div class="sheet-grab"></div>
   <div class="gift-head"><h3 id="giftPickerTitle">🎁 Cadeaux africains</h3><span class="gift-balance" id="giftCoinBalance">🪙 0 pièce</span></div>
   <p class="small">Choisis un symbole pour soutenir le créateur pendant son direct.</p>
+  <div class="gift-test-note">🧪 ESSAI GRATUIT : aucun paiement, aucune pièce débitée et aucun revenu réel ne sont enregistrés pendant ce test. Les montants affichés servent seulement à préparer les futurs cadeaux.</div>
   <div id="giftGrid" class="gift-grid"></div>
-  <div class="gift-selected"><span id="giftSelectedLabel">🌹 Petite rose</span><b id="giftSelectedPrice">100 pièces</b></div>
+  <div class="gift-selected"><span id="giftSelectedLabel">🌹 Petite rose</span><b id="giftSelectedPrice">10 FCFA · gratuit</b></div>
   <button id="giftSendButton" class="gift-send" type="button" onclick="sendSelectedAfroGift()">Envoyer le cadeau</button>
   <div id="giftPickerStatus" class="gift-status" aria-live="polite"></div>
   <div class="divider" style="height:1px;background:var(--line);margin:12px 0"></div>
-  <h3 style="margin:6px 0">Acheter des pièces AFRO LIVE</h3>
-  <p class="small">1 pièce = 1 FCFA de valeur de cadeau.</p>
-  <div class="gift-packs" id="giftCoinPacks">
+  <h3 style="margin:6px 0">Recharge de pièces</h3>
+  <p class="small">Désactivée pendant l’essai gratuit. Aucun achat n’est nécessaire pour tester les animations.</p>
+  <div class="gift-packs hidden" id="giftCoinPacks">
    <button class="gift-pack" type="button" data-coins="1000"><b>🪙 1 000 pièces</b><small>1 000 FCFA</small></button>
    <button class="gift-pack" type="button" data-coins="2500"><b>🪙 2 500 pièces</b><small>2 500 FCFA</small></button>
    <button class="gift-pack" type="button" data-coins="5000"><b>🪙 5 000 pièces</b><small>5 000 FCFA</small></button>
