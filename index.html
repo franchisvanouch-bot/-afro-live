@@ -1547,6 +1547,17 @@ async function loadAccount(){
   if(error){authMessage("Impossible de charger ton profil : "+error.message);return}
   if(!profile){authMessage("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");return}
   currentUser=user;currentProfile=profile;
+  // Une session LiveKit ne survit pas à un rechargement/une nouvelle connexion.
+  // Fermer les anciennes sessions encore marquées "live" évite les faux directs.
+  if(profile.role==="creator"&&!liveRoom){
+   const {data:staleLives,error:staleError}=await db.from("live_sessions")
+    .update({status:"ended",ended_at:new Date().toISOString()})
+    .eq("creator_id",user.id).eq("status","live").select("id");
+   if(!staleError&&staleLives?.length){
+    liveCreatorIds.delete(user.id);
+    updateFollowsBadge();
+   }
+  }
   $("auth").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");
   $("myProfile").textContent=(profile.display_name||profile.username)+" · @"+profile.username+" · "+user.email;
   renderView();
