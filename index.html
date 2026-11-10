@@ -1517,15 +1517,26 @@ function installLiveInterface(stage,room,mode,creatorId=null){
    const data=JSON.parse(new TextDecoder().decode(payload));
    if(data?.type==="afro_gift"){
     showLiveGift(stage,String(data.code||""),String(data.name||"Spectateur").slice(0,35));
+    playAfroGiftSound();
     return;
    }
+   if(data?.type==="afro_tap"){showLiveHeart(stage);return}
    if(data?.type!=="afro_chat"||typeof data.text!=="string")return;
    const clean=data.text.trim().slice(0,300);if(!clean)return;
    addChatMessage(list,String(data.name||"Spectateur").slice(0,40),clean,false);
   }catch(e){console.warn("Message de chat ignoré.",e)}
  });
 
- let lastSent=0;
+ let lastSent=0,lastTap=0;
+ stage.addEventListener("pointerup",async event=>{
+  if(mode!=="spectator"||!creatorId||creatorId===currentUser?.id)return;
+  if(event.target.closest("button,input,textarea,select,form"))return;
+  if(event.target!==stage&&!event.target.matches("video.live-video")&&!event.target.closest(".live-tap-zone"))return;
+  if(Date.now()-lastTap<140)return;lastTap=Date.now();
+  showLiveHeart(stage);
+  try{await room.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({type:"afro_tap"})),{reliable:false})}
+  catch(e){console.warn("Tapotement non transmis",e)}
+ },{passive:true});
  form.addEventListener("submit",async event=>{
   event.preventDefault();
   const text=input.value.trim();if(!text)return;
@@ -1596,6 +1607,23 @@ async function loadLives(){
 }
 
 /* DIRECT SPECTATEUR EN PLEIN ÉCRAN */
+async function showLiveSubscriptionOptions(creatorId,sessionId,status){
+ status.hidden=false;status.textContent="";
+ const wrap=document.createElement("div");wrap.className="lv-paywall";
+ const title=document.createElement("div");title.textContent="🔒 Ce direct est réservé aux abonnés";wrap.appendChild(title);
+ const note=document.createElement("p");note.textContent="Choisis un accès pour rejoindre ce direct. Après confirmation du paiement, appuie sur Actualiser.";wrap.appendChild(note);
+ const {data:settings,error}=await db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",creatorId).maybeSingle();
+ if(error||!settings?.is_accepting_subscriptions){const msg=document.createElement("p");msg.textContent="Les abonnements ne sont pas disponibles pour le moment.";wrap.appendChild(msg)}
+ else{
+  [["daily","1 jour",settings.daily_price_fcfa],["weekly","7 jours",settings.weekly_price_fcfa],["monthly","30 jours",settings.monthly_price_fcfa]].forEach(([plan,label,price])=>{
+   const amount=Number(price);if(!Number.isInteger(amount)||amount<100)return;
+   const b=document.createElement("button");b.type="button";b.textContent=label+" · "+amount.toLocaleString("fr-FR")+" FCFA";
+   b.addEventListener("click",()=>openMbotePay(creatorId,"subscription",plan,amount));wrap.appendChild(b);
+  });
+ }
+ const retry=document.createElement("button");retry.type="button";retry.className="soft";retry.textContent="Actualiser / rejoindre";retry.addEventListener("click",()=>joinLive(sessionId));wrap.appendChild(retry);
+ status.appendChild(wrap);
+}
 async function joinLive(sessionId){
  if(!currentUser)return message("Connecte-toi pour regarder ce direct.");
  if(liveRoom&&liveMode==="spectator"&&currentLiveSessionId===sessionId){$("liveViewer").classList.remove("hidden");return}
@@ -1607,8 +1635,14 @@ async function joinLive(sessionId){
  viewer.classList.remove("hidden");
  let room=null;
  try{
-  const {data:liveInfo,error:liveInfoError}=await db.from("live_sessions").select("creator_id").eq("id",sessionId).maybeSingle();
+  const {data:liveInfo,error:liveInfoError}=await db.from("live_sessions").select("creator_id,access_mode").eq("id",sessionId).maybeSingle();
   if(liveInfoError||!liveInfo?.creator_id)throw new Error("Impossible d’identifier le créateur de ce direct.");
+  if(liveInfo.access_mode==="paid"){
+   const now=new Date().toISOString();
+   const {data:sub,error:subError}=await db.from("subscriptions").select("id").eq("spectator_id",currentUser.id).eq("creator_id",liveInfo.creator_id).eq("status","active").lte("starts_at",now).gt("expires_at",now).limit(1).maybeSingle();
+   if(subError)throw subError;
+   if(!sub){await showLiveSubscriptionOptions(liveInfo.creator_id,sessionId,status);return}
+  }
   const credentials=await getLiveToken(sessionId);
   room=createLiveRoom();
   liveRoom=room;currentLiveSessionId=sessionId;liveMode="spectator";
