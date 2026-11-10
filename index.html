@@ -1997,6 +1997,7 @@ function renderAfroGiftGrid(){
 function openGiftPicker(creatorId){
  if(!currentUser){guestToAuth();return}
  if(!creatorId||creatorId===currentUser.id)return message("Tu ne peux pas t'envoyer un cadeau.");
+ if(AFRO_GIFT_TEST_MODE&&(!liveRoom||liveMode!=="spectator"))return message("Les cadeaux gratuits d'essai sont disponibles uniquement pendant un direct.");
  giftPickerCreatorId=creatorId;selectedAfroGift="rose";
  $("giftPickerStatus").textContent="";
  renderAfroGiftGrid();
