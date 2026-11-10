@@ -924,8 +924,29 @@ async function installApp(){
  }
  message("Sur Android : ouvre le menu ⋮ de Chrome, puis choisis « Ajouter à l'écran d'accueil ».",true);
 }
+/* MISE À JOUR AUTOMATIQUE DE L'APPLICATION (iPhone / PWA) */
 if("serviceWorker" in navigator){
- window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));
+ let afroSwRegistration=null,afroUpdateCheckBusy=false;
+ navigator.serviceWorker.addEventListener("controllerchange",()=>{
+  if(sessionStorage.getItem("afro-sw-reloaded")==="1")return;
+  sessionStorage.setItem("afro-sw-reloaded","1");
+  window.location.reload();
+ });
+ async function afroCheckAppUpdate(){
+  if(afroUpdateCheckBusy||!navigator.onLine)return;
+  afroUpdateCheckBusy=true;
+  try{
+   if(!afroSwRegistration){
+    afroSwRegistration=await navigator.serviceWorker.register("/sw.js?v=20261110-iphone-refresh",{scope:"/",updateViaCache:"none"});
+   }
+   await afroSwRegistration.update();
+  }catch(e){console.warn("AFRO LIVE : vérification de mise à jour impossible",e)}
+  finally{afroUpdateCheckBusy=false}
+ }
+ window.addEventListener("load",afroCheckAppUpdate);
+ window.addEventListener("pageshow",afroCheckAppUpdate);
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)afroCheckAppUpdate()});
+ window.addEventListener("online",afroCheckAppUpdate);
 }
 
 /* AUTHENTIFICATION */
