@@ -1667,7 +1667,7 @@ function vitemHTML(p){
    </button>
    <button class="vbtn vcomments" data-action="comments" data-post="${escapeHTML(p.id)}" aria-label="Commentaires"><i class="ti ti-message-circle" aria-hidden="true"></i><span class="vcount">${fmtCount(Number(p.comment_count)||0)}</span></button>
    <button class="vbtn" data-action="share" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Partager"><i class="ti ti-share-3" aria-hidden="true"></i><span class="vcount">Partager</span></button>
-   <button class="vbtn" data-action="repost" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">Republier</span></button>
+   <button class="vbtn" data-action="repost" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">${p.reposted?"Republié":"Republier"}</span></button>
    <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}<span class="vcount">Son</span></button>
   </div>
   <div class="vmeta">
