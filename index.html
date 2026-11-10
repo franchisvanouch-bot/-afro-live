@@ -367,7 +367,7 @@ body.feed-mode #navigation.bottomnav.over .nav-create{background:linear-gradient
 .vside .vbtn{min-height:34px}
 .vside .vbtn i{font-size:29px}
 .v-soundline{opacity:.94}
-</style>
+.live-gift-pop{position:absolute;z-index:35;left:50%;top:43%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:12px;pointer-events:none;animation:afroGiftEntrance 2.6s cubic-bezier(.16,.82,.22,1) both}.live-gift-pop .art{font-size:clamp(76px,23vw,150px);line-height:1;filter:drop-shadow(0 12px 20px rgba(0,0,0,.55));animation:afroGiftPulse 1.1s ease-in-out infinite alternate}.live-gift-pop .caption{padding:8px 16px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:linear-gradient(100deg,rgba(15,15,15,.82),rgba(75,30,8,.78));color:#fff;font-weight:800;font-size:14px;box-shadow:0 8px 28px #0006;backdrop-filter:blur(12px);white-space:nowrap}@keyframes afroGiftEntrance{0%{opacity:0;transform:translate(-50%,40%) scale(.25) rotate(-9deg)}18%{opacity:1;transform:translate(-50%,-54%) scale(1.12) rotate(3deg)}32%{transform:translate(-50%,-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translate(-50%,-65%) scale(.86)}}@keyframes afroGiftPulse{from{filter:drop-shadow(0 8px 12px rgba(255,174,0,.32))}to{filter:drop-shadow(0 16px 32px rgba(255,174,0,.72))}}</style>
 </head>
 <body>
 <header><div class="logo">AFRO <span>LIVE</span></div><button id="logout" class="soft hidden">Déconnexion</button></header>
@@ -1648,7 +1648,7 @@ function installLiveInterface(stage,room,mode,creatorId=null){
    const data=JSON.parse(new TextDecoder().decode(payload));
    if(data?.type==="afro_gift"){
     showLiveGift(stage,String(data.code||""),String(data.name||"Spectateur").slice(0,35));
-    playAfroGiftSound(gift.code);
+    playAfroGiftSound(data.code);
     return;
    }
    if(data?.type==="afro_tap"){showLiveHeart(stage);return}
@@ -2231,7 +2231,7 @@ async function sendSelectedAfroGift(){
   if(liveRoom&&liveMode==="spectator"){
    try{await liveRoom.localParticipant.publishData(packet,{reliable:true})}catch(e){console.warn("Gift animation could not be broadcast",e)}
    showLiveGift($("lvStage"),gift.code,currentProfile?.display_name||currentProfile?.username||"Spectateur");
-   playAfroGiftSound();
+   playAfroGiftSound(gift.code);
   }
  }catch(error){status.textContent=error.message||"Erreur pendant l'envoi du cadeau."}
  finally{button.disabled=false}
