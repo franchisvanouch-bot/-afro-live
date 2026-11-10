@@ -219,6 +219,8 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .live-fullscreen .live-chat{padding-bottom:max(12px,env(safe-area-inset-bottom))}
 .live-fullscreen .live-chat-messages{max-height:20dvh}
 
+.lv-paywall{max-width:420px;margin:auto;padding:18px;border:1px solid rgba(255,255,255,.18);border-radius:18px;background:rgba(12,12,14,.88);backdrop-filter:blur(8px);display:flex;flex-direction:column;gap:10px;pointer-events:auto}
+.lv-paywall>div{font-size:17px;font-weight:800}.lv-paywall p{font-size:13px;color:#eee}.lv-paywall button{width:100%;margin:2px 0}
 .live-heart-counter{position:absolute;right:16px;top:72px;z-index:12;background:rgba(0,0,0,.42);color:#fff;border-radius:999px;padding:6px 10px;font-size:13px;font-weight:700;pointer-events:none;text-shadow:0 1px 3px #000}
 .live-floating-heart{position:absolute;z-index:18;left:var(--heart-x,72%);bottom:22%;font-size:26px;line-height:1;pointer-events:none;animation:afroHeartFloat 1.35s ease-out forwards;text-shadow:0 2px 8px rgba(0,0,0,.45)}
 @keyframes afroHeartFloat{0%{opacity:0;transform:translate3d(0,12px,0) scale(.55)}15%{opacity:1}100%{opacity:0;transform:translate3d(var(--heart-drift,-20px),-150px,0) scale(1.35)}}
@@ -1637,7 +1639,7 @@ async function joinLive(sessionId){
  try{
   const {data:liveInfo,error:liveInfoError}=await db.from("live_sessions").select("creator_id,access_mode").eq("id",sessionId).maybeSingle();
   if(liveInfoError||!liveInfo?.creator_id)throw new Error("Impossible d’identifier le créateur de ce direct.");
-  if(liveInfo.access_mode==="paid"){
+  if(liveInfo.access_mode==="paid"&&currentUser.id!==liveInfo.creator_id){
    const now=new Date().toISOString();
    const {data:sub,error:subError}=await db.from("subscriptions").select("id").eq("spectator_id",currentUser.id).eq("creator_id",liveInfo.creator_id).eq("status","active").lte("starts_at",now).gt("expires_at",now).limit(1).maybeSingle();
    if(subError)throw subError;
