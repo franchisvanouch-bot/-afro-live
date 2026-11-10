@@ -1009,7 +1009,18 @@ button:focus-visible{outline:2px solid var(--af-gold);outline-offset:3px}
   <button class="soft" style="width:100%;margin-top:8px" onclick="closeComposer()">Annuler</button>
  </div>
 </div>
-<input id="galleryInput" type="file" accept="image/*,video/*" class="hidden">
+<div id="galleryChoice" class="sheet-back hidden">
+ <div class="sheet">
+  <button type="button" class="sheet-exit" onclick="closeGalleryChoice()" aria-label="Fermer">×</button>
+  <div class="sheet-grab"></div>
+  <h3>Choisir un média</h3>
+  <p class="small">Sélectionne le type de fichier pour afficher correctement les aperçus sur Android.</p>
+  <button type="button" class="sheet-opt" onclick="chooseGalleryType('image')"><i class="ti ti-photo" aria-hidden="true"></i><span>Photo<small>Choisir une ou plusieurs photos dans la galerie</small></span></button>
+  <button type="button" class="sheet-opt" onclick="chooseGalleryType('video')"><i class="ti ti-video" aria-hidden="true"></i><span>Vidéo<small>Choisir une vidéo dans la galerie</small></span></button>
+ </div>
+</div>
+<input id="galleryImageInput" type="file" accept="image/*" class="hidden">
+<input id="galleryVideoInput" type="file" accept="video/*" class="hidden">
 
 <!-- Visionneuse de grille -->
 <div id="viewer" class="viewer hidden">
@@ -1730,7 +1741,7 @@ function closeViewer(){
  $("viewer").classList.add("hidden");
 }
 function closeOtherSheets(keepId=null){
- ["createScreen","createSheet","moreSheet","composer","giftPicker","mbotePayModal","menuSheet"].forEach(id=>{
+ ["createScreen","createSheet","moreSheet","composer","giftPicker","mbotePayModal","menuSheet","galleryChoice"].forEach(id=>{
   if(id!==keepId){const el=$(id);if(el)el.classList.add("hidden")}
  });
  if(keepId!=="moreSheet")moreTarget=null;
@@ -2962,7 +2973,12 @@ function openGallery(mode){
  if(currentProfile?.role!=="creator"){showPage("application");return}
  closeOtherSheets();
  galleryMode=mode==="status"?"status":"post";
- const input=$("galleryInput");
+ $("galleryChoice").classList.remove("hidden");
+}
+function closeGalleryChoice(){$("galleryChoice").classList.add("hidden")}
+function chooseGalleryType(type){
+ closeGalleryChoice();
+ const input=$(type==="video"?"galleryVideoInput":"galleryImageInput");
  input.value="";
  input.click();
 }
@@ -3184,10 +3200,12 @@ $("creatorApplicationForm").addEventListener("submit",submitCreatorApplication);
 $("openCreateSheet").addEventListener("click",openSheet);
 $("composerFile").addEventListener("change",e=>previewComposer(e.target.files[0]));
 $("composerSubmit").addEventListener("click",publishFromComposer);
-$("galleryInput").addEventListener("change",e=>{
- const file=e.target.files[0];e.target.value="";
- if(!file)galleryAskCaption=false;
- uploadFromGallery(file);
+["galleryImageInput","galleryVideoInput"].forEach(id=>{
+ $(id).addEventListener("change",e=>{
+  const file=e.target.files&&e.target.files[0];e.target.value="";
+  if(!file){galleryAskCaption=false;return}
+  uploadFromGallery(file);
+ });
 });
 const csShutterEl=$("csShutter");
 csShutterEl.addEventListener("pointerdown",csShutterDown);
