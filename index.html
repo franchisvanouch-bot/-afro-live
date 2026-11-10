@@ -1303,7 +1303,15 @@ function closeViewer(){
  $("feedBody").innerHTML="";
  $("viewer").classList.add("hidden");
 }
+function closeOtherSheets(keepId=null){
+ ["createSheet","moreSheet","composer","giftPicker","mbotePayModal"].forEach(id=>{
+  if(id!==keepId){const el=$(id);if(el)el.classList.add("hidden")}
+ });
+ if(keepId!=="moreSheet")moreTarget=null;
+ if(keepId!=="giftPicker")giftPickerCreatorId=null;
+}
 function openMoreSheet(postId){
+ closeOtherSheets("moreSheet");
  moreTarget=(feedSources.creator||[]).find(p=>p.id===postId)||null;
  if(!moreTarget)return;
  resetDeleteBtn();
@@ -2101,6 +2109,7 @@ async function requestCreatorWithdrawal(){
 }
 let mbotePayContext=null;
 function openMbotePay(creatorId,paymentType,planType,price){
+ closeOtherSheets("mbotePayModal");
  if(!currentUser){guestToAuth();return}
  if(paymentType!=="coin_purchase"&&(!creatorId||creatorId===currentUser.id))return message("Tu ne peux pas payer ton propre compte.");
  mbotePayContext={creatorId,paymentType,planType};
@@ -2237,6 +2246,7 @@ function renderAfroGiftGrid(){
  $("giftSelectedPrice").textContent=selected.coins.toLocaleString("fr-FR")+" FCFA · GRATUIT";
 }
 function openGiftPicker(creatorId){
+ closeOtherSheets("giftPicker");
  if(!currentUser){guestToAuth();return}
  if(!creatorId||creatorId===currentUser.id)return message("Tu ne peux pas t'envoyer un cadeau.");
  if(AFRO_GIFT_TEST_MODE&&(!liveRoom||liveMode!=="spectator"))return message("Les cadeaux gratuits d'essai sont disponibles uniquement pendant un direct.");
@@ -2307,9 +2317,10 @@ document.addEventListener("click",event=>{
  if(pack&&$("giftPicker")&&!$("giftPicker").classList.contains("hidden"))openCoinPurchase(Number(pack.dataset.coins));
 });
 /* MENUS ET COMPOSITION */
-function openSheet(){$("createSheet").classList.remove("hidden")}
+function openSheet(){closeOtherSheets("createSheet");$("createSheet").classList.remove("hidden")}
 function closeSheet(){$("createSheet").classList.add("hidden")}
 function openComposer(mode){
+ closeOtherSheets("composer");
  composerMode=mode;
  $("composerTitle").textContent=mode==="status"?"Nouveau statut":"Nouvelle publication";
  $("composerHint").textContent=mode==="status"?"Visible pendant 24 h, comme sur WhatsApp.":"Photo ou vidéo publiée sur ton profil.";
