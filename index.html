@@ -1610,7 +1610,7 @@ function installLiveInterface(stage,room,mode,creatorId=null){
    const data=JSON.parse(new TextDecoder().decode(payload));
    if(data?.type==="afro_gift"){
     showLiveGift(stage,String(data.code||""),String(data.name||"Spectateur").slice(0,35));
-    playAfroGiftSound();
+    playAfroGiftSound(gift.code);
     return;
    }
    if(data?.type==="afro_tap"){showLiveHeart(stage);return}
@@ -2132,6 +2132,13 @@ const AFRO_GIFTS=[
  {code:"african_legend_mukhtar",name:"Omar al-Mukhtar · Libye",art:"🏜️🇱🇾",coins:50000,category:"Légendes africaines",tribute:"Hommage à sa résistance contre la colonisation italienne."},
  {code:"african_legend_malcolm",name:"Miriam Makeba · Afrique du Sud",art:"🎶🇿🇦",coins:50000,category:"Légendes africaines",tribute:"Hommage à sa voix et à son engagement contre l'apartheid."},
 ];
+
+/* Catalogue hommage : une figure historique pour chacun des 54 pays africains */
+const AFRICAN_LEGENDS_CATALOG=[["dz","Algérie","Émir Abdelkader","🛡️"],["ao","Angola","Agostinho Neto","📜"],["bj","Bénin","Béhanzin","👑"],["bw","Botswana","Seretse Khama","🦁"],["bf","Burkina Faso","Thomas Sankara","✊🏿"],["bi","Burundi","Louis Rwagasore","🕊️"],["cv","Cap-Vert","Amílcar Cabral","📚"],["cm","Cameroun","Ruben Um Nyobè","✊🏿"],["cf","République centrafricaine","Barthélemy Boganda","🕊️"],["td","Tchad","François Tombalbaye","📜"],["km","Comores","Saïd Mohamed Cheikh","🌴"],["cg","Congo-Brazzaville","André Matsoua","🕊️"],["ci","Côte d’Ivoire","Félix Houphouët-Boigny","🌟"],["dj","Djibouti","Mahmoud Harbi","✊🏿"],["cd","RDC","Patrice Lumumba","✊🏿"],["eg","Égypte","Saad Zaghloul","🏛️"],["gq","Guinée équatoriale","Acacio Mañé","🕊️"],["er","Érythrée","Hamid Idris Awate","🛡️"],["sz","Eswatini","Sobhuza II","👑"],["et","Éthiopie","Ménélik II","👑"],["ga","Gabon","Léon Mba","🌿"],["gm","Gambie","Dawda Jawara","🦁"],["gh","Ghana","Kwame Nkrumah","⭐"],["gn","Guinée","Ahmed Sékou Touré","✊🏿"],["gw","Guinée-Bissau","Francisco Mendes","📜"],["ke","Kenya","Jomo Kenyatta","🦁"],["ls","Lesotho","Moshoeshoe I","👑"],["lr","Liberia","Edward Wilmot Blyden","📚"],["ly","Libye","Omar al-Mukhtar","🏜️"],["mg","Madagascar","Ranavalona I","👑"],["mw","Malawi","John Chilembwe","🕊️"],["ml","Mali","Soundiata Keïta","🦁"],["mr","Mauritanie","Moktar Ould Daddah","📜"],["mu","Maurice","Seewoosagur Ramgoolam","🌺"],["ma","Maroc","Mohammed V","👑"],["mz","Mozambique","Samora Machel","✊🏿"],["na","Namibie","Sam Nujoma","🕊️"],["ne","Niger","Boubou Hama","📚"],["ng","Nigeria","Nnamdi Azikiwe","🦅"],["rw","Rwanda","Grégoire Kayibanda","🌿"],["st","São Tomé-et-Príncipe","Manuel Pinto da Costa","🌴"],["sn","Sénégal","Léopold Sédar Senghor","📚"],["sc","Seychelles","James Mancham","🌊"],["sl","Sierra Leone","Bai Bureh","🛡️"],["so","Somalie","Hawo Tako","🕊️"],["za","Afrique du Sud","Nelson Mandela","🕊️"],["ss","Soudan du Sud","John Garang","🕊️"],["sd","Soudan","Muhammad Ahmad al-Mahdi","🏜️"],["tz","Tanzanie","Julius Nyerere","📖"],["tg","Togo","Sylvanus Olympio","🕊️"],["tn","Tunisie","Habib Bourguiba","🏛️"],["ug","Ouganda","Apollo Milton Obote","📜"],["zm","Zambie","Kenneth Kaunda","🕊️"],["zw","Zimbabwe","Joshua Nkomo","✊🏿"]];
+AFRO_GIFTS.push(...AFRICAN_LEGENDS_CATALOG.map(([code,country,person,art])=>({
+ code:"legend_"+code,name:person+" · "+country,art:art+" 🌍",coins:50000,category:"Légendes africaines",
+ tribute:"Cadeau hommage à une figure historique de "+country+"."
+})));
 let giftPickerCreatorId=null,selectedAfroGift="rose";
 async function refreshAfroCoinBalance(){
  if(AFRO_GIFT_TEST_MODE){$("giftCoinBalance").textContent="🧪 ESSAI GRATUIT";$("giftCoinBalance").dataset.balance="0";return}
@@ -2191,16 +2198,28 @@ async function sendSelectedAfroGift(){
  }catch(error){status.textContent=error.message||"Erreur pendant l'envoi du cadeau."}
  finally{button.disabled=false}
 }
-function playAfroGiftSound(){
+function playAfroGiftSound(code="gift"){
  try{
   const AudioCtx=window.AudioContext||window.webkitAudioContext;if(!AudioCtx)return;
   const ctx=new AudioCtx();if(ctx.state==="suspended")ctx.resume().catch(()=>{});
-  [660,880,1175].forEach((hz,i)=>{
-   const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type="sine";osc.frequency.value=hz;
-   gain.gain.setValueAtTime(.0001,ctx.currentTime+i*.09);gain.gain.exponentialRampToValueAtTime(.045,ctx.currentTime+i*.09+.02);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+i*.09+.14);
-   osc.connect(gain);gain.connect(ctx.destination);osc.start(ctx.currentTime+i*.09);osc.stop(ctx.currentTime+i*.09+.16);
-  });
-  setTimeout(()=>ctx.close().catch(()=>{}),700);
+  const now=ctx.currentTime;
+  if(code==="drum"||code==="grand_drum"){
+   [0,.19,.39].forEach((delay,i)=>{
+    const osc=ctx.createOscillator(),gain=ctx.createGain();
+    osc.type="sine";osc.frequency.setValueAtTime(i===1?105:145,now+delay);osc.frequency.exponentialRampToValueAtTime(48,now+delay+.19);
+    gain.gain.setValueAtTime(.0001,now+delay);gain.gain.exponentialRampToValueAtTime(i===1?.22:.16,now+delay+.012);gain.gain.exponentialRampToValueAtTime(.0001,now+delay+.23);
+    osc.connect(gain);gain.connect(ctx.destination);osc.start(now+delay);osc.stop(now+delay+.24);
+   });
+  }else{
+   const seed=String(code).split("").reduce((n,c)=>n+c.charCodeAt(0),0);
+   const base=420+(seed%7)*55;
+   [0,1,2].forEach(i=>{
+    const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=i===1?"triangle":"sine";osc.frequency.value=base*(1+i*.32);
+    gain.gain.setValueAtTime(.0001,now+i*.075);gain.gain.exponentialRampToValueAtTime(.045,now+i*.075+.02);gain.gain.exponentialRampToValueAtTime(.0001,now+i*.075+.18);
+    osc.connect(gain);gain.connect(ctx.destination);osc.start(now+i*.075);osc.stop(now+i*.075+.2);
+   });
+  }
+  setTimeout(()=>ctx.close().catch(()=>{}),900);
  }catch(e){console.warn("Son du cadeau indisponible",e)}
 }
 function showLiveHeart(stage){
