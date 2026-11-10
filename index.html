@@ -2246,7 +2246,7 @@ async function getLiveToken(sessionId){
  if(!data?.token||!data?.livekit_url)throw new Error(data?.error||"Réponse invalide du serveur LiveKit.");
  return data;
 }
-async function connectLiveRoom(room,credentials,purpose){
+async function connectLiveRoom(room,credentials,purpose,autoSubscribe=true){
  let host="adresse inconnue",timer=null;
  try{
   const endpoint=new URL(credentials.livekit_url);
@@ -2254,7 +2254,7 @@ async function connectLiveRoom(room,credentials,purpose){
   if(endpoint.protocol!=="wss:"&&endpoint.protocol!=="ws:")
    throw new Error("L’adresse LiveKit doit commencer par wss:// ou ws://.");
   await Promise.race([
-   room.connect(credentials.livekit_url,credentials.token,{autoSubscribe:true}),
+   room.connect(credentials.livekit_url,credentials.token,{autoSubscribe}),
    new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error("Délai dépassé après 18 secondes.")),18000)})
   ]);
  }catch(error){
@@ -2326,7 +2326,7 @@ async function startPreview(sessionId){
    const v=track.attach();v.muted=true;v.autoplay=true;v.playsInline=true;v.className="live-video";
    box.appendChild(v);
   });
-  await connectLiveRoom(room,credentials,"aperçu");
+  await connectLiveRoom(room,credentials,"aperçu",false);
   if(!previewRooms.has(sessionId)){room.disconnect().catch(()=>{});return}
   for(const p of room.remoteParticipants.values())
    for(const pub of p.trackPublications.values())
