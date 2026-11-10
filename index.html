@@ -924,6 +924,7 @@ async function sharePostToNetwork(btn,repost=false){
  catch{prompt("Copie ce lien AFRO LIVE :",url)}
 }
 function showPage(page){
+ closeOtherSheets();
  const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",profile:"profilePage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage"};
  Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
  $(pages[page]).classList.remove("hidden");
@@ -1991,6 +1992,7 @@ async function stopCreatorLive(){
 /* ESPACE CRÉATEUR */
 const CREATOR_PAGES=["posts","statuts","live","subscribers","earnings"];
 function creatorPage(page){
+ closeOtherSheets();
  CREATOR_PAGES.forEach(n=>$("creator"+cap(n)).classList.toggle("hidden",n!==page));
  document.querySelectorAll(".c-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===page));
  if(page==="posts")loadCreatorPosts();
