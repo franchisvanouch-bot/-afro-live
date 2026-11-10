@@ -2288,20 +2288,54 @@ function attachLiveTrack(track,container,status=null){
  if(track.kind===LivekitClient.Track.Kind.Video){
   let video=track.attachedElements?.find(el=>el instanceof HTMLVideoElement);
   if(!video)video=track.attach();
-  video.classList.add("live-video");video.autoplay=true;video.playsInline=true;video.muted=true;
+  video.classList.add("live-video");
+  video.autoplay=true;video.playsInline=true;video.muted=true;
   video.setAttribute("muted","");video.setAttribute("playsinline","");video.setAttribute("autoplay","");
+  video.style.position="absolute";
+  video.style.inset="0";
+  video.style.width="100%";
+  video.style.height="100%";
+  video.style.maxWidth="none";
+  video.style.maxHeight="none";
+  video.style.display="block";
+  video.style.visibility="visible";
+  video.style.opacity="1";
+  video.style.zIndex="1";
+  video.style.objectFit="cover";
+  video.style.background="transparent";
+  video.style.transform="translateZ(0)";
   if(video.parentElement!==container)container.prepend(video);
+  let renderReported=false;
   const report=()=>{
-   if(video.videoWidth>0&&video.videoHeight>0){if(status){addLiveDiagnostic(status,"Image vidéo décodée ("+video.videoWidth+"×"+video.videoHeight+").")}}
-   else if(status){addLiveDiagnostic(status,"Piste vidéo reçue, mais image non décodée. Attente du flux vidéo…")}
+   if(video.videoWidth>0&&video.videoHeight>0){
+    if(status&&!renderReported){
+     renderReported=true;
+     const rect=video.getBoundingClientRect();
+     const css=getComputedStyle(video);
+     addLiveDiagnostic(status,"Image décodée : "+video.videoWidth+"×"+video.videoHeight+
+      " · écran : "+Math.round(rect.width)+"×"+Math.round(rect.height)+" px"+
+      " · lecture : "+(video.paused?"en pause":"active")+
+      " · readyState : "+video.readyState+
+      " · affichage : "+css.display+
+      " · visibilité : "+css.visibility+
+      " · opacité : "+css.opacity);
+    }
+   }else if(status){
+    addLiveDiagnostic(status,"Piste vidéo reçue, mais aucune image décodée pour le moment (readyState : "+video.readyState+").");
+   }
   };
-  video.addEventListener("loadedmetadata",report);video.addEventListener("playing",report);
+  video.addEventListener("loadedmetadata",report);
+  video.addEventListener("playing",report);
   video.addEventListener("error",()=>{if(status)addLiveDiagnostic(status,"La vidéo est reçue, mais le navigateur signale une erreur de lecture.")});
-  if(status)addLiveDiagnostic(status,"Vidéo reçue. Démarrage de l’image…")
-  requestAnimationFrame(()=>video.play?.().then(report).catch(error=>{
-   console.warn("Lecture vidéo du direct bloquée par le navigateur.",error);
-   if(status)addLiveDiagnostic(status,"Vidéo reçue, lecture bloquée par le navigateur. Touche l’écran pour réessayer.")
-  }));
+  if(status)addLiveDiagnostic(status,"Vidéo reçue. Affichage plein écran en préparation…");
+  requestAnimationFrame(()=>{
+   const rect=video.getBoundingClientRect();
+   if(status)addLiveDiagnostic(status,"Zone vidéo à l’écran : "+Math.round(rect.width)+"×"+Math.round(rect.height)+" px.");
+   video.play?.().then(report).catch(error=>{
+    console.warn("Lecture vidéo du direct bloquée par le navigateur.",error);
+    if(status)addLiveDiagnostic(status,"Vidéo reçue, lecture bloquée. Touche l’écran pour réessayer.");
+   });
+  });
   return;
  }
  if(track.kind===LivekitClient.Track.Kind.Audio){
