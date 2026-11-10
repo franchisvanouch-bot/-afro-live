@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>AFRO LIVE Studio</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#26364e,#090d15 65%);color:#fff;font-family:Inter,system-ui,Arial,sans-serif;min-height:100vh;padding:20px}
+main{width:min(100%,850px);margin:auto}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}.brand{font-size:23px;font-weight:950;letter-spacing:.1em}.brand span{color:#ff9637}.live{font-size:11px;letter-spacing:.14em;color:#ffb46b;border:1px solid #ff9a3755;border-radius:99px;padding:8px 12px}
+h1{font-size:clamp(26px,6vw,42px);margin:12px 0 6px}.sub{color:#aebbd0;line-height:1.55;margin-bottom:22px}
+.card{background:#ffffff09;border:1px solid #ffffff20;border-radius:18px;padding:17px;margin:14px 0;box-shadow:0 18px 50px #0004}
+.label{font-size:12px;color:#cbd4e2;font-weight:850;letter-spacing:.09em;text-transform:uppercase;margin-bottom:11px}
+.row{display:flex;flex-wrap:wrap;gap:9px}.btn{border:1px solid #ffffff2b;background:#ffffff12;color:#fff;border-radius:12px;padding:12px 15px;font-weight:800;min-height:44px}.btn.primary{background:linear-gradient(135deg,#ffad4b,#f36b12);color:#17100a;border:0}.btn.stop{background:#b51e32;border:0}.btn:disabled{opacity:.5}
+input{width:100%;background:#080d16;border:1px solid #ffffff30;color:#fff;border-radius:12px;padding:14px;margin:8px 0 12px;font-size:14px}
+.status{padding:13px;border-radius:12px;background:#ff963714;border:1px solid #ff963733;color:#ffd0a1;line-height:1.5;white-space:pre-wrap}
+.note{font-size:12px;color:#aebbd0;line-height:1.55;margin-top:10px}
+.scene{background:linear-gradient(135deg,#19283b,#0b111b);border:1px solid #ffffff1c;border-radius:14px;padding:15px;margin-top:12px}
+a{color:#ffb46b;text-decoration:none}#back{display:inline-block;margin-top:18px}
+</style></head><body><main>
+<div class="top"><div class="brand">AFRO LIVE <span>STUDIO</span></div><div class="live">● RÉGIE LIVE</div></div>
+<h1>Studio de diffusion</h1><div class="sub">Compose ton direct avec une mise en scène professionnelle. Le moteur Egress capture les participants LiveKit et produit une sortie vidéo composée en 720p.</div>
+<div class="card"><div class="label">1 · Choisir une scène</div><div class="row"><button class="btn primary" data-layout="studio">Plateau principal</button><button class="btn" data-layout="interview">Interview 2×2</button><button class="btn" data-layout="solo">Solo</button></div><div class="note">La scène peut être changée pendant la composition.</div></div>
+<div class="card"><div class="label">2 · Moteur de composition LiveKit Egress</div><div class="row"><button id="start" class="btn primary">Démarrer la composition</button><button id="stop" class="btn stop">Arrêter</button><button id="check" class="btn">Vérifier l'état</button></div><div class="note">Le moteur de composition est séparé de la caméra du créateur. Il ne remplace pas encore le flux vu par les spectateurs dans l'application.</div></div>
+<div class="card"><div class="label">3 · Envoyer la composition vers une plateforme externe</div><input id="rtmp" type="url" placeholder="rtmps://.../stream-key" autocomplete="off"><div class="row"><button id="attach" class="btn">Connecter la sortie RTMP</button></div><div class="note">Colle ici l'adresse RTMP/RTMPS fournie par ta plateforme de diffusion. Elle n'est pas enregistrée dans la base de données AFRO LIVE. Garde cette clé secrète.</div></div>
+<div class="scene"><div class="label">État du studio</div><div id="status" class="status">Vérification de ta session…</div></div>
+<a id="back" href="index.html">← Retour à AFRO LIVE</a>
+</main>
+<script>
+const SUPABASE_URL="https://imhlbguhcafbxjszmjag.supabase.co";
+const SUPABASE_KEY="sb_publishable_FGSth0t3t-gbyqNeV4Nj-g_69kDOar7";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const sessionId=new URLSearchParams(location.search).get("session_id");
+const statusBox=document.getElementById("status");
+let egressId=sessionStorage.getItem("afroStudioEgressId")||null,chosenLayout="studio",ready=false;
+const say=t=>statusBox.textContent=t;
+async function invoke(action,extra={}){
+ const {data,error}=await db.functions.invoke("live-studio-egress",{body:{action,session_id:sessionId,egress_id:egressId,...extra}});
+ if(error)throw new Error(data?.error||error.message||"Erreur du serveur Studio");
+ if(data?.error)throw new Error(data.error);
+ if(data?.egress_id){egressId=data.egress_id;sessionStorage.setItem("afroStudioEgressId",egressId)}
+ return data||{};
+}
+async function boot(){
+ if(!sessionId){say("Identifiant du direct absent. Retourne dans ton direct créateur.");return}
+ const {data:{session},error}=await db.auth.getSession();
+ if(error||!session){say("Connecte-toi d'abord dans AFRO LIVE, puis ouvre le Studio.");return}
+ ready=true;
+ if(egressId){try{const d=await invoke("status");say("Composition détectée · état Egress : "+d.status)}catch(e){egressId=null;sessionStorage.removeItem("afroStudioEgressId");say("Prêt. Aucun moteur de composition actif.")}}
+ else say("Session vérifiée. Prêt à démarrer la composition.");
+}
+document.querySelectorAll("[data-layout]").forEach(b=>b.addEventListener("click",async()=>{chosenLayout=b.dataset.layout;document.querySelectorAll("[data-layout]").forEach(x=>x.classList.toggle("primary",x===b));if(egressId)try{const d=await invoke("layout",{layout:chosenLayout});say("Scène modifiée · "+chosenLayout+" · "+d.status)}catch(e){say(e.message)}else say("Scène sélectionnée : "+chosenLayout+". Démarre le moteur pour l'appliquer.")}));
+document.getElementById("start").onclick=async e=>{if(!ready)return say("Session non vérifiée.");e.currentTarget.disabled=true;say("Démarrage du moteur de composition…");try{const d=await invoke("start",{layout:chosenLayout});say("Composition démarrée · ID : "+d.egress_id+" · statut : "+d.status)}catch(err){say("Échec : "+err.message)}finally{e.currentTarget.disabled=false}};
+document.getElementById("stop").onclick=async()=>{if(!egressId)return say("Aucune composition active.");try{const d=await invoke("stop");egressId=null;sessionStorage.removeItem("afroStudioEgressId");say("Composition arrêtée · "+d.status)}catch(e){say("Impossible d'arrêter : "+e.message)}};
+document.getElementById("check").onclick=async()=>{if(!egressId)return say("Aucune composition enregistrée.");try{const d=await invoke("status");say("État Egress : "+d.status)}catch(e){say(e.message)}};
+document.getElementById("attach").onclick=async()=>{const url=document.getElementById("rtmp").value.trim();if(!egressId)return say("Démarre d'abord la composition.");if(!url)return say("Ajoute l'adresse RTMP/RTMPS.");try{const d=await invoke("attach",{rtmp_url:url});document.getElementById("rtmp").value="";say("Sortie RTMP connectée · "+d.status)}catch(e){say("Connexion impossible : "+e.message)}};
+boot();
+</script></body></html>
