@@ -2312,15 +2312,24 @@ async function startPreview(sessionId){
   if(box&&!box.querySelector(".live-video"))box.innerHTML="<p class='small'>Aperçu indisponible</p>";
  }
 }
-function stopPreview(sessionId){
+async function stopPreview(sessionId){
  const room=previewRooms.get(sessionId);
  previewRooms.delete(sessionId);
- if(room)room.disconnect().catch(()=>{});
+ if(room)await room.disconnect().catch(()=>{});
  if(liveMode==="spectator"&&sessionId===currentLiveSessionId)return;
  const box=$("livePreview_"+sessionId);
  if(box&&!box.querySelector(".live-video"))box.innerHTML="<p class='small'>Aperçu en pause</p>";
 }
-function stopAllPreviews(){[...previewRooms.keys()].forEach(stopPreview)}
+async function stopAllPreviews(){
+ const entries=[...previewRooms.entries()];
+ previewRooms.clear();
+ await Promise.all(entries.map(async([sessionId,room])=>{
+  if(room)await room.disconnect().catch(()=>{});
+  if(liveMode==="spectator"&&sessionId===currentLiveSessionId)return;
+  const box=$("livePreview_"+sessionId);
+  if(box&&!box.querySelector(".live-video"))box.innerHTML="<p class='small'>Aperçu en pause</p>";
+ }));
+}
 function observeLivePreviews(lives){
  if(previewObserver)previewObserver.disconnect();
  previewObserver=new IntersectionObserver(entries=>{
@@ -2502,7 +2511,7 @@ async function switchCamera(room,btn){
 async function loadLives(){
  const box=$("liveList");
  box.innerHTML="<div class='vempty'>Chargement des directs...</div>";
- stopAllPreviews();
+ await stopAllPreviews();
  const {data:lives,error}=await db.from("live_sessions").select("id,title,status,creator_id").eq("status","live").gte("started_at",liveSinceIso()).order("started_at",{ascending:false}).limit(30);
  if(error){box.innerHTML=`<div class="vempty">Impossible de charger les directs : ${escapeHTML(error.message)}</div>`;return}
  liveCreatorIds=new Set(lives.map(l=>l.creator_id));
@@ -2547,7 +2556,9 @@ async function joinLive(sessionId){
  if(!currentUser)return message("Connecte-toi pour regarder ce direct.");
  if(liveRoom&&liveMode==="spectator"&&currentLiveSessionId===sessionId){$("liveViewer").classList.remove("hidden");return}
  if(liveRoom)await closeLiveViewer();
- stopAllPreviews();
+ // Fermer complètement les connexions d'aperçu avant d'ouvrir le lecteur :
+ // éviter deux connexions LiveKit simultanées pour le même spectateur.
+ await stopAllPreviews();
  const viewer=$("liveViewer"),stage=$("lvStage"),status=$("lvStatus");
  stage.innerHTML="";
  status.hidden=false;status.textContent="Connexion au direct...";
@@ -2566,6 +2577,9 @@ async function joinLive(sessionId){
   room=createLiveRoom();
   liveRoom=room;currentLiveSessionId=sessionId;liveMode="spectator";
   room.on(LivekitClient.RoomEvent.TrackSubscribed,track=>attachLiveTrack(track,stage));
+  room.on(LivekitClient.RoomEvent.TrackPublished,(publication,participant)=>{
+   if(publication.kind===LivekitClient.Track.Kind.Video)publication.setSubscribed(true);
+  });
   room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>{
    if(track.kind===LivekitClient.Track.Kind.Video){
     const currentVideo=stage.querySelector("video.live-video");
@@ -2577,11 +2591,13 @@ async function joinLive(sessionId){
     closeLiveViewer().then(()=>message("Le direct s'est terminé ou la connexion a été interrompue."));
    }
   });
-  await room.connect(credentials.livekit_url,credentials.token);
+  await room.connect(credentials.livekit_url,credentials.token,{autoSubscribe:true});
   try{await room.startAudio()}catch(error){console.log("Activation audio différée par le navigateur.",error)}
   for(const participant of room.remoteParticipants.values())
-   for(const publication of participant.trackPublications.values())
+   for(const publication of participant.trackPublications.values()){
+    if(publication.kind===LivekitClient.Track.Kind.Video&&!publication.isSubscribed)publication.setSubscribed(true);
     if(publication.track)attachLiveTrack(publication.track,stage);
+   }
   installLiveInterface(stage,room,"spectator",liveInfo.creator_id);
   status.hidden=true;
   clearInterval(liveStatusPollTimer);
