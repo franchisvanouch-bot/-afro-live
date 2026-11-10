@@ -3078,6 +3078,7 @@ async function joinLive(sessionId,knownCreatorId=null){
 async function closeLiveViewer(){
  clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;
  const room=liveRoom;
+ try{const {error:studioStopError}=await db.functions.invoke("live-studio-egress",{body:{action:"stop_room",session_id:sessionId}});if(studioStopError)console.warn("Arrêt Egress non confirmé :",studioStopError.message)}catch(studioStopError){console.warn("Arrêt Egress non confirmé :",studioStopError)}
  liveRoom=null;currentLiveSessionId=null;liveMode=null;
  if(room)await room.disconnect().catch(()=>{});
  const stage=$("lvStage");
