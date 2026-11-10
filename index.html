@@ -158,6 +158,8 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .row-thumb img,.row-thumb video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .row-text{flex:1;font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis}
 
+.sheet-exit{position:absolute;right:14px;top:10px;width:34px;height:34px;border-radius:50%;background:var(--surface2);color:var(--text);font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:3}
+.sheet{position:relative}
 /* Feuilles du bas */
 .sheet-back{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
 #moreSheet{z-index:100002}
@@ -658,6 +660,7 @@ header{background:#000;border-bottom:0}
 <!-- Menu du bouton + -->
 <div id="createSheet" class="sheet-back hidden">
  <div class="sheet">
+  <button type="button" class="sheet-exit" onclick="closeSheet()" aria-label="Fermer">×</button>
   <div class="sheet-grab"></div>
   <button class="sheet-opt" onclick="closeSheet();openComposer('post')"><i class="ti ti-photo" aria-hidden="true"></i><span>Publication<small>Photo ou vidéo sur ton profil</small></span></button>
   <button class="sheet-opt" onclick="closeSheet();openComposer('status')"><i class="ti ti-circle-dashed" aria-hidden="true"></i><span>Statut<small>Visible pendant 24 h</small></span></button>
@@ -668,6 +671,7 @@ header{background:#000;border-bottom:0}
 <!-- Menu ⋯ d'une publication -->
 <div id="moreSheet" class="sheet-back hidden">
  <div class="sheet">
+  <button type="button" class="sheet-exit" onclick="closeMoreSheet()" aria-label="Fermer">×</button>
   <div class="sheet-grab"></div>
   <button class="sheet-opt" id="moreDelete" style="color:#ff8a8a"><i class="ti ti-trash" aria-hidden="true" style="color:#ff8a8a"></i><span>Supprimer la publication</span></button>
   <p id="moreNote" class="small" style="color:#ffb47c;min-height:18px;margin:8px 4px"></p>
@@ -678,6 +682,7 @@ header{background:#000;border-bottom:0}
 <!-- Composition -->
 <div id="composer" class="sheet-back hidden">
  <div class="sheet">
+  <button type="button" class="sheet-exit" onclick="closeComposer()" aria-label="Fermer">×</button>
   <div class="sheet-grab"></div>
   <h3 id="composerTitle">Nouvelle publication</h3>
   <p class="small" id="composerHint"></p>
@@ -2124,6 +2129,19 @@ function openMbotePay(creatorId,paymentType,planType,price){
  $("mbotePayModal").classList.remove("hidden");
 }
 function closeMbotePay(){$("mbotePayModal").classList.add("hidden");mbotePayContext=null}
+
+/* Fermeture fiable des panneaux par toucher sur le fond. */
+document.addEventListener("click",event=>{
+ const overlay=event.target;
+ if(!overlay || !["createSheet","moreSheet","composer","giftPicker","mbotePayModal"].includes(overlay.id))return;
+ if(overlay.classList.contains("hidden"))return;
+ if(overlay.id==="createSheet")closeSheet();
+ else if(overlay.id==="moreSheet")closeMoreSheet();
+ else if(overlay.id==="composer")closeComposer();
+ else if(overlay.id==="giftPicker")closeGiftPicker();
+ else if(overlay.id==="mbotePayModal")closeMbotePay();
+});
+
 async function submitMbotePay(){
  if(!mbotePayContext)return;
  const phone=normalizeCongoPhoneClient($("mbotePayPhone").value);
