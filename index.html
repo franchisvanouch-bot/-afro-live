@@ -2246,6 +2246,35 @@ async function getLiveToken(sessionId){
  if(!data?.token||!data?.livekit_url)throw new Error(data?.error||"Réponse invalide du serveur LiveKit.");
  return data;
 }
+async function connectLiveRoom(room,credentials,purpose){
+ let host="adresse inconnue",timer=null;
+ try{
+  const endpoint=new URL(credentials.livekit_url);
+  host=endpoint.host||host;
+  if(endpoint.protocol!=="wss:"&&endpoint.protocol!=="ws:")
+   throw new Error("L’adresse LiveKit doit commencer par wss:// ou ws://.");
+  await Promise.race([
+   room.connect(credentials.livekit_url,credentials.token,{autoSubscribe:true}),
+   new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error("Délai dépassé après 18 secondes.")),18000)})
+  ]);
+ }catch(error){
+  await room.disconnect().catch(()=>{});
+  throw new Error("Connexion vidéo impossible ("+purpose+") vers "+host+" : "+(error?.message||"échec réseau")+". Vérifie l’adresse LIVEKIT_URL et l’accès WebSocket du serveur.");
+ }finally{
+  if(timer)clearTimeout(timer);
+ }
+}
+async function enableLiveCamera(room){
+ let timer=null;
+ try{
+  await Promise.race([
+   room.localParticipant.enableCameraAndMicrophone(),
+   new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error("La caméra ou le microphone ne répond pas après 25 secondes. Vérifie les autorisations du navigateur.")),25000)})
+  ]);
+ }finally{
+  if(timer)clearTimeout(timer);
+ }
+}
 function attachLiveTrack(track,container,status=null){
  if(!track||!container)return;
  if(track.kind===LivekitClient.Track.Kind.Video){
@@ -2297,7 +2326,7 @@ async function startPreview(sessionId){
    const v=track.attach();v.muted=true;v.autoplay=true;v.playsInline=true;v.className="live-video";
    box.appendChild(v);
   });
-  await room.connect(credentials.livekit_url,credentials.token,{autoSubscribe:false});
+  await connectLiveRoom(room,credentials,"aperçu");
   if(!previewRooms.has(sessionId)){room.disconnect().catch(()=>{});return}
   for(const p of room.remoteParticipants.values())
    for(const pub of p.trackPublications.values())
@@ -2599,7 +2628,7 @@ async function joinLive(sessionId){
    }
   });
   diagnostic("Jeton obtenu. Connexion à la salle vidéo…");
-  await room.connect(credentials.livekit_url,credentials.token,{autoSubscribe:true});
+  await connectLiveRoom(room,credentials,"spectateur");
   try{await room.startAudio()}catch(error){console.log("Activation audio différée par le navigateur.",error)}
   const participants=[...room.remoteParticipants.values()];
   if(!participants.length)diagnostic("Connecté à la salle, mais aucun créateur n’est encore visible. Attente de sa connexion…");
@@ -2698,9 +2727,9 @@ async function startCreatorLive(){
   room.on(LivekitClient.RoomEvent.Disconnected,()=>{if(liveMode==="creator")$("creatorLiveStatus").textContent="Connexion au direct interrompue."});
   room.on(LivekitClient.RoomEvent.ParticipantConnected,updateLiveParticipantCount);
   room.on(LivekitClient.RoomEvent.ParticipantDisconnected,updateLiveParticipantCount);
-  await room.connect(credentials.livekit_url,credentials.token);
+  await connectLiveRoom(room,credentials,"créateur");
   $("creatorLiveStatus").textContent="Activation de la caméra et du microphone...";
-  await room.localParticipant.enableCameraAndMicrophone();
+  await enableLiveCamera(room);
   const cameraPub=[...room.localParticipant.videoTrackPublications.values()].find(p=>p.track);
   if(!cameraPub)throw new Error("La caméra n'a pas pu démarrer.");
   cameraPub.track.attach($("localLiveVideo"));
