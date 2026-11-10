@@ -1741,7 +1741,7 @@ async function loadComments(){
  const {data:post,error:postError}=await db.from("posts").select("creator_id").eq("id",postId).maybeSingle();
  if(postError){$("cmList").innerHTML='<div class="cm-empty">Impossible de charger cette publication.</div>';return}
  cmPostOwnerId=post?.creator_id||null;
- const {data:rows,error}=await db.from("post_comments").select("id,post_id,user_id,content,created_at").eq("post_id",postId).order("created_at",{ascending:true}).limit(200);
+ const {data:rows,error}=await db.from("post_comments").select("id,post_id,user_id,body,created_at").eq("post_id",postId).order("created_at",{ascending:true}).limit(200);
  if(error){$("cmList").innerHTML='<div class="cm-empty">Erreur : '+escapeHTML(error.message)+'</div>';return}
  if(!rows?.length){$("cmList").innerHTML='<div class="cm-empty">Aucun commentaire pour le moment. Sois le premier !</div>';return}
  const ids=[...new Set(rows.map(r=>r.user_id))];
@@ -1764,7 +1764,7 @@ async function submitComment(event){
  if(!content)return;
  cmBusy=true;$("cmSend").disabled=true;
  const postId=cmPostId;
- const {error}=await db.from("post_comments").insert({post_id:postId,user_id:currentUser.id,content});
+ const {error}=await db.from("post_comments").insert({post_id:postId,user_id:currentUser.id,body:content});
  if(error){message("Commentaire non envoyé : "+error.message);cmBusy=false;$("cmSend").disabled=false;return}
  input.value="";
  await loadComments();
