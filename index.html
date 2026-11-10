@@ -1074,6 +1074,9 @@ async function sharePostToNetwork(btn,repost=false){
 function showPage(page){
  closeOtherSheets();
  $("publicProfile").classList.add("hidden");
+ $("spectator").classList.remove("hidden");
+ $("creator").classList.add("hidden");
+ $("admin").classList.add("hidden");
  const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",profile:"profilePage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage"};
  Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
  $(pages[page]).classList.remove("hidden");
