@@ -2856,7 +2856,7 @@ async function loadLives(){
    <div class="vshade"></div>
    <div class="lf-info">
     <div class="lf-who">${avatarHTML(p,true)}<div><b>${escapeHTML(p.display_name||p.username||"Créateur")}</b> <span class="tag-live">EN DIRECT</span><div class="small">${escapeHTML(l.title)}</div></div></div>
-    <button class="lf-watch" onclick="joinLive('${l.id}')">Regarder en direct</button>
+    <button class="lf-watch" onclick="joinLive('${l.id}','${l.creator_id}')">Regarder en direct</button>
    </div>
   </section>`;
  }).join("");
@@ -2878,11 +2878,11 @@ async function showLiveSubscriptionOptions(creatorId,sessionId,status){
    b.addEventListener("click",()=>openMbotePay(creatorId,"subscription",plan,amount));wrap.appendChild(b);
   });
  }
- const retry=document.createElement("button");retry.type="button";retry.className="soft";retry.textContent="Actualiser / rejoindre";retry.addEventListener("click",()=>joinLive(sessionId));wrap.appendChild(retry);
+ const retry=document.createElement("button");retry.type="button";retry.className="soft";retry.textContent="Actualiser / rejoindre";retry.addEventListener("click",()=>joinLive(sessionId,creatorId));wrap.appendChild(retry);
  status.appendChild(wrap);
 }
 let liveStatusPollTimer=null;
-async function joinLive(sessionId){
+async function joinLive(sessionId,knownCreatorId=null){
  if(!currentUser)return message("Connecte-toi pour regarder ce direct.");
  if(liveRoom&&liveMode==="spectator"&&currentLiveSessionId===sessionId){$("liveViewer").classList.remove("hidden");return}
  if(liveRoom)await closeLiveViewer();
@@ -2898,8 +2898,12 @@ async function joinLive(sessionId){
  let room=null;
  const diagnostic=(message)=>addLiveDiagnostic(status,message);
  try{
-  const {data:liveInfo,error:liveInfoError}=await db.from("live_sessions").select("creator_id,access_mode").eq("id",sessionId).maybeSingle();
-  if(liveInfoError||!liveInfo?.creator_id)throw new Error("Impossible d’identifier le créateur de ce direct.");
+  // La liste des directs fournit déjà creator_id. On le conserve comme secours
+  // si la lecture détaillée de la session est momentanément filtrée par RLS.
+  let liveInfo={creator_id:knownCreatorId,access_mode:"free"};
+  const {data:loadedLiveInfo,error:liveInfoError}=await db.from("live_sessions").select("creator_id,access_mode").eq("id",sessionId).maybeSingle();
+  if(loadedLiveInfo?.creator_id)liveInfo=loadedLiveInfo;
+  else if(!knownCreatorId)throw new Error(liveInfoError?.message||"Ce direct est introuvable ou n’est plus disponible.");
   if(liveInfo.access_mode==="paid"&&currentUser.id!==liveInfo.creator_id){
    const now=new Date().toISOString();
    const {data:sub,error:subError}=await db.from("subscriptions").select("id").eq("spectator_id",currentUser.id).eq("creator_id",liveInfo.creator_id).eq("status","active").lte("starts_at",now).gt("expires_at",now).limit(1).maybeSingle();
