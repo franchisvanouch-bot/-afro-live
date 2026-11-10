@@ -108,6 +108,7 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .vnotify.on i{color:#ffd166}
 .vmeta{position:absolute;left:14px;right:90px;bottom:90px;z-index:4;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8);pointer-events:none}
 .vmeta b{font-size:16px}
+.v-repost-note{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;margin-bottom:8px;color:#fff;text-shadow:0 1px 4px #000}
 .vmeta p{color:#fff;font-size:14px;margin:6px 0 0}
 .vempty{color:#ccc;text-align:center;padding:45% 20px;position:relative;z-index:2}
 
@@ -1134,7 +1135,7 @@ function fmtCount(n){
 }
 function thumbHTML(p){
  const url=escapeHTML(mediaUrl(p.media_path));
- return p.kind==="video"?`<video src="${url}" muted playsinline preload="metadata"></video>`:`<img src="${url}" alt="" loading="lazy">`;
+ return p.kind==="video"?`<video src="${url}" autoplay loop muted playsinline webkit-playsinline preload="auto"></video>`:`<img src="${url}" alt="" loading="lazy">`;
 }
 function feedMediaHTML(p){
  const url=escapeHTML(mediaUrl(p.media_path));
@@ -1633,15 +1634,39 @@ async function loadHomeFeed(){
  box.innerHTML="<div class='vempty'>Chargement...</div>";
  const {data,error}=await db.rpc("feed_posts",{p_only_follows:homeFilter==="follows",p_limit:40});
  if(error){box.innerHTML=`<div class="vempty">${escapeHTML(error.message)}</div>`;return}
- if(!data?.length){
+ let feedData=[...(data||[])];
+ const {data:reposts,error:repostError}=await db.from("post_reposts").select("post_id,user_id,created_at").order("created_at",{ascending:false}).limit(100);
+ if(!repostError&&reposts?.length){
+  const visible=reposts.filter(r=>homeFilter!=="follows"||myFollows.has(r.user_id));
+  const ids=[...new Set(visible.map(r=>r.post_id))];
+  if(ids.length){
+   const {data:originals}=await db.from("posts").select("id,kind,media_path,caption,creator_id,created_at").in("id",ids);
+   const originalsById={};(originals||[]).forEach(p=>originalsById[p.id]=p);
+   const profileIds=[...new Set([...visible.map(r=>r.user_id),...(originals||[]).map(p=>p.creator_id)])];
+   const {data:repostProfiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",profileIds);
+   const profilesById={};(repostProfiles||[]).forEach(p=>profilesById[p.id]=p);
+   visible.forEach(r=>{
+    const original=originalsById[r.post_id],reposter=profilesById[r.user_id];
+    if(!original||!reposter)return;
+    const creator=profilesById[original.creator_id]||{};
+    feedData.push({...original,username:creator.username||"créateur",display_name:creator.display_name||"",avatar_url:creator.avatar_url||null,is_repost:true,reposted_by:reposter.username||"membre",reposted_by_name:reposter.display_name||reposter.username||"Membre",reposted_at:r.created_at});
+   });
+  }
+ }
+ if(!feedData.length){
   box.innerHTML=`<div class="vempty">${homeFilter==="follows"?"Aucune publication de tes suivis pour le moment.":"Pas encore de publications."}</div>`;
   return;
  }
- const postIds=data.map(p=>p.id);
- const {data:commentRows}=await db.from("post_comments").select("post_id").in("post_id",postIds);
+ feedData.sort((a,b)=>new Date(b.is_repost?b.reposted_at:b.created_at)-new Date(a.is_repost?a.reposted_at:a.created_at));
+ const postIds=[...new Set(feedData.map(p=>p.id))];
+ const [{data:commentRows},{data:repostMine}]=await Promise.all([
+  db.from("post_comments").select("post_id").in("post_id",postIds),
+  currentUser?db.from("post_reposts").select("post_id").eq("user_id",currentUser.id).in("post_id",postIds):Promise.resolve({data:[]})
+ ]);
  const commentCounts={};(commentRows||[]).forEach(row=>commentCounts[row.post_id]=(commentCounts[row.post_id]||0)+1);
- data.forEach(p=>p.comment_count=commentCounts[p.id]||0);
- box.innerHTML=data.map(vitemHTML).join("");
+ const mine=new Set((repostMine||[]).map(r=>r.post_id));
+ feedData.forEach(p=>{p.comment_count=commentCounts[p.id]||0;p.reposted=mine.has(p.id)});
+ box.innerHTML=feedData.map(vitemHTML).join("");
  box.scrollTop=0;
  observeHomeVideos();
 }
@@ -1667,15 +1692,31 @@ function vitemHTML(p){
    </button>
    <button class="vbtn vcomments" data-action="comments" data-post="${escapeHTML(p.id)}" aria-label="Commentaires"><i class="ti ti-message-circle" aria-hidden="true"></i><span class="vcount">${fmtCount(Number(p.comment_count)||0)}</span></button>
    <button class="vbtn" data-action="share" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Partager"><i class="ti ti-share-3" aria-hidden="true"></i><span class="vcount">Partager</span></button>
-   <button class="vbtn" data-action="repost" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">${p.reposted?"Republié":"Republier"}</span></button>
+   <button class="vbtn${p.reposted?" on":""}" data-action="repost" data-post="${escapeHTML(p.id)}" data-reposted="${p.reposted?1:0}" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">${p.reposted?"Republié":"Republier"}</span></button>
    <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}<span class="vcount">Son</span></button>
   </div>
   <div class="vmeta">
+   ${p.is_repost?`<div class="v-repost-note"><i class="ti ti-repeat"></i> ${escapeHTML(p.reposted_by_name||"")} a republié</div>`:""}
    <b>@${escapeHTML(p.username||"")}</b>${live?' <span class="tag-live">EN DIRECT</span>':""}
    ${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}
    <div class="v-soundline"><i class="ti ti-music"></i> Son original · AFRO LIVE</div>
   </div>
  </section>`;
+}
+async function toggleRepost(btn){
+ if(!currentUser)return guestToAuth();
+ if(btn.dataset.busy)return;
+ const postId=btn.dataset.post;if(!postId)return;
+ const was=btn.dataset.reposted==="1";
+ btn.dataset.busy="1";btn.disabled=true;
+ const req=was?db.from("post_reposts").delete().eq("post_id",postId).eq("user_id",currentUser.id):db.from("post_reposts").insert({post_id:postId,user_id:currentUser.id});
+ const {error}=await req;
+ if(error){message("Republication impossible : "+error.message);btn.disabled=false;delete btn.dataset.busy;return}
+ btn.dataset.reposted=was?"0":"1";btn.classList.toggle("on",!was);
+ const label=btn.querySelector(".vcount");if(label)label.textContent=was?"Republier":"Republié";
+ btn.setAttribute("aria-label",was?"Republier":"Déjà republié");
+ btn.disabled=false;delete btn.dataset.busy;
+ message(was?"Republication annulée.":"Publication republiée dans ton fil.",true);
 }
 function observeHomeVideos(){
  const feed=$("homeFeed");
@@ -3375,7 +3416,7 @@ $("homeFeed").addEventListener("click",e=>{
   if(action==="like"){toggleLike(btn);return}
   if(action==="comments"){openComments(btn.dataset.post);return}
   if(action==="share"){sharePostToNetwork(btn,false);return}
-  if(action==="repost"){sharePostToNetwork(btn,true);return}
+  if(action==="repost"){toggleRepost(btn);return}
   if(action==="sound"){
    homeMuted=!homeMuted;
    document.querySelectorAll("#homeFeed video").forEach(v=>v.muted=homeMuted);
