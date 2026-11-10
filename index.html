@@ -951,6 +951,22 @@ main button:not(.nav-create):not(.vbtn):not(.vtab):not(.vtop-btn):not(.icon){
  border-radius:999px
 }
 button:focus-visible{outline:2px solid #ff9a35;outline-offset:3px}
+
+/* AFRO LIVE — finition compacte du fil */
+.vtop .vbrand-live{display:inline-flex!important;align-items:center!important;gap:7px!important;padding:8px 11px!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:999px!important;background:rgba(8,8,8,.42)!important;color:#fff!important;font-size:13px!important;font-weight:850!important;letter-spacing:.35px!important;backdrop-filter:blur(12px)}
+.vtop .vbrand-live i{font-size:19px!important;color:#ff922e!important}
+.vtop .vbrand-live span{white-space:nowrap}
+.vtop{gap:clamp(7px,2vw,16px)!important}
+.vtop .vtab,.vtop-btn{font-size:14px!important}
+.vtop .vtab{padding-left:4px!important;padding-right:4px!important}
+.vmeta{left:14px!important;right:82px!important;bottom:calc(26px + env(safe-area-inset-bottom))!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;backdrop-filter:none!important;box-shadow:none!important}
+.vmeta b{display:block;font-size:15px!important;margin-top:3px}
+.v-repost-note{display:inline-flex!important;align-items:center;gap:6px!important;margin:0 0 6px!important;padding:5px 9px!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:999px!important;background:rgba(0,0,0,.48)!important;backdrop-filter:blur(8px);font-size:10px!important;line-height:1.2!important}
+.vmeta p{font-size:13px!important;margin:4px 0!important}
+.v-soundline{display:inline-flex!important;width:max-content!important;max-width:68vw!important;margin-top:6px!important;padding:6px 10px!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:999px!important;background:rgba(0,0,0,.48)!important;backdrop-filter:blur(9px);font-size:11px!important}
+#navigation.bottomnav .nav-create,#navigation.bottomnav.over .nav-create{width:46px!important;height:46px!important;flex:0 0 46px!important;margin:-12px 7px 0!important;padding:0!important;border:2px solid rgba(255,255,255,.92)!important;border-radius:50%!important;background:linear-gradient(145deg,#ffad45,#ff7100 72%,#e95600)!important;color:#fff!important;box-shadow:0 5px 18px rgba(255,112,0,.42),inset 0 1px 2px rgba(255,255,255,.35)!important;opacity:1!important;transform:translateY(-1px)}
+#navigation.bottomnav .nav-create i,#navigation.bottomnav.over .nav-create i{color:#fff!important;font-size:27px!important;font-weight:700!important}
+
 </style>
 </head>
 <body>
@@ -981,7 +997,7 @@ button:focus-visible{outline:2px solid #ff9a35;outline-offset:3px}
  <section id="spectator">
   <section id="discoverPage" class="homefeed hidden">
    <div class="vtop">
-    <button class="vtop-btn" type="button" onclick="showPage('lives')" aria-label="Directs"><i class="ti ti-broadcast"></i></button>
+    <button class="vtop-btn vbrand-live" type="button" onclick="showPage('lives')" aria-label="Ouvrir les directs"><i class="ti ti-broadcast"></i><span>AFRO LIVE</span></button>
     <button class="vtop-btn" type="button" onclick="showPage('creators')">Communauté</button>
     <button class="vtab" data-filter="follows">Suivis</button>
     <button class="vtab active" data-filter="pour-toi">Pour toi</button>
