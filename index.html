@@ -244,6 +244,7 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 #creatorLivePreview.creator-live-on .live-chat-form button{padding:7px 10px!important;font-size:12px!important}
 .gift-sheet{display:flex;flex-direction:column;gap:5px;max-height:min(82dvh,680px)!important;overflow:hidden!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom))!important;touch-action:pan-y}
 .gift-head h3{font-size:15px!important;margin:2px 0!important}
+.gift-close{width:30px!important;height:30px!important;min-width:30px!important;padding:0!important;border-radius:50%!important;font-size:19px!important;line-height:1!important}
 .gift-balance{font-size:11px!important;padding:5px 8px!important}
 .gift-sheet>.small{font-size:11px!important;margin:2px 0!important}
 .gift-test-note{font-size:10px!important;padding:5px 8px!important;margin:2px 0!important}
@@ -516,7 +517,7 @@ body.feed-mode footer{display:none}
 <div id="giftPicker" class="gift-back hidden" role="dialog" aria-modal="true" aria-labelledby="giftPickerTitle">
  <div class="gift-sheet">
   <div class="sheet-grab"></div>
-  <div class="gift-head"><h3 id="giftPickerTitle">🎁 Cadeaux africains</h3><span class="gift-balance" id="giftCoinBalance">🪙 0 pièce</span></div>
+  <div class="gift-head"><h3 id="giftPickerTitle">🎁 Cadeaux africains</h3><span class="gift-balance" id="giftCoinBalance">🧪 ESSAI GRATUIT</span><button type="button" class="soft gift-close" onclick="closeGiftPicker()" aria-label="Fermer les cadeaux">×</button></div>
   <p class="small">Choisis un symbole pour soutenir le créateur pendant son direct.</p>
   <div class="gift-test-note">🧪 ESSAI GRATUIT : aucun paiement, aucune pièce débitée et aucun revenu réel ne sont enregistrés pendant ce test. Les montants affichés servent seulement à préparer les futurs cadeaux.</div>
   <div id="giftGrid" class="gift-grid"></div>
