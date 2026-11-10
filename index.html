@@ -1752,7 +1752,7 @@ async function loadComments(){
   const label=p.display_name||p.username||"Utilisateur";
   const canDelete=currentUser?.id===r.user_id||currentUser?.id===cmPostOwnerId;
   const date=new Date(r.created_at).toLocaleString("fr-FR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
-  return '<div class="cm-item" data-comment="'+escapeHTML(r.id)+'">'+cmAvatar(p)+'<div class="cm-content"><b>'+escapeHTML(label)+' <span style="font-weight:400;color:#888">@'+escapeHTML(p.username||"membre")+'</span></b><span>'+escapeHTML(r.content)+'</span><div class="cm-meta">'+escapeHTML(date)+'</div></div>'+(canDelete?'<button class="cm-delete" type="button" data-delete-comment="'+escapeHTML(r.id)+'" aria-label="Supprimer">Supprimer</button>':"")+'</div>';
+  return '<div class="cm-item" data-comment="'+escapeHTML(r.id)+'">'+cmAvatar(p)+'<div class="cm-content"><b>'+escapeHTML(label)+' <span style="font-weight:400;color:#888">@'+escapeHTML(p.username||"membre")+'</span></b><span>'+escapeHTML(r.body)+'</span><div class="cm-meta">'+escapeHTML(date)+'</div></div>'+(canDelete?'<button class="cm-delete" type="button" data-delete-comment="'+escapeHTML(r.id)+'" aria-label="Supprimer">Supprimer</button>':"")+'</div>';
  }).join("");
  $("cmList").scrollTop=$("cmList").scrollHeight;
 }
