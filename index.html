@@ -359,6 +359,14 @@ body.feed-mode{background:#000}
 @keyframes afroGiftFloat{from{transform:translateY(5px) rotate(-5deg)}to{transform:translateY(-8px) rotate(5deg)}}
 @media(max-width:420px){.vside{gap:14px}.vbtn i{font-size:32px}.vmeta{bottom:calc(98px + env(safe-area-inset-bottom))}}
 
+/* Ajustements finaux du lecteur vertical */
+body.feed-mode #navigation.bottomnav.over{padding-bottom:calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,rgba(0,0,0,.78))}
+body.feed-mode #navigation.bottomnav.over .nav-create{background:linear-gradient(90deg,#fff 0 18%,var(--orange) 18% 82%,#fff 82%);color:#fff}
+.vmeta{bottom:112px!important;right:86px!important}
+.vside{bottom:116px!important;gap:12px!important}
+.vside .vbtn{min-height:34px}
+.vside .vbtn i{font-size:29px}
+.v-soundline{opacity:.94}
 </style>
 </head>
 <body>
@@ -1134,7 +1142,6 @@ function vitemHTML(p){
     <i class="ti ${liked?"ti-heart-filled":"ti-heart"}" aria-hidden="true"></i>
     <span class="vcount" data-n="${count}">${fmtCount(count)}</span>
    </button>
-   <button class="vbtn" data-action="comment" data-post="${escapeHTML(p.id)}" aria-label="Commentaires"><i class="ti ti-message-circle" aria-hidden="true"></i><span class="vcount">Commenter</span></button>
    <button class="vbtn" data-action="share" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Partager"><i class="ti ti-share-3" aria-hidden="true"></i><span class="vcount">Partager</span></button>
    <button class="vbtn" data-action="repost" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">Republier</span></button>
    <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}<span class="vcount">Son</span></button>
@@ -2508,7 +2515,6 @@ $("homeFeed").addEventListener("click",e=>{
   if(action==="like"){toggleLike(btn);return}
   if(action==="share"){sharePostToNetwork(btn,false);return}
   if(action==="repost"){sharePostToNetwork(btn,true);return}
-  if(action==="comment"){message("Les commentaires des publications nécessitent encore leur espace dédié. Les commentaires des directs restent disponibles.");return}
   if(action==="sound"){
    homeMuted=!homeMuted;
    document.querySelectorAll("#homeFeed video").forEach(v=>v.muted=homeMuted);
