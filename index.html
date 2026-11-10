@@ -708,6 +708,25 @@ button:focus-visible{outline:2px solid var(--af-gold);outline-offset:3px}
 #lvStage .live-gift-pop .art{display:block!important;padding:0!important;margin:0!important;font-size:clamp(100px,30vw,190px)!important;line-height:1!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;filter:drop-shadow(0 8px 18px rgba(0,0,0,.65)) drop-shadow(0 0 24px rgba(255,174,45,.5))!important}
 #lvStage .live-gift-pop .caption{padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;color:#fff!important;font-size:13px!important;font-weight:800!important;text-shadow:0 2px 8px #000,0 0 12px #000!important}
 
+
+/* CORRECTION LECTEUR LIVE — dimensions explicites sur iOS/Android */
+#liveViewer.lv:not(.hidden){
+ position:fixed!important;
+ top:0!important;right:0!important;bottom:0!important;left:0!important;
+ width:100vw!important;height:100vh!important;height:100dvh!important;
+ min-width:100vw!important;min-height:100vh!important;min-height:100dvh!important;
+ display:block!important;overflow:hidden!important;background:#000!important;
+}
+#liveViewer #lvStage{
+ position:absolute!important;top:0!important;right:0!important;bottom:0!important;left:0!important;
+ width:100%!important;height:100%!important;min-height:100vh!important;min-height:100dvh!important;
+ display:block!important;overflow:hidden!important;background:#000!important;
+}
+#liveViewer #lvStage video.live-video{
+ position:absolute!important;top:0!important;right:0!important;bottom:0!important;left:0!important;
+ width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;
+ display:block!important;visibility:visible!important;opacity:1!important;object-fit:cover!important;
+}
 </style>
 </head>
 <body>
