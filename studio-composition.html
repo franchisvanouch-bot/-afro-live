@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AFRO LIVE Studio Composition</title>
+<style>
+:root{color-scheme:dark;--orange:#ff7a18;--gold:#ffc36b;--bg:#07090e}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,Arial,sans-serif;color:#fff}
+#broadcast{position:relative;width:100vw;height:100vh;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#222b3d 0,#101622 48%,#07090e 100%)}
+#broadcast:before{content:"";position:absolute;inset:0;background:linear-gradient(130deg,transparent 35%,rgba(255,122,24,.10) 50%,transparent 68%),radial-gradient(circle at 50% 100%,rgba(255,122,24,.16),transparent 35%);pointer-events:none}
+#topline{position:absolute;z-index:10;top:3.2%;left:3.2%;right:3.2%;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:14px;font-weight:900;letter-spacing:.16em;font-size:clamp(18px,2.2vw,34px)}
+.brand-mark{width:clamp(38px,4vw,62px);height:clamp(38px,4vw,62px);border-radius:15px;background:linear-gradient(145deg,#ff9a37,#e34c08);display:grid;place-items:center;box-shadow:0 0 34px #ff7a1844;font-size:clamp(20px,2.6vw,38px)}
+.live-pill{display:flex;align-items:center;gap:10px;border:1px solid #ff5b6380;background:#6d101caa;padding:10px 18px;border-radius:99px;font-weight:900;letter-spacing:.12em;font-size:clamp(12px,1.1vw,18px)}
+.live-dot{width:10px;height:10px;border-radius:50%;background:#ff344f;box-shadow:0 0 15px #ff344f;animation:pulse 1.4s infinite}
+#scene{position:absolute;inset:12% 3.2% 11%;display:grid;gap:18px;min-height:0}
+#scene.studio{grid-template-columns:minmax(0,2.15fr) minmax(240px,.85fr);grid-template-rows:1fr}
+#scene.interview{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+#scene.solo{grid-template-columns:1fr;grid-template-rows:1fr}
+.tile{position:relative;overflow:hidden;border-radius:26px;background:linear-gradient(145deg,#202b3d,#0b111c);border:1px solid #ffffff24;box-shadow:0 22px 65px #0008;min-width:0;min-height:0}
+.tile.primary{border:2px solid #ff8a2a99;box-shadow:0 0 0 1px #ff8a2a22,0 28px 80px #0009}
+.tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
+.tile .placeholder{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle,#334158,#111722 65%);font-size:clamp(50px,9vw,130px);font-weight:900;color:#ffb46b}
+.tile .name{position:absolute;left:18px;right:18px;bottom:16px;z-index:3;display:flex;align-items:center;gap:10px;font-size:clamp(14px,1.35vw,22px);font-weight:800;text-shadow:0 2px 8px #000;background:linear-gradient(90deg,#05070dc9,transparent);padding:12px;border-radius:12px}
+.tile.speaking{border-color:#ffb35c;box-shadow:0 0 0 3px #ff9a3740,0 0 42px #ff8b2a55}
+#lower{position:absolute;z-index:10;bottom:3.2%;left:3.2%;right:3.2%;display:flex;align-items:end;justify-content:space-between;gap:20px}
+#lower .show-title{font-size:clamp(15px,1.6vw,25px);font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+#lower .show-sub{margin-top:5px;color:#b6c1d2;font-size:clamp(11px,1vw,16px)}
+#watermark{font-size:clamp(12px,1.2vw,18px);font-weight:900;letter-spacing:.16em;color:#ffffffc9}
+#status{position:absolute;z-index:20;left:50%;top:50%;transform:translate(-50%,-50%);padding:12px 18px;border-radius:12px;background:#05070dd9;color:#ffd3a6;font-size:14px;max-width:80%;text-align:center}
+#status:empty{display:none}
+#audio-bin{position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
+@keyframes pulse{50%{opacity:.4;transform:scale(.8)}}
+</style>
+</head>
+<body>
+<div id="broadcast">
+ <div id="topline"><div class="brand"><span class="brand-mark">A</span><span>AFRO LIVE <span style="color:#ff9a37">STUDIO</span></span></div><div class="live-pill"><i class="live-dot"></i> DIRECT</div></div>
+ <div id="scene" class="studio"></div>
+ <div id="lower"><div><div class="show-title" id="show-title">AFRO LIVE · LE PLATEAU</div><div class="show-sub" id="show-sub">En direct maintenant</div></div><div id="watermark">AFRO LIVE</div></div>
+ <div id="status">Connexion au plateau…</div><div id="audio-bin"></div>
+</div>
+<script type="module">
+import { Room, RoomEvent, Track } from "https://esm.sh/livekit-client@2.5.8";
+import EgressHelper from "https://esm.sh/@livekit/egress-sdk@0.2.1";
+const params=new URLSearchParams(location.search);
+const serverUrl=EgressHelper.getLiveKitURL();
+const token=EgressHelper.getAccessToken();
+const scene=document.getElementById("scene"),status=document.getElementById("status"),audioBin=document.getElementById("audio-bin");
+const room=new Room({adaptiveStream:true,dynacast:true});
+let layout=EgressHelper.getLayout()||"studio",activeIds=new Set(),started=false;
+function participants(){return [...room.remoteParticipants.values()].filter(p=>p.kind!=="EGRESS")}
+function label(p){return p.name||p.identity||"Invité"}
+function clearScene(){scene.querySelectorAll("video").forEach(v=>{try{v.srcObject=null}catch{}});scene.innerHTML=""}
+function render(){
+ layout=["studio","interview","solo"].includes(layout)?layout:"studio";
+ scene.className=layout;
+ clearScene();
+ const list=participants();
+ if(!list.length){status.textContent="En attente du créateur…";return}
+ status.textContent="";
+ const ordered=list.sort((a,b)=>Number(activeIds.has(b.identity))-Number(activeIds.has(a.identity)));
+ const visible=layout==="solo"?ordered.slice(0,1):ordered.slice(0,layout==="interview"?4:5);
+ visible.forEach((p,index)=>{
+  const tile=document.createElement("div");tile.className="tile"+(index===0?" primary":"")+(activeIds.has(p.identity)?" speaking":"");
+  const videoPub=[...p.trackPublications.values()].find(pub=>pub.kind===Track.Kind.Video&&pub.track);
+  if(videoPub?.track){const video=videoPub.track.attach();video.autoplay=true;video.playsInline=true;video.muted=true;tile.appendChild(video)}
+  else{const place=document.createElement("div");place.className="placeholder";place.textContent=(label(p).trim()[0]||"A").toUpperCase();tile.appendChild(place)}
+  const name=document.createElement("div");name.className="name";name.textContent=label(p);tile.appendChild(name);scene.appendChild(tile);
+ });
+}
+function syncAudio(){
+ audioBin.innerHTML="";
+ for(const p of participants())for(const pub of p.trackPublications.values()){
+  if(pub.kind===Track.Kind.Audio&&pub.track){const audio=pub.track.attach();audio.autoplay=true;audioBin.appendChild(audio)}
+ }
+}
+room.on(RoomEvent.TrackSubscribed,()=>{render();syncAudio()});
+room.on(RoomEvent.TrackUnsubscribed,()=>{render();syncAudio()});
+room.on(RoomEvent.ParticipantConnected,()=>{render();syncAudio()});
+room.on(RoomEvent.ParticipantDisconnected,()=>{render();syncAudio()});
+room.on(RoomEvent.ActiveSpeakersChanged,speakers=>{activeIds=new Set(speakers.map(p=>p.identity));render()});
+room.on(RoomEvent.Disconnected,()=>{EgressHelper.endRecording()});
+EgressHelper.onLayoutChanged(next=>{layout=next;render()});
+try{
+ await room.connect(serverUrl,token,{autoSubscribe:true});
+ EgressHelper.setRoom(room);
+ render();syncAudio();
+ document.getElementById("show-sub").textContent="Plateau de diffusion · AFRO LIVE";
+ setTimeout(()=>{if(!started){started=true;status.textContent="";EgressHelper.startRecording()}},1500);
+}catch(error){status.textContent="Impossible de connecter le plateau : "+(error?.message||"Erreur LiveKit");console.error(error)}
+</script>
+</body>
+</html>
