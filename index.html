@@ -55,6 +55,9 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 #navigation.bottomnav button{position:relative;flex:1;background:none;color:var(--muted);font-size:11px;font-weight:500;padding:4px 0;border-radius:0;display:flex;flex-direction:column;align-items:center;gap:2px}
 #navigation.bottomnav button i{font-size:22px}
 #navigation.bottomnav button.active{color:var(--text)}
+#navigation.bottomnav .nav-create{flex:0 0 46px;width:46px;height:30px;align-self:center;margin:0 8px;padding:0;border-radius:9px;background:linear-gradient(90deg,#fff 0 18%,var(--orange) 18% 82%,#fff 82%);color:#fff;font-size:22px;box-shadow:0 3px 14px rgba(255,106,0,.25)}
+#navigation.bottomnav .nav-create i{font-size:24px}
+#navigation.bottomnav.over .nav-create{color:#fff}
 #navigation.bottomnav.over button{color:rgba(255,255,255,.8);text-shadow:0 1px 3px rgba(0,0,0,.8)}
 #navigation.bottomnav.over button.active{color:#fff}
 .navdot{position:absolute;top:2px;right:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:var(--red)}
@@ -86,7 +89,13 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .vtab.active{color:#fff;box-shadow:inset 0 -2px 0 #fff}
 .vbell{position:absolute;top:max(10px,env(safe-area-inset-top));right:12px;z-index:6;background:rgba(0,0,0,.35);width:40px;height:40px;border-radius:50%;padding:0;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center}
 .vdot{position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:50%;background:var(--red);border:1.5px solid #000}
-.vside{position:absolute;right:10px;bottom:96px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:18px}
+.vside{position:absolute;right:10px;bottom:112px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:13px}
+.vside .vbtn{min-width:48px}
+.vside .vbtn i{font-size:30px}
+.vside .vbtn .vcount{font-size:10px;line-height:1.1;max-width:54px;text-align:center}
+.vmeta{bottom:106px}
+.v-soundline{display:flex;align-items:center;gap:6px;margin-top:9px;font-size:12px;color:#fff;max-width:75vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v-soundline i{font-size:15px}
 .vavatar{background:none;padding:0;border-radius:0;margin-bottom:4px}
 .vavatar .avatar{width:50px;height:50px;font-size:16px;border:2px solid #fff}
 .vavatar .avatar-wrap.ring{padding:2px}
@@ -834,9 +843,9 @@ function renderView(){
  nav.className="bottomnav";
  nav.innerHTML=
   `<button class="active" data-page="discover" onclick="showPage('discover')"><i class="ti ti-home" aria-hidden="true"></i><span>Accueil</span></button>`+
-  `<button data-page="creators" onclick="showPage('creators')"><i class="ti ti-users" aria-hidden="true"></i><span>Créateurs</span></button>`+
-  `<button data-page="lives" onclick="showPage('lives')"><i class="ti ti-broadcast" aria-hidden="true"></i><span>Directs</span></button>`+
-  `<button data-page="follows" onclick="showPage('follows')"><i class="ti ti-heart" aria-hidden="true"></i><span>Suivis</span><i class="navdot" hidden></i></button>`+
+  `<button data-page="creators" onclick="showPage('creators')"><i class="ti ti-compass" aria-hidden="true"></i><span>Découvrir</span></button>`+
+  `<button class="nav-create" aria-label="Créer une publication ou passer en direct" onclick="openCreateAction()"><i class="ti ti-plus" aria-hidden="true"></i></button>`+
+  `<button data-page="lives" onclick="showPage('lives')"><i class="ti ti-broadcast" aria-hidden="true"></i><span>LIVE</span><i class="navdot" hidden></i></button>`+
   `<button data-page="profile" onclick="showPage('profile')"><i class="ti ti-user" aria-hidden="true"></i><span>Profil</span></button>`;
  loadSpectatorData();
 }
@@ -851,6 +860,24 @@ async function loadSpectatorData(){
 }
 
 /* NAVIGATION SPECTATEUR */
+function openCreateAction(){
+ if(!currentUser)return guestToAuth();
+ if(currentProfile?.role==="creator"){openSheet();return}
+ showPage("application");
+}
+async function sharePostToNetwork(btn,repost=false){
+ const creator=btn.dataset.creator,username=btn.dataset.username||"créateur AFRO LIVE";
+ const caption=(btn.dataset.caption||"").trim();
+ const url=creatorLink(username);
+ const title=repost?"Publication recommandée sur AFRO LIVE":"Regarde cette vidéo sur AFRO LIVE";
+ const messageText=(repost?"Je recommande cette vidéo de @":"Découvre la vidéo de @")+username+(caption?" : "+caption:"");
+ if(navigator.share){
+  try{await navigator.share({title,text:messageText,url});return}
+  catch(error){if(error?.name==="AbortError")return}
+ }
+ try{await navigator.clipboard.writeText(url);message(repost?"Lien prêt à republier : "+url:"Lien de partage copié : "+url,true)}
+ catch{prompt("Copie ce lien AFRO LIVE :",url)}
+}
 function showPage(page){
  const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",profile:"profilePage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage"};
  Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
@@ -1107,11 +1134,15 @@ function vitemHTML(p){
     <i class="ti ${liked?"ti-heart-filled":"ti-heart"}" aria-hidden="true"></i>
     <span class="vcount" data-n="${count}">${fmtCount(count)}</span>
    </button>
-   <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}</button>
+   <button class="vbtn" data-action="comment" data-post="${escapeHTML(p.id)}" aria-label="Commentaires"><i class="ti ti-message-circle" aria-hidden="true"></i><span class="vcount">Commenter</span></button>
+   <button class="vbtn" data-action="share" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Partager"><i class="ti ti-share-3" aria-hidden="true"></i><span class="vcount">Partager</span></button>
+   <button class="vbtn" data-action="repost" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">Republier</span></button>
+   <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}<span class="vcount">Son</span></button>
   </div>
   <div class="vmeta">
    <b>@${escapeHTML(p.username||"")}</b>${live?' <span class="tag-live">EN DIRECT</span>':""}
    ${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}
+   <div class="v-soundline"><i class="ti ti-music"></i> Son original · AFRO LIVE</div>
   </div>
  </section>`;
 }
@@ -2475,10 +2506,13 @@ $("homeFeed").addEventListener("click",e=>{
   if(action==="follow"){toggleFollow(btn.dataset.creator);return}
   if(action==="notify"){toggleNotify(btn.dataset.creator);return}
   if(action==="like"){toggleLike(btn);return}
+  if(action==="share"){sharePostToNetwork(btn,false);return}
+  if(action==="repost"){sharePostToNetwork(btn,true);return}
+  if(action==="comment"){message("Les commentaires des publications nécessitent encore leur espace dédié. Les commentaires des directs restent disponibles.");return}
   if(action==="sound"){
    homeMuted=!homeMuted;
    document.querySelectorAll("#homeFeed video").forEach(v=>v.muted=homeMuted);
-   document.querySelectorAll('[data-action="sound"]').forEach(b=>b.innerHTML=`<i class="ti ${homeMuted?"ti-volume-off":"ti-volume"}" aria-hidden="true"></i>`);
+   document.querySelectorAll('[data-action="sound"]').forEach(b=>b.innerHTML=`<i class="ti ${homeMuted?"ti-volume-off":"ti-volume"}" aria-hidden="true"></i><span class="vcount">Son</span>`);
    return;
   }
  }
