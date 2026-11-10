@@ -655,6 +655,52 @@ button:focus-visible{outline:2px solid var(--af-gold);outline-offset:3px}
 .cm-form input{min-width:0;flex:1;border:1px solid #39393e;border-radius:22px;background:#252529;color:#fff;padding:12px 15px;font-size:14px;outline:none}
 .cm-form button{border-radius:22px;padding:10px 15px;font-weight:800}
 
+
+/* ===== PROFIL AFRO LIVE · INTERFACE INSPIRÉE D'INSTAGRAM ===== */
+#publicProfile{background:#000;color:#fff;padding-bottom:max(18px,env(safe-area-inset-bottom));min-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#publicProfile .ig-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px 6px;min-height:52px}
+#publicProfile .ig-user{flex:1;min-width:0;text-align:center;font-size:17px;color:#fff;display:flex;align-items:center;justify-content:center;gap:7px;overflow:hidden}
+#publicProfile .ig-user b{font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#publicProfile .ig-live-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#ff3040;display:inline-block;box-shadow:0 0 9px #ff304099}
+#publicProfile .ig-icon{background:transparent!important;color:#fff!important;width:38px;height:38px;flex:0 0 38px;padding:0;display:flex;align-items:center;justify-content:center;font-size:23px;border-radius:50%}
+#publicProfile .ig-head{display:flex;align-items:center;gap:clamp(14px,5vw,24px);padding:14px 16px 5px}
+#publicProfile .ig-avatar{position:relative;background:none!important;padding:0!important;border-radius:50%;flex:0 0 auto}
+#publicProfile .ig-avatar .avatar-wrap{border-radius:50%}
+#publicProfile .ig-avatar .avatar{width:clamp(78px,22vw,94px)!important;height:clamp(78px,22vw,94px)!important;font-size:30px!important;border:0}
+#publicProfile .ig-add{position:absolute;right:0;bottom:0;width:25px;height:25px;border-radius:50%;background:#247cff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid #000}
+#publicProfile .ig-stats{flex:1;min-width:0;display:flex;justify-content:space-around;gap:5px;text-align:center}
+#publicProfile .ig-stats>div{min-width:0;display:flex;flex-direction:column;align-items:center}
+#publicProfile .ig-stats b{display:block;font-size:17px;font-weight:750;color:#fff;line-height:1.35}
+#publicProfile .ig-stats span{font-size:12px;color:#f1f1f1;white-space:nowrap}
+#publicProfile .ig-bio{padding:10px 16px 4px}
+#publicProfile .ig-name{display:block;font-size:14px;color:#fff;font-weight:750}
+#publicProfile .ig-bio p{margin:3px 0 0;font-size:14px;color:#f2f2f5;white-space:pre-wrap;line-height:1.4;overflow-wrap:anywhere}
+#publicProfile .ig-bio .ig-muted{color:var(--muted)!important}
+#publicProfile .ig-bio .ig-status{color:#ffb47c!important;font-style:italic;font-size:13px}
+#publicProfile .ig-actions{display:flex;align-items:stretch;gap:6px;padding:12px 14px 7px;flex-wrap:wrap}
+#publicProfile .ig-btn{flex:1 1 0;min-width:0;min-height:38px;background:#262628!important;color:#fff!important;border-radius:8px!important;padding:8px 7px!important;font-size:13px!important;font-weight:650!important;white-space:normal;line-height:1.2}
+#publicProfile .ig-btn-primary{background:var(--orange)!important}
+#publicProfile .ig-btn-icon{flex:0 0 40px;padding:8px 0!important;font-size:18px!important}
+#publicProfile .ig-share-profile{flex-basis:100%;min-height:34px}
+#publicProfile .ig-pay{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 8px}
+#publicProfile .ig-plan{flex:1 1 28%;min-width:0;background:#1b1b1e!important;color:#fff!important;border:1px solid #343438;border-radius:8px!important;padding:9px 6px!important;font-size:12px!important;font-weight:650!important}
+#publicProfile .ig-tabs{display:flex;justify-content:space-around;border-top:1px solid #262628;margin-top:9px}
+#publicProfile .ig-tab{flex:1;background:none!important;color:#8e8e93!important;border-radius:0!important;padding:11px 0!important;display:flex;justify-content:center;box-shadow:none!important}
+#publicProfile .ig-tab i{font-size:23px}
+#publicProfile .ig-tab.active{color:#fff!important;box-shadow:inset 0 -2px 0 #fff!important}
+#publicProfile .ig-grid{gap:2px!important;margin-top:2px}
+#publicProfile .ig-grid .tile{aspect-ratio:1/1;border-radius:0!important;background:#171719;overflow:hidden}
+#publicProfile .ig-grid .tile img,#publicProfile .ig-grid .tile video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;background:#171719}
+#publicProfile .ig-grid .tile-icon{left:auto;right:6px;top:6px;bottom:auto;font-size:14px;color:#fff;text-shadow:0 1px 4px #000}
+#publicProfile .pf-empty{padding:32px 16px!important}
+@media(max-width:360px){
+ #publicProfile .ig-head{gap:10px;padding-left:12px;padding-right:12px}
+ #publicProfile .ig-stats b{font-size:15px}
+ #publicProfile .ig-stats span{font-size:10px}
+ #publicProfile .ig-actions{padding-left:10px;padding-right:10px}
+ #publicProfile .ig-btn{font-size:12px!important}
+}
+
 </style>
 </head>
 <body>
@@ -1980,17 +2026,22 @@ async function openProfile(id){
  $("livesPage").classList.remove("lfull");
  const profile=$("publicProfile");
  profile.classList.remove("hidden");
- profile.innerHTML="<p class='empty'>Chargement...</p>";
+ profile.innerHTML="<p class='empty'>Chargement du profil...</p>";
  const {data,error}=await db.rpc("public_profile",{p_id:id});
  const p=data?.[0];
  if(error||!p){
-  profile.innerHTML="<div class='pf-top'><button class='pf-icon' type='button' onclick=\"closeProfile()\" aria-label='Retour'><i class='ti ti-arrow-left'></i></button></div><p class='empty'>Profil introuvable.</p>";
+  profile.innerHTML="<div class='ig-top'><button class='ig-icon' type='button' onclick='closeProfile()' aria-label='Retour'><i class='ti ti-arrow-left'></i></button><span class='ig-user'>Profil</span><span></span></div><p class='empty'>Profil introuvable.</p>";
   return;
  }
- const [{data:posts},{data:settings}]=await Promise.all([
+ const [{data:posts,error:postsError},{data:settings},{count:followingCount}] = await Promise.all([
   db.from("posts").select("id,kind,media_path,caption,created_at").eq("creator_id",id).order("created_at",{ascending:false}),
-  db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",id).maybeSingle()
+  db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",id).maybeSingle(),
+  db.from("follows").select("creator_id",{count:"exact",head:true}).eq("spectator_id",id)
  ]);
+ if(postsError){
+  profile.innerHTML="<div class='ig-top'><button class='ig-icon' type='button' onclick='closeProfile()' aria-label='Retour'><i class='ti ti-arrow-left'></i></button><span class='ig-user'>Profil</span><span></span></div><p class='empty'>Impossible de charger les publications.</p>";
+  return;
+ }
  const list=(posts||[]).map(x=>({...x,username:p.username,creator_id:id}));
  feedSources.profile=list;
  let liveSessionId=null;
@@ -2003,75 +2054,113 @@ async function openProfile(id){
  const name=p.display_name||p.username;
  const videos=list.filter(x=>x.kind==="video").length;
  const photos=list.length-videos;
+ const followerCount=Number(p.follower_count)||0;
+ const followingTotal=Number(followingCount)||0;
+ const profileThumb=x=>{
+  const url=escapeHTML(mediaUrl(x.media_path));
+  return x.kind==="video"
+   ? `<video src="${url}" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture></video>`
+   : `<img src="${url}" alt="" loading="lazy">`;
+ };
  profile.innerHTML=`
-  <div class="pf-top">
-   ${isMe?"":'<button class="pf-icon" type="button" id="pfBack" aria-label="Retour"><i class="ti ti-arrow-left"></i></button>'}
-   <span class="pf-title">@${escapeHTML(p.username)}</span>
-   <button class="pf-icon" type="button" id="pfMenu" aria-label="${isMe?"Menu":"Partager"}"><i class="ti ${isMe?"ti-menu-2":"ti-share"}"></i></button>
-  </div>
-  <div class="pf-head">
-   <button class="pf-avatar" type="button" id="pfAvatar" aria-label="${hasStatus?"Voir le statut":"Photo de profil"}">
-    ${avatarHTML(p,p.is_live)}${isMe?'<span class="pf-edit-dot"><i class="ti ti-plus"></i></span>':""}
+  <header class="ig-top">
+   ${isMe
+    ? '<button class="ig-icon" type="button" id="igAdd" aria-label="Créer"><i class="ti ti-plus"></i></button>'
+    : '<button class="ig-icon" type="button" id="pfBack" aria-label="Retour"><i class="ti ti-arrow-left"></i></button>'}
+   <span class="ig-user"><b>${escapeHTML(p.username)}</b>${p.is_live?' <span class="ig-live-dot"></span>':""}</span>
+   <button class="ig-icon" type="button" id="pfMenu" aria-label="${isMe?"Menu":"Partager"}"><i class="ti ${isMe?"ti-menu-2":"ti-share"}"></i></button>
+  </header>
+  <section class="ig-head">
+   <button class="ig-avatar" type="button" id="pfAvatar" aria-label="${hasStatus?"Voir le statut":(isMe?"Modifier la photo":"Photo de profil")}">
+    ${avatarHTML(p,p.is_live)}
+    ${isMe?'<span class="ig-add"><i class="ti ti-plus"></i></span>':""}
    </button>
-   <div class="pf-stats">
-    <div><b>${Number(p.follower_count)||0}</b><span>Abonnés</span></div>
-    <div><b>${videos}</b><span>Vidéos</span></div>
-    <div><b>${photos}</b><span>Photos</span></div>
+   <div class="ig-stats">
+    <div><b>${list.length}</b><span>publications</span></div>
+    <div><b>${followerCount}</b><span>abonnés</span></div>
+    <div><b>${followingTotal}</b><span>abonnements</span></div>
    </div>
-  </div>
-  <div class="pf-info">
-   <h2>${escapeHTML(name)}${p.is_live?' <span class="tag-live">EN DIRECT</span>':""}</h2>
-   ${hasStatus?'<p class="pf-status">Statut actif · touche la photo pour le voir</p>':""}
-   ${p.status_text?`<p class="pf-status">${escapeHTML(p.status_text)}</p>`:""}
-   ${p.bio?`<p class="pf-bio">${escapeHTML(p.bio)}</p>`:(isMe?'<p class="pf-bio muted">Ajoute une bio pour te présenter.</p>':"")}
-  </div>
-  <div class="pf-actions" id="pfActions"></div>
-  <div class="pf-pay" id="pfPay"></div>
-  <div class="ptabs">
-   <button class="ptab active" type="button" data-ptab="all" aria-label="Toutes"><i class="ti ti-layout-grid"></i></button>
-   <button class="ptab" type="button" data-ptab="video" aria-label="Vidéos"><i class="ti ti-player-play"></i></button>
-   <button class="ptab" type="button" data-ptab="photo" aria-label="Photos"><i class="ti ti-photo"></i></button>
-  </div>
-  <div class="tiles" id="pfTiles">${list.length?list.map((x,i)=>
-   `<button class="tile" type="button" data-kind="${x.kind}" onclick="openFeedFrom('profile',${i})">${thumbHTML(x)}${x.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play"></i></span>':""}</button>`
+  </section>
+  <section class="ig-bio">
+   <b class="ig-name">${escapeHTML(name)}${p.is_live?' <span class="tag-live">EN DIRECT</span>':""}</b>
+   ${p.bio? `<p>${escapeHTML(p.bio)}</p>` : (isMe?'<p class="ig-muted">Ajoute une bio pour te présenter.</p>':"")}
+   ${hasStatus?'<p class="ig-status">Statut actif · touche la photo pour le voir</p>':""}
+   ${p.status_text?`<p class="ig-status">${escapeHTML(p.status_text)}</p>`:""}
+  </section>
+  <div class="ig-actions" id="pfActions"></div>
+  <div class="ig-pay" id="pfPay"></div>
+  <nav class="ig-tabs" aria-label="Publications du profil">
+   <button class="ig-tab active" type="button" data-ptab="all" aria-label="Publications"><i class="ti ti-layout-grid"></i></button>
+   <button class="ig-tab" type="button" data-ptab="video" aria-label="Vidéos"><i class="ti ti-player-play"></i></button>
+   <button class="ig-tab" type="button" data-ptab="photo" aria-label="Photos"><i class="ti ti-photo"></i></button>
+  </nav>
+  <div class="tiles ig-grid" id="pfTiles">${list.length?list.map((x,i)=>
+   `<button class="tile" type="button" data-kind="${x.kind}" onclick="openFeedFrom('profile',${i})" aria-label="Ouvrir ${x.kind==="video"?"la vidéo":"la photo"}">${profileThumb(x)}${x.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play"></i></span>':""}</button>`
   ).join(""):`<p class="empty pf-empty" style="grid-column:1/-1">${isMe?"Tu n'as encore rien publié. Appuie sur + pour commencer.":"Aucune publication."}</p>`}</div>`;
  const actions=$("pfActions");
  const mk=(cls,html,fn)=>{
-  const b=document.createElement("button");b.type="button";b.className=cls;b.innerHTML=html;b.onclick=fn;return b;
+  const b=document.createElement("button");
+  b.type="button";b.className=cls;b.innerHTML=html;b.onclick=fn;
+  return b;
  };
  if(isMe){
   actions.append(
-   mk("pf-btn","Modifier le profil",editMyProfile),
-   mk("pf-btn",currentProfile?.role==="creator"?"Espace créateur":"Devenir créateur",()=>currentProfile?.role==="creator"?setViewMode("creator"):showPage("application"))
+   mk("ig-btn","Modifier",editMyProfile),
+   mk("ig-btn",currentProfile?.role==="creator"?"Espace créateur":"Devenir créateur",()=>currentProfile?.role==="creator"?setViewMode("creator"):showPage("application"))
   );
  }else{
-  actions.append(mk(following?"pf-btn":"pf-btn primary",following?"Abonné":"Suivre",()=>toggleFollow(id)));
-  actions.append(mk("pf-btn","Offrir un cadeau",()=>openGiftPicker(id)));
-  if(following)actions.append(mk("pf-btn pf-bell",`<i class="ti ${myNotify.has(id)?"ti-bell-ringing":"ti-bell"}"></i>`,()=>toggleNotify(id).then(()=>openProfile(id))));
+  actions.append(mk(following?"ig-btn":"ig-btn ig-btn-primary",following?"Abonné":"Suivre",()=>toggleFollow(id)));
+  actions.append(mk("ig-btn","Offrir un cadeau",()=>openGiftPicker(id)));
+  if(liveSessionId)actions.append(mk("ig-btn ig-btn-primary","Voir le direct",()=>joinLive(liveSessionId)));
+  if(following){
+   actions.append(mk("ig-btn ig-btn-icon",`<i class="ti ${myNotify.has(id)?"ti-bell-ringing":"ti-bell"}"></i>`,async()=>{
+    await toggleNotify(id);
+    if(!$("publicProfile").classList.contains("hidden"))openProfile(id);
+   }));
+  }
  }
  if(!isMe&&settings?.is_accepting_subscriptions){
   [["daily","1 jour",settings.daily_price_fcfa],["weekly","7 jours",settings.weekly_price_fcfa],["monthly","30 jours",settings.monthly_price_fcfa]].forEach(([plan,label,price])=>{
    const amount=Number(price);
    if(!Number.isInteger(amount)||amount<100||amount>1000000)return;
-   const b=document.createElement("button");b.type="button";b.className="pf-plan";
+   const b=document.createElement("button");
+   b.type="button";b.className="ig-plan";
    b.textContent=`${label} · ${amount.toLocaleString("fr-FR")} FCFA`;
    b.onclick=()=>openMbotePay(id,"subscription",plan,amount);
    $("pfPay").appendChild(b);
   });
  }
+ if(!isMe){
+  actions.append(mk("ig-btn ig-share-profile","Partager le profil",()=>shareCreator(p.username,name)));
+ }
  const back=$("pfBack");if(back)back.onclick=()=>showPage("discover");
+ const add=$("igAdd");if(add)add.onclick=openCreateAction;
  $("pfMenu").onclick=()=>isMe?openMenuSheet():shareCreator(p.username,name);
  $("pfAvatar").onclick=()=>{
   if(hasStatus)openStatusViewer(id);
   else if(isMe)$("avatarInput").click();
  };
- profile.querySelectorAll(".ptab").forEach(tab=>tab.onclick=()=>{
-  profile.querySelectorAll(".ptab").forEach(x=>x.classList.toggle("active",x===tab));
+ profile.querySelectorAll(".ig-tab").forEach(tab=>tab.onclick=()=>{
+  profile.querySelectorAll(".ig-tab").forEach(x=>x.classList.toggle("active",x===tab));
   const filter=tab.dataset.ptab;
   profile.querySelectorAll("#pfTiles .tile").forEach(tile=>{
    tile.style.display=(filter==="all"||tile.dataset.kind===(filter==="video"?"video":"photo"))?"":"none";
   });
  });
+ const profileVideos=[...profile.querySelectorAll("#pfTiles video")];
+ if(profileVideos.length){
+  const previewObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{
+   const video=entry.target;
+   if(entry.isIntersecting){video.play().catch(()=>{});}
+   else video.pause();
+  }),{root:profile,threshold:0.15});
+  profileVideos.forEach(video=>{
+   video.muted=true;
+   video.playsInline=true;
+   video.addEventListener("loadeddata",()=>{if(video.getBoundingClientRect().width)video.play().catch(()=>{});},{once:true});
+   previewObserver.observe(video);
+  });
+ }
  refreshFollowUI();
 }
 function closeProfile(){showPage("discover")}
