@@ -447,6 +447,10 @@ header{background:#000;border-bottom:0}
 .cs-grid5 i{width:52px;height:52px;border-radius:14px;background:#1c1c20;display:flex;align-items:center;justify-content:center;font-size:24px}
 .cs-new{width:100%;background:linear-gradient(90deg,#fff3ec,#e9fbff);color:#000;padding:24px;border-radius:14px;font-size:16px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px}
 .cs-card-btn{width:100%;background:#1c1c20;color:#fff;padding:16px;border-radius:12px;font-size:15px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:10px;text-align:left}
+.cs-grid-ov{position:absolute;inset:0;z-index:2;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.35) 1px,transparent 1px);background-size:33.33% 33.33%}
+.cs-prompter{position:absolute;left:16px;right:70px;top:30%;z-index:3;color:#fff;font-size:22px;font-weight:700;text-align:center;text-shadow:0 2px 6px #000;background:rgba(0,0,0,.35);border-radius:12px;padding:12px;max-height:35%;overflow:hidden}
+.cs-countdown{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:120px;font-weight:800;color:#fff;text-shadow:0 4px 16px #000;z-index:5;pointer-events:none}
+.cs-shutter{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .cs-live-card p{color:#ccc}
 </style>
 </head>
@@ -716,17 +720,21 @@ header{background:#000;border-bottom:0}
   </div>
   <div class="cs-side">
    <button type="button" onclick="csFlip()"><span>Retourner</span><i class="ti ti-refresh"></i></button>
-   <button type="button" onclick="csSoon('Flash')"><span>Flash</span><i class="ti ti-bolt-off"></i></button>
-   <button type="button" onclick="csSoon('Minuterie')"><span>Minuterie</span><i class="ti ti-clock"></i></button>
-   <button type="button" onclick="csSoon('Disposition')"><span>Disposition</span><i class="ti ti-layout-grid"></i></button>
-   <button type="button" onclick="csSoon('Retouche')"><span>Retouche</span><i class="ti ti-sparkles"></i></button>
-   <button type="button" onclick="csSoon('Téléprompteur')"><span>Téléprompteur</span><i class="ti ti-blockquote"></i></button>
-   <button type="button" onclick="csSoon('Format')"><span>Format</span><i class="ti ti-arrows-diagonal-minimize-2"></i></button>
+   <button type="button" onclick="csToggleFlash()"><span>Flash</span><i class="ti ti-bolt"></i></button>
+   <button type="button" onclick="csCycleTimer()"><span id="csTimerLabel">Minuterie · off</span><i class="ti ti-clock"></i></button>
+   <button type="button" onclick="csToggleGrid()"><span>Grille</span><i class="ti ti-layout-grid"></i></button>
+   <button type="button" onclick="csCycleFilter()"><span id="csFilterLabel">Retouche · Normal</span><i class="ti ti-sparkles"></i></button>
+   <button type="button" onclick="csTogglePrompter()"><span>Téléprompteur</span><i class="ti ti-blockquote"></i></button>
+   <button type="button" onclick="csCycleFit()"><span id="csFitLabel">Cadrage · rempli</span><i class="ti ti-arrows-diagonal-minimize-2"></i></button>
   </div>
+  <div id="csGrid" class="cs-grid-ov hidden"></div>
+  <div id="csPrompter" class="cs-prompter hidden"><div id="csPrompterText"></div></div>
+  <div id="csCountdown" class="cs-countdown hidden"></div>
   <div class="cs-rec" id="csRec"><i class="ti ti-circle-filled"></i> <span id="csRecTime">0:00</span></div>
   <div class="cs-modes">
-   <button type="button" data-mode="60" onclick="csSetMode('60')">60 s</button>
    <button type="button" data-mode="15" onclick="csSetMode('15')">15 s</button>
+   <button type="button" data-mode="60" onclick="csSetMode('60')">60 s</button>
+   <button type="button" data-mode="180" onclick="csSetMode('180')">3 min</button>
    <button type="button" data-mode="photo" class="active" onclick="csSetMode('photo')">PHOTO</button>
   </div>
   <div class="cs-row">
@@ -746,6 +754,7 @@ header{background:#000;border-bottom:0}
     <button type="button" onclick="csSoon('Détourage')"><i class="ti ti-cut"></i>Détourage</button>
    </div>
    <button class="cs-new" type="button" onclick="csTab('camera')"><i class="ti ti-plus"></i> Nouvelle vidéo</button>
+   <button class="cs-card-btn" type="button" onclick="csCaptionThenGallery()"><i class="ti ti-captions"></i> Publication avec légende</button>
    <button class="cs-card-btn" type="button" onclick="csOpen('post')"><i class="ti ti-photo"></i> Publication depuis la galerie</button>
    <button class="cs-card-btn" type="button" onclick="csOpen('status')"><i class="ti ti-circle-dashed"></i> Publier un statut</button>
   </div>
@@ -2503,9 +2512,9 @@ function csSetMode(mode){
  $("csShutter").classList.toggle("video",mode!=="photo");
 }
 function csShoot(){
- if(csMode==="photo")return csTakePhoto();
+ if(csMode==="photo")return csWithCountdown(csTakePhoto);
  if(csRecorder)return csStopRecording();
- csStartRecording(Number(csMode));
+ csWithCountdown(()=>csStartRecording(Number(csMode)));
 }
 function csTakePhoto(){
  const v=$("csVideo");
@@ -2513,9 +2522,11 @@ function csTakePhoto(){
  const c=document.createElement("canvas");c.width=v.videoWidth;c.height=v.videoHeight;
  const ctx=c.getContext("2d");
  if(csFacing==="user"){ctx.translate(c.width,0);ctx.scale(-1,1)}
+ try{ctx.filter=CS_FILTERS[csFilterIdx]}catch{}
  ctx.drawImage(v,0,0,c.width,c.height);
  c.toBlob(blob=>{if(blob)csSendToComposer(blob,"photo-"+Date.now()+".jpg")},"image/jpeg",0.92);
 }
+
 function csStartRecording(maxSeconds){
  if(!csStream)return message("Caméra indisponible.");
  if(!window.MediaRecorder)return message("L'enregistrement vidéo n'est pas supporté sur ce téléphone.");
@@ -2535,7 +2546,7 @@ function csStartRecording(maxSeconds){
   }
   csDiscard=false;
  };
- csRecorder.start();csRecStart=Date.now();
+ csRecorder.start(1000);csRecStart=Date.now();
  $("csShutter").classList.add("rec");$("csRec").classList.add("on");
  csRecTick=setInterval(()=>{
   const sec=Math.floor((Date.now()-csRecStart)/1000);
@@ -2543,11 +2554,54 @@ function csStartRecording(maxSeconds){
   if(sec>=maxSeconds)csStopRecording();
  },250);
 }
-function csStopRecording(){if(csRecorder&&csRecorder.state!=="inactive")csRecorder.stop();csHideRec()}
+function csStopRecording(){if(csRecorder&&csRecorder.state!=="inactive")csRecorder.stop();csHideRec();clearTimeout(csPressTimer)}
 function csHideRec(){
  clearInterval(csRecTick);csRecTick=null;
  $("csRec").classList.remove("on");$("csRecTime").textContent="0:00";
  $("csShutter").classList.remove("rec");
+ if(csFlashOn){const t=csStream?.getVideoTracks()[0];t?.applyConstraints({advanced:[{torch:false}]}).catch(()=>{});csFlashOn=false}
+}
+/* OPTIONS AVANCÉES DE LA CAMÉRA */
+let csTimerSec=0,csGridOn=false,csFlashOn=false,csCountingDown=false,csPrompterOn=false,csFilterIdx=0,csFitIdx=0;
+let csPressTimer=null,csPressStart=0,csHolding=false,csPressWasStop=false;
+const CS_FILTERS=["none","sepia(.6) saturate(1.3)","grayscale(1) contrast(1.1)","saturate(1.6) brightness(1.08)"];
+const CS_FILTER_NAMES=["Normal","Chaud","Noir & blanc","Vif"];
+const CS_FITS=["cover","contain"];
+function csApplyVideoStyle(){
+ const v=$("csVideo");v.style.filter=CS_FILTERS[csFilterIdx];v.style.objectFit=CS_FITS[csFitIdx];
+}
+function csCycleFilter(){csFilterIdx=(csFilterIdx+1)%CS_FILTERS.length;$("csFilterLabel").textContent="Retouche · "+CS_FILTER_NAMES[csFilterIdx];csApplyVideoStyle()}
+function csCycleFit(){csFitIdx=(csFitIdx+1)%CS_FITS.length;$("csFitLabel").textContent="Cadrage · "+(csFitIdx===0?"rempli":"entier");csApplyVideoStyle()}
+function csToggleGrid(){csGridOn=!csGridOn;$("csGrid").classList.toggle("hidden",!csGridOn)}
+function csCycleTimer(){const a=[0,3,10];csTimerSec=a[(a.indexOf(csTimerSec)+1)%a.length];$("csTimerLabel").textContent="Minuterie · "+(csTimerSec?csTimerSec+" s":"off")}
+function csTogglePrompter(){
+ if(csPrompterOn){csPrompterOn=false;$("csPrompter").classList.add("hidden");return}
+ const t=prompt("Texte à lire pendant la vidéo :");if(!t||!t.trim())return;
+ $("csPrompterText").textContent=t.trim();csPrompterOn=true;$("csPrompter").classList.remove("hidden");
+}
+function csToggleFlash(){
+ const track=csStream?.getVideoTracks()[0],caps=track?.getCapabilities?.();
+ if(!caps||!caps.torch)return message("Flash non disponible sur ce téléphone ou ce navigateur.");
+ csFlashOn=!csFlashOn;
+ track.applyConstraints({advanced:[{torch:csFlashOn}]}).catch(()=>{csFlashOn=false;message("Flash indisponible.")});
+}
+function csWithCountdown(action){
+ if(!csTimerSec)return action();if(csCountingDown)return;csCountingDown=true;
+ const el=$("csCountdown");let n=csTimerSec;el.textContent=n;el.classList.remove("hidden");
+ const iv=setInterval(()=>{n--;if(n<=0){clearInterval(iv);el.classList.add("hidden");csCountingDown=false;action()}else el.textContent=n},1000);
+}
+function csShutterDown(e){
+ e.preventDefault();csPressStart=Date.now();csHolding=false;csPressWasStop=false;
+ if(csMode==="photo")return;
+ if(csRecorder){csPressWasStop=true;csStopRecording();return}
+ clearTimeout(csPressTimer);csPressTimer=setTimeout(()=>{csHolding=true;csWithCountdown(()=>csStartRecording(Number(csMode)))},300);
+}
+function csShutterUp(e){
+ e.preventDefault();clearTimeout(csPressTimer);
+ if(csMode==="photo"){if(Date.now()-csPressStart<600)csWithCountdown(csTakePhoto);return}
+ if(csPressWasStop){csPressWasStop=false;return}
+ if(csHolding){csHolding=false;csStopRecording();return}
+ if(!csRecorder)csWithCountdown(()=>csStartRecording(Number(csMode)));
 }
 function csSendToComposer(blob,name){
  const file=new File([blob],name,{type:blob.type||"application/octet-stream"});
@@ -2572,7 +2626,8 @@ function openComposer(mode){
 function closeComposer(){$("composer").classList.add("hidden")}
 
 /* GALERIE : publication directe ou statut de 24 h */
-let galleryMode="post";
+let galleryMode="post",galleryAskCaption=false;
+function csCaptionThenGallery(){closeCreateScreen();galleryAskCaption=true;openGallery("post")}
 function openGallery(mode){
  if(!currentUser)return guestToAuth();
  if(currentProfile?.role!=="creator"){showPage("application");return}
@@ -2589,13 +2644,18 @@ async function uploadFromGallery(file){
  if(file.size>200*1024*1024)return message("Fichier trop lourd (200 Mo max).");
  const info=fileInfo(file);
  if(!info)return message("Format non accepté.");
+ let caption=null;
+ if(galleryAskCaption){
+  const t=prompt("Légende (facultatif) :")||"";
+  caption=t.trim().slice(0,500)||null;galleryAskCaption=false;
+ }
  message(isStatus?"Envoi du statut en cours...":"Envoi de la publication en cours...");
  try{
   const path=`${currentUser.id}/${isStatus?"status-":""}${crypto.randomUUID()}.${info.ext}`;
   const {error:se}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type});
   if(se)return message("Envoi impossible : "+se.message);
   const table=isStatus?"statuses":"posts";
-  const {error}=await db.from(table).insert({creator_id:currentUser.id,kind:info.kind,media_path:path,caption:null});
+  const {error}=await db.from(table).insert({creator_id:currentUser.id,kind:info.kind,media_path:path,caption});
   if(error)return message((isStatus?"Statut":"Publication")+" refusé : "+error.message);
   if(isStatus){
    message("Statut publié pour 24 h.",true);
@@ -2796,10 +2856,15 @@ $("openCreateSheet").addEventListener("click",openSheet);
 $("composerFile").addEventListener("change",e=>previewComposer(e.target.files[0]));
 $("composerSubmit").addEventListener("click",publishFromComposer);
 $("galleryInput").addEventListener("change",e=>{
- const file=e.target.files[0];
- e.target.value="";
+ const file=e.target.files[0];e.target.value="";
+ if(!file)galleryAskCaption=false;
  uploadFromGallery(file);
 });
+const csShutterEl=$("csShutter");
+csShutterEl.addEventListener("pointerdown",csShutterDown);
+csShutterEl.addEventListener("pointerup",csShutterUp);
+csShutterEl.addEventListener("pointercancel",csShutterUp);
+csShutterEl.addEventListener("contextmenu",e=>e.preventDefault());
 $("moreDelete").addEventListener("click",deleteFromViewer);
 $("avatarInput").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";uploadAvatar(f)});
 $("startLiveButton").addEventListener("click",startCreatorLive);
