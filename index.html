@@ -969,6 +969,25 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
  .vtop .vtop-btn,.vtop .vtab{font-size:12px!important}
 }
 
+
+/* AFRO LIVE — commandes du direct : masquage doux après inactivité */
+.live-overlay-tools .live-tools{transition:opacity .22s ease,transform .22s ease}
+#lvStage.controls-hidden .live-overlay-tools .live-tools,
+#creatorLiveStage.controls-hidden .live-overlay-tools .live-tools{opacity:0;transform:translateY(12px);pointer-events:none}
+#lvStage .live-overlay-tools .live-tools,
+#creatorLiveStage .live-overlay-tools .live-tools{position:relative;z-index:90}
+.af-invite-backdrop{position:fixed;inset:0;z-index:10050;background:rgba(0,0,0,.68);display:flex;align-items:flex-end;justify-content:center;padding:14px}
+.af-invite-panel{width:min(100%,520px);max-height:min(78dvh,720px);overflow:auto;background:#171719;color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:18px;box-shadow:0 18px 60px #0009}
+.af-invite-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.af-invite-head h3{margin:0;font-size:18px}
+.af-invite-close{width:38px;height:38px;border:0;border-radius:50%;background:#303034;color:#fff;font-size:22px}
+.af-invite-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff16}
+.af-invite-row img,.af-invite-row .avatar{width:42px;height:42px;flex:none;border-radius:50%;object-fit:cover}
+.af-invite-row .af-invite-name{min-width:0;flex:1}
+.af-invite-row .af-invite-name b,.af-invite-row .af-invite-name small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.af-invite-row .af-invite-name small{color:#aaa}
+.af-invite-send{border:0;border-radius:999px;background:#ff7a18;color:#fff;font-weight:800;padding:9px 13px}
+.af-invite-send:disabled{opacity:.55}
 </style>
 </head>
 <body>
@@ -1913,7 +1932,7 @@ async function loadFollowsPage(){
 /* NOTIFICATIONS */
 async function refreshUnread(){
  if(!currentUser)return;
- const {count}=await db.from("notifications").select("id",{count:"exact",head:true}).eq("read",false);
+ const {count}=await db.from("notifications").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id).eq("read",false);
  $("bellDot").hidden=!count;
  const navDot=document.querySelector('#navigation button[data-page="notifs"] .navdot');
  if(navDot)navDot.hidden=!count;
@@ -1921,7 +1940,7 @@ async function refreshUnread(){
 async function loadNotifications(){
  const box=$("notifsList");
  box.innerHTML="<p>Chargement...</p>";
- const {data,error}=await db.from("notifications").select("id,creator_id,kind,created_at,read").order("created_at",{ascending:false}).limit(50);
+ const {data,error}=await db.from("notifications").select("id,creator_id,kind,created_at,read,live_session_id").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50);
  if(error){box.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
  if(!data.length){box.innerHTML="<p class='empty'>Aucune notification pour le moment.</p>";return}
  const ids=[...new Set(data.map(n=>n.creator_id))];
@@ -1930,18 +1949,24 @@ async function loadNotifications(){
  const txt={post:"a publié une nouvelle publication",status:"a publié un statut",live:"est en direct"};
  box.innerHTML=data.map(n=>{
   const p=map[n.creator_id]||{id:n.creator_id,username:"créateur"};
-  return `<button class="notif${n.read?"":" unread"}" data-notif-creator="${escapeHTML(n.creator_id)}" data-notif-kind="${escapeHTML(n.kind)}">
+  return `<button class="notif${n.read?"":" unread"}" data-notif-creator="${escapeHTML(n.creator_id)}" data-notif-kind="${escapeHTML(n.kind)}" data-notif-live="${escapeHTML(n.live_session_id||"")}">
    ${avatarHTML(p)}
    <div class="notif-text"><span><b>${escapeHTML(p.display_name||p.username)}</b> ${txt[n.kind]||""}</span>
    <span class="small">${new Date(n.created_at).toLocaleString("fr-FR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"})}</span></div>
   </button>`;
  }).join("");
- await db.from("notifications").update({read:true}).eq("read",false);
+ await db.from("notifications").update({read:true}).eq("user_id",currentUser.id).eq("read",false);
  $("bellDot").hidden=true;
  const navDot=document.querySelector('#navigation button[data-page="notifs"] .navdot');
  if(navDot)navDot.hidden=true;
 }
 
+document.addEventListener("click",event=>{
+ const card=event.target.closest(".notif");if(!card)return;
+ const creatorId=card.dataset.notifCreator,kind=card.dataset.notifKind,sessionId=card.dataset.notifLive;
+ if(kind==="live"&&sessionId){joinLive(sessionId,creatorId);return}
+ if(creatorId)openProfile(creatorId);
+});
 /* ACCUEIL : PUBLICATIONS PLEIN ÉCRAN */
 async function loadHomeFeed(){
  const box=$("homeFeed");
@@ -2686,6 +2711,47 @@ function addChatMessage(list,name,text,isMine=false){
  list.scrollTop=list.scrollHeight;
  setTimeout(()=>row.remove(),5000);
 }
+
+/* INVITATIONS DE DIRECT — envoi aux abonnés du créateur */
+async function openInvitePanel(sessionId=currentLiveSessionId){
+ if(!currentUser||liveMode!=="creator"||!sessionId)return message("Tu dois être en direct pour inviter tes abonnés.");
+ const old=document.getElementById("afInviteBackdrop");if(old)old.remove();
+ const backdrop=document.createElement("div");backdrop.id="afInviteBackdrop";backdrop.className="af-invite-backdrop";
+ const panel=document.createElement("section");panel.className="af-invite-panel";panel.setAttribute("role","dialog");panel.setAttribute("aria-modal","true");
+ const head=document.createElement("div");head.className="af-invite-head";
+ const heading=document.createElement("h3");heading.textContent="Inviter des abonnés";
+ const close=document.createElement("button");close.className="af-invite-close";close.type="button";close.textContent="×";close.setAttribute("aria-label","Fermer");close.onclick=()=>backdrop.remove();
+ head.append(heading,close);
+ const content=document.createElement("div");content.textContent="Chargement des abonnés…";
+ panel.append(head,content);backdrop.append(panel);document.body.append(backdrop);
+ backdrop.addEventListener("click",e=>{if(e.target===backdrop)backdrop.remove()});
+ const {data:follows,error}=await db.from("follows").select("spectator_id").eq("creator_id",currentUser.id);
+ if(error){content.textContent="Impossible de charger les abonnés : "+error.message;return}
+ const ids=[...new Set((follows||[]).map(x=>x.spectator_id).filter(id=>id&&id!==currentUser.id))];
+ if(!ids.length){content.textContent="Aucun abonné à inviter pour le moment.";return}
+ const {data:profiles, error:profileError}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ if(profileError){content.textContent="Impossible de charger les profils : "+profileError.message;return}
+ content.replaceChildren();
+ const intro=document.createElement("p");intro.className="small";intro.textContent="Envoie une invitation pour que tes abonnés puissent rejoindre ce direct.";content.append(intro);
+ for(const id of ids){
+  const p=(profiles||[]).find(x=>x.id===id)||{id,username:"Membre"};
+  const row=document.createElement("div");row.className="af-invite-row";
+  if(p.avatar_url){const img=document.createElement("img");img.src=mediaUrl(p.avatar_url);img.alt="";row.append(img)}
+  else{const avatar=document.createElement("div");avatar.className="avatar";avatar.textContent=(p.display_name||p.username||"M").slice(0,1).toUpperCase();row.append(avatar)}
+  const name=document.createElement("div");name.className="af-invite-name";
+  const strong=document.createElement("b");strong.textContent=p.display_name||p.username||"Membre";
+  const small=document.createElement("small");small.textContent="@"+(p.username||"membre");name.append(strong,small);
+  const send=document.createElement("button");send.className="af-invite-send";send.type="button";send.textContent="Inviter";
+  send.addEventListener("click",async()=>{
+   send.disabled=true;send.textContent="Envoi…";
+   const {error:sendError}=await db.from("notifications").insert({user_id:id,creator_id:currentUser.id,kind:"live",read:false,live_session_id:sessionId});
+   if(sendError){send.disabled=false;send.textContent="Réessayer";message("Invitation non envoyée : "+sendError.message);return}
+   send.textContent="Envoyé ✓";message("Invitation envoyée à "+(p.display_name||p.username||"cet abonné")+".",true);
+  });
+  row.append(name,send);content.append(row);
+ }
+}
+
 function installLiveInterface(stage,room,mode,creatorId=null){
  if(!stage||!room)return;
  const old=stage.querySelector(".live-overlay-tools");if(old)old.remove();
@@ -2702,6 +2768,9 @@ function installLiveInterface(stage,room,mode,creatorId=null){
  bar.appendChild(count);
 
  if(mode==="creator"){
+  const invite=document.createElement("button");invite.className="soft";invite.type="button";invite.textContent="Inviter";
+  invite.addEventListener("click",()=>openInvitePanel(currentLiveSessionId));
+  bar.appendChild(invite);
   let micEnabled=true;
   const mic=document.createElement("button");mic.className="soft";mic.type="button";mic.textContent="🎙 Micro ✓";
   mic.addEventListener("click",async()=>{
@@ -2751,6 +2820,15 @@ function installLiveInterface(stage,room,mode,creatorId=null){
  const send=document.createElement("button");send.type="submit";send.textContent="Envoyer";
  form.append(input,send);chat.append(title,list,form);
  tools.append(bar,chat);stage.appendChild(tools);
+ let controlsTimer=null;
+ const wakeLiveControls=()=>{
+  stage.classList.remove("controls-hidden");
+  clearTimeout(controlsTimer);
+  controlsTimer=setTimeout(()=>{if(document.activeElement!==input)stage.classList.add("controls-hidden")},4000);
+ };
+ stage.addEventListener("pointerdown",wakeLiveControls,{passive:true});
+ stage.addEventListener("touchstart",wakeLiveControls,{passive:true});
+ wakeLiveControls();
 
  const update=()=>{
   const n=room.remoteParticipants.size;
