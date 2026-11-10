@@ -2246,32 +2246,30 @@ async function getLiveToken(sessionId){
  if(!data?.token||!data?.livekit_url)throw new Error(data?.error||"Réponse invalide du serveur LiveKit.");
  return data;
 }
-function attachLiveTrack(track,container){
+function attachLiveTrack(track,container,status=null){
  if(!track||!container)return;
  if(track.kind===LivekitClient.Track.Kind.Video){
-  // Utiliser l'élément créé par LiveKit lui-même (comme dans l'aperçu
-  // qui fonctionne), plutôt que de lui imposer un élément vidéo externe.
   let video=track.attachedElements?.find(el=>el instanceof HTMLVideoElement);
   if(!video)video=track.attach();
-  video.classList.add("live-video");
-  video.autoplay=true;
-  video.playsInline=true;
-  video.muted=true;
-  video.setAttribute("muted","");
-  video.setAttribute("playsinline","");
-  video.setAttribute("autoplay","");
+  video.classList.add("live-video");video.autoplay=true;video.playsInline=true;video.muted=true;
+  video.setAttribute("muted","");video.setAttribute("playsinline","");video.setAttribute("autoplay","");
   if(video.parentElement!==container)container.prepend(video);
-  requestAnimationFrame(()=>video.play?.().catch(error=>console.warn("Lecture vidéo du direct bloquée par le navigateur.",error)));
+  const report=()=>{
+   if(video.videoWidth>0&&video.videoHeight>0){if(status){status.hidden=true;status.textContent=""}}
+   else if(status){status.hidden=false;status.textContent="Piste vidéo reçue, mais image non décodée. Attente du flux vidéo…"}
+  };
+  video.addEventListener("loadedmetadata",report);video.addEventListener("playing",report);
+  video.addEventListener("error",()=>{if(status){status.hidden=false;status.textContent="La vidéo est reçue, mais le navigateur signale une erreur de lecture."}});
+  if(status){status.hidden=false;status.textContent="Vidéo reçue. Démarrage de l’image…"}
+  requestAnimationFrame(()=>video.play?.().then(report).catch(error=>{
+   console.warn("Lecture vidéo du direct bloquée par le navigateur.",error);
+   if(status){status.hidden=false;status.textContent="Vidéo reçue, lecture bloquée par le navigateur. Touche l’écran pour réessayer."}
+  }));
   return;
  }
  if(track.kind===LivekitClient.Track.Kind.Audio){
-  const existing=track.attachedElements?.find(el=>el instanceof HTMLAudioElement);
-  if(existing)return;
-  const audio=track.attach();
-  audio.autoplay=true;
-  audio.playsInline=true;
-  audio.style.display="none";
-  container.appendChild(audio);
+  const existing=track.attachedElements?.find(el=>el instanceof HTMLAudioElement);if(existing)return;
+  const audio=track.attach();audio.autoplay=true;audio.playsInline=true;audio.style.display="none";container.appendChild(audio);
   audio.play?.().catch(error=>console.warn("Audio du direct en attente d'une interaction.",error));
  }
 }
@@ -2287,6 +2285,7 @@ async function startPreview(sessionId){
  const box=$("livePreview_"+sessionId);if(!box)return;
  previewRooms.set(sessionId,null);
  let room=null;
+ const diagnostic=(message)=>{status.hidden=false;status.textContent=message};
  try{
   const credentials=await getLiveToken(sessionId);
   if(!previewRooms.has(sessionId))return;
@@ -2578,9 +2577,14 @@ async function joinLive(sessionId){
   const credentials=await getLiveToken(sessionId);
   room=createLiveRoom();
   liveRoom=room;currentLiveSessionId=sessionId;liveMode="spectator";
-  room.on(LivekitClient.RoomEvent.TrackSubscribed,track=>attachLiveTrack(track,stage));
+  room.on(LivekitClient.RoomEvent.ConnectionStateChanged,state=>diagnostic("État de connexion : "+String(state)));
+  room.on(LivekitClient.RoomEvent.ParticipantConnected,participant=>diagnostic("Créateur connecté : "+(participant.name||participant.identity||"participant")+". Recherche de sa vidéo…"));
+  room.on(LivekitClient.RoomEvent.TrackSubscribed,(track,publication,participant)=>{
+   if(track.kind===LivekitClient.Track.Kind.Video){diagnostic("Piste vidéo reçue. Préparation de l’image…");attachLiveTrack(track,stage,status)}else attachLiveTrack(track,stage,status);
+  });
+  room.on(LivekitClient.RoomEvent.TrackSubscriptionFailed,(trackSid,participant)=>diagnostic("Échec de réception de la piste vidéo ("+String(trackSid)+")."));
   room.on(LivekitClient.RoomEvent.TrackPublished,(publication,participant)=>{
-   if(publication.kind===LivekitClient.Track.Kind.Video)publication.setSubscribed(true);
+   if(publication.kind===LivekitClient.Track.Kind.Video){diagnostic("Vidéo publiée par le créateur. Abonnement en cours…");publication.setSubscribed(true)}
   });
   room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>{
    if(track.kind===LivekitClient.Track.Kind.Video){
@@ -2593,15 +2597,18 @@ async function joinLive(sessionId){
     closeLiveViewer().then(()=>message("Le direct s'est terminé ou la connexion a été interrompue."));
    }
   });
+  diagnostic("Jeton obtenu. Connexion à la salle vidéo…");
   await room.connect(credentials.livekit_url,credentials.token,{autoSubscribe:true});
   try{await room.startAudio()}catch(error){console.log("Activation audio différée par le navigateur.",error)}
-  for(const participant of room.remoteParticipants.values())
+  const participants=[...room.remoteParticipants.values()];
+  if(!participants.length)diagnostic("Connecté à la salle, mais aucun créateur n’est encore visible. Attente de sa connexion…");
+  else diagnostic("Salle connectée. "+participants.length+" participant(s) distant(s). Recherche de la piste vidéo…");
+  for(const participant of participants)
    for(const publication of participant.trackPublications.values()){
-    if(publication.kind===LivekitClient.Track.Kind.Video&&!publication.isSubscribed)publication.setSubscribed(true);
-    if(publication.track)attachLiveTrack(publication.track,stage);
+    if(publication.kind===LivekitClient.Track.Kind.Video){diagnostic("Piste vidéo trouvée (abonnement : "+(publication.isSubscribed?"actif":"en cours")+").");if(!publication.isSubscribed)publication.setSubscribed(true)}
+    if(publication.track)attachLiveTrack(publication.track,stage,status);
    }
   installLiveInterface(stage,room,"spectator",liveInfo.creator_id);
-  status.hidden=true;
   clearInterval(liveStatusPollTimer);
   liveStatusPollTimer=setInterval(async()=>{
    if(liveMode!=="spectator"||currentLiveSessionId!==sessionId){clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;return}
@@ -2617,7 +2624,7 @@ async function joinLive(sessionId){
   if(room)room.disconnect().catch(()=>{});
   if(liveRoom===room){liveRoom=null;currentLiveSessionId=null;liveMode=null}
   status.hidden=false;
-  status.textContent="Impossible de rejoindre ce direct : "+(error.message||"erreur inconnue");
+  status.textContent="Erreur pendant la connexion : "+(error.message||"erreur inconnue");
  }
 }
 async function closeLiveViewer(){
