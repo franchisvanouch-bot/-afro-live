@@ -730,6 +730,180 @@ button:focus-visible{outline:2px solid var(--af-gold);outline-offset:3px}
 
 /* Masquer les diagnostics techniques du lecteur pour les spectateurs */
 #liveViewer #lvStatus{display:none!important;visibility:hidden!important;pointer-events:none!important}
+
+/* =========================================================
+   AFRO LIVE — SIGNATURE VISUELLE PREMIUM 2026
+   Couleurs conservées : orange, noir, blanc.
+   Amélioration visuelle uniquement : aucun flux vidéo ni accès DB modifié.
+   ========================================================= */
+:root{
+ --bg:#070707;--surface:#111113;--surface2:#1b1b1f;
+ --line:rgba(255,255,255,.09);--orange:#ff7900;
+ --text:#fff;--muted:#a6a6ad;
+}
+body{background:#070707}
+button{transition:transform .18s ease,filter .18s ease,background .18s ease}
+button:active{transform:scale(.96)}
+.card{
+ background:linear-gradient(145deg,rgba(29,29,32,.98),rgba(14,14,16,.98));
+ border:1px solid rgba(255,255,255,.075);
+ border-radius:20px;box-shadow:0 14px 40px rgba(0,0,0,.22)
+}
+header{
+ background:rgba(7,7,7,.82);backdrop-filter:blur(18px);
+ border-bottom:1px solid rgba(255,121,0,.15)
+}
+.logo{letter-spacing:-.8px;font-weight:950}
+.logo span{color:#fff}
+body.feed-mode #discoverPage:before{
+ content:"AFRO LIVE";
+ position:absolute;z-index:6;top:max(13px,env(safe-area-inset-top));
+ left:15px;color:#fff;font-size:15px;font-weight:950;letter-spacing:1.1px;
+ text-shadow:0 2px 12px #000;pointer-events:none
+}
+body.feed-mode #discoverPage:before{ text-decoration: none }
+#discoverPage .vtop{
+ top:max(55px,calc(env(safe-area-inset-top) + 43px));
+ left:12px;right:58px;justify-content:flex-start;gap:7px;
+ overflow-x:auto;scrollbar-width:none;padding:7px 2px;
+ mask-image:linear-gradient(90deg,#000 0%,#000 90%,transparent 100%)
+}
+#discoverPage .vtop::-webkit-scrollbar{display:none}
+#discoverPage .vtop .vtab,
+#discoverPage .vtop .vtop-btn{
+ pointer-events:auto;white-space:nowrap;border-radius:999px;
+ padding:9px 13px;font-size:13px;font-weight:750;
+ color:rgba(255,255,255,.76);background:rgba(16,16,18,.58);
+ border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(14px);
+ text-shadow:none;box-shadow:none
+}
+#discoverPage .vtop .vtab.active{
+ color:#fff;background:rgba(255,121,0,.23);
+ border-color:rgba(255,121,0,.7);box-shadow:inset 0 0 0 1px rgba(255,121,0,.12)
+}
+#discoverPage .vtop .vtop-btn:first-child{
+ width:38px;height:38px;padding:0;display:grid;place-items:center;
+ color:#ff8a24;font-size:18px
+}
+#discoverPage .vbell{
+ top:max(12px,env(safe-area-inset-top));right:13px;
+ background:rgba(15,15,17,.58);border:1px solid rgba(255,255,255,.14);
+ backdrop-filter:blur(14px);box-shadow:0 5px 20px rgba(0,0,0,.25)
+}
+#discoverPage .vitem{background:#050505}
+#discoverPage .vshade{
+ height:48%;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.08) 35%,rgba(0,0,0,.76) 100%)
+}
+#discoverPage .vside{right:12px;bottom:calc(112px + env(safe-area-inset-bottom));gap:15px}
+#discoverPage .vside .vavatar .avatar{
+ width:48px;height:48px;border:2px solid #ff7900;
+ box-shadow:0 0 0 3px rgba(255,121,0,.2)
+}
+#discoverPage .vfollow{
+ background:#ff7900;color:#111;border:2px solid #080808;
+ box-shadow:0 5px 18px rgba(255,121,0,.3)
+}
+#discoverPage .vbtn{
+ width:48px;min-height:48px;justify-content:center;
+ border-radius:18px;background:rgba(10,10,12,.35);
+ border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(8px);
+ text-shadow:0 2px 5px #000
+}
+#discoverPage .vbtn i{font-size:27px}
+#discoverPage .vbtn.on i{color:#ff7900}
+#discoverPage .vmeta{
+ left:14px;right:78px;bottom:calc(28px + env(safe-area-inset-bottom));
+ padding:14px 15px;border-radius:18px;
+ background:linear-gradient(135deg,rgba(12,12,13,.74),rgba(12,12,13,.35));
+ border:1px solid rgba(255,255,255,.11);backdrop-filter:blur(13px);
+ box-shadow:0 12px 35px rgba(0,0,0,.2)
+}
+#discoverPage .vmeta b{font-size:15px;font-weight:850}
+#discoverPage .vmeta p{font-size:14px;line-height:1.45;margin-top:7px}
+#discoverPage .v-soundline{color:#ffb16f;font-size:11px}
+.tag-live{
+ display:inline-flex;align-items:center;gap:5px;
+ background:#ff7900;color:#111!important;border-radius:999px;
+ padding:4px 8px;font-size:10px;font-weight:900;letter-spacing:.5px
+}
+/* Liste des directs : cartes plus cinématographiques */
+#livesPage .lf-item{background:#080808}
+#livesPage .lf-preview{background:#080808}
+#livesPage .lf-info{
+ padding:18px 16px calc(22px + env(safe-area-inset-bottom));
+ background:linear-gradient(transparent,rgba(0,0,0,.82))
+}
+#livesPage .lf-watch{
+ background:linear-gradient(135deg,#ff9a24,#ff7900);color:#111;
+ border-radius:999px;font-weight:900;box-shadow:0 8px 24px rgba(255,121,0,.28)
+}
+/* Direct immersif : contrôles flottants et chat transparent */
+#liveViewer .lv-stage{background:#050505}
+#liveViewer .live-overlay-tools{
+ background:linear-gradient(180deg,rgba(0,0,0,.38),transparent 24%,transparent 58%,rgba(0,0,0,.2));
+}
+#liveViewer .live-tools{
+ display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 12px) 62px 10px 14px;
+}
+#liveViewer .live-tools .count{
+ display:inline-flex;align-items:center;min-height:36px;padding:0 13px;
+ border-radius:999px;background:rgba(12,12,14,.58);
+ border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(14px);
+ color:#fff;font-size:12px;font-weight:800
+}
+#liveViewer .live-tools button{
+ min-height:36px;padding:8px 12px;border-radius:999px;
+ background:rgba(15,15,17,.55);border:1px solid rgba(255,255,255,.16);
+ backdrop-filter:blur(14px);font-size:12px;font-weight:800
+}
+#liveViewer .live-tools button.danger{background:rgba(255,121,0,.92);color:#111;border-color:transparent}
+#liveViewer .live-chat{padding:10px 13px calc(12px + env(safe-area-inset-bottom))}
+#liveViewer .live-chat-title{
+ display:inline-flex;padding:6px 10px;border-radius:999px;
+ background:rgba(10,10,12,.45);border:1px solid rgba(255,255,255,.1);
+ color:#ffb16f;font-size:11px;font-weight:800;backdrop-filter:blur(10px)
+}
+#liveViewer .live-chat-messages{
+ max-height:24dvh;padding:4px 2px 8px;
+ mask-image:linear-gradient(180deg,transparent 0%,#000 12%,#000 100%)
+}
+#liveViewer .live-chat-message{
+ background:rgba(10,10,12,.48);border:1px solid rgba(255,255,255,.08);
+ border-radius:14px;padding:7px 11px;backdrop-filter:blur(10px);
+ font-size:13px
+}
+#liveViewer .live-chat-message strong{color:#ff9b45}
+#liveViewer .live-chat-form{
+ gap:8px;padding:8px;border-radius:999px;
+ background:rgba(10,10,12,.48);border:1px solid rgba(255,255,255,.14);
+ backdrop-filter:blur(16px)
+}
+#liveViewer .live-chat-form input{
+ height:42px;padding:0 14px;border:0!important;background:transparent!important;
+ color:#fff;font-size:14px
+}
+#liveViewer .live-chat-form button{
+ width:42px;height:42px;min-width:42px;padding:0;border-radius:50%;
+ background:#ff7900;color:#111;font-size:12px;font-weight:900
+}
+#liveViewer .lv-close{
+ width:40px;height:40px;background:rgba(12,12,14,.58);
+ border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(12px)
+}
+/* Feuilles et fenêtres : finition cohérente */
+.gift-sheet,.payment-sheet,.cm-sheet,.sheet,.csm-sheet{
+ border:1px solid rgba(255,255,255,.1);
+ box-shadow:0 -18px 60px rgba(0,0,0,.45)
+}
+.gift-send,.csm-apply{background:linear-gradient(135deg,#ff9a24,#ff7900);color:#111;font-weight:900}
+@media(min-width:700px){
+ #discoverPage .vitem{max-width:480px;margin:auto}
+ #discoverPage .vfeed{display:flex;flex-direction:column;align-items:center}
+ #discoverPage .vitem{flex:0 0 100%;width:min(100%,480px)}
+}
+@media(prefers-reduced-motion:reduce){
+ button{transition:none!important}
+}
 </style>
 </head>
 <body>
