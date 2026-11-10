@@ -943,7 +943,10 @@ if("serviceWorker" in navigator){
   }catch(e){console.warn("AFRO LIVE : vérification de mise à jour impossible",e)}
   finally{afroUpdateCheckBusy=false}
  }
- window.addEventListener("load",afroCheckAppUpdate);
+ window.addEventListener("load",()=>{
+  setTimeout(()=>sessionStorage.removeItem("afro-sw-reloaded"),4000);
+  afroCheckAppUpdate();
+ });
  window.addEventListener("pageshow",afroCheckAppUpdate);
  document.addEventListener("visibilitychange",()=>{if(!document.hidden)afroCheckAppUpdate()});
  window.addEventListener("online",afroCheckAppUpdate);
