@@ -1475,6 +1475,9 @@ function installLiveInterface(stage,room,mode,creatorId=null){
 
   const end=document.createElement("button");end.className="danger";end.type="button";end.textContent="Terminer";
   end.addEventListener("click",()=>{if(confirm("Veux-tu vraiment terminer ce direct ?"))stopCreatorLive()});
+  const access=document.createElement("button");access.id="liveAccessToggle";access.className="soft";access.type="button";access.textContent=activeLiveAccessMode==="paid"?"Passer en mode gratuit":"Passer en mode payant";
+  access.addEventListener("click",()=>setLiveAccessMode(activeLiveAccessMode==="paid"?"free":"paid"));
+  bar.appendChild(access);
   bar.appendChild(end);
  }
  if(mode==="spectator"){
@@ -1653,6 +1656,27 @@ async function leaveSpectatorLive(){
 $("lvClose").addEventListener("click",()=>closeLiveViewer());
 
 /* DIRECT CRÉATEUR */
+let activeLiveAccessMode="free";
+async function creatorHasPaidLivePlans(){
+ const {data,error}=await db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",currentUser.id).maybeSingle();
+ if(error)throw error;
+ return !!data?.is_accepting_subscriptions&&[data.daily_price_fcfa,data.weekly_price_fcfa,data.monthly_price_fcfa].some(v=>Number.isInteger(Number(v))&&Number(v)>=100);
+}
+async function setLiveAccessMode(nextMode){
+ if(!["free","paid"].includes(nextMode))return;
+ if(liveMode!=="creator"||!currentLiveSessionId)return message("Tu dois être en direct pour changer ce mode.");
+ if(nextMode==="paid"){
+  try{if(!await creatorHasPaidLivePlans())return message("Configure d’abord au moins un tarif et active les abonnements dans l’onglet Tarifs et revenus.");}
+  catch(error){return message("Impossible de vérifier tes tarifs : "+error.message)}
+ }
+ const button=$("liveAccessToggle");if(button)button.disabled=true;
+ const {data,error}=await db.from("live_sessions").update({access_mode:nextMode}).eq("id",currentLiveSessionId).eq("creator_id",currentUser.id).select("id,access_mode").maybeSingle();
+ if(error||!data){if(button)button.disabled=false;return message("Le mode n’a pas été modifié : "+(error?.message||"aucune confirmation du serveur."))}
+ activeLiveAccessMode=data.access_mode||nextMode;
+ $("creatorLiveAccessStatus").textContent=activeLiveAccessMode==="paid"?"🔒 Mode payant · abonnement requis":"🌍 Mode gratuit · accès libre";
+ if(button){button.textContent=activeLiveAccessMode==="paid"?"Passer en mode gratuit":"Passer en mode payant";button.disabled=false}
+ message(activeLiveAccessMode==="paid"?"Le direct est maintenant réservé aux abonnés actifs.":"Le direct est de nouveau gratuit pour tout le monde.",true);
+}
 function updateLiveParticipantCount(){
  if(!liveRoom||liveMode!=="creator")return;
  const count=liveRoom.remoteParticipants.size;
@@ -1663,13 +1687,18 @@ async function startCreatorLive(){
  if(liveRoom)return message("Tu es déjà connecté à un direct.");
  if(!window.isSecureContext)return message("La caméra nécessite une connexion HTTPS.");
  const title=$("liveTitle").value.trim(),description=$("liveDescription").value.trim(),button=$("startLiveButton");
+ const accessMode=$("liveAccessMode").value==="paid"?"paid":"free";
  if(title.length<3)return message("Donne un titre d'au moins 3 caractères.");
+ if(accessMode==="paid"){
+  try{if(!await creatorHasPaidLivePlans())return message("Pour lancer un direct payant, configure au moins un tarif et active les abonnements dans Tarifs et revenus.");}
+  catch(error){return message("Impossible de vérifier tes tarifs : "+error.message)}
+ }
  button.disabled=true;button.textContent="Préparation du direct...";
  $("creatorLiveStatus").textContent="Création de ta salle...";
  let sessionId=null,room=null;
  facingMode="user";
  try{
-  const {data:session,error:ie}=await db.from("live_sessions").insert({creator_id:currentUser.id,title,description,status:"scheduled"}).select("id").single();
+  const {data:session,error:ie}=await db.from("live_sessions").insert({creator_id:currentUser.id,title,description,status:"scheduled",access_mode:accessMode}).select("id").single();
   if(ie)throw ie;
   sessionId=session.id;
   $("creatorLiveStatus").textContent="Connexion au serveur vidéo...";
@@ -1687,7 +1716,9 @@ async function startCreatorLive(){
   cameraPub.track.attach($("localLiveVideo"));
   const {data:updated,error:ue}=await db.from("live_sessions").update({status:"live",started_at:new Date().toISOString()}).eq("id",sessionId).eq("creator_id",currentUser.id).select("id").maybeSingle();
   if(ue||!updated)throw new Error(ue?.message||"Impossible de publier le direct.");
+  activeLiveAccessMode=accessMode;
   liveCreatorIds.add(currentUser.id);
+  $("creatorLiveAccessStatus").textContent=accessMode==="paid"?"🔒 Mode payant · abonnement requis":"🌍 Mode gratuit · accès libre";
   $("creatorLivePreview").classList.remove("hidden");
   button.classList.add("hidden");
   installLiveInterface($("creatorLiveStage"),room,"creator");
@@ -1716,6 +1747,7 @@ async function stopCreatorLive(){
  liveCreatorIds.delete(currentUser.id);
  const {data,error}=await db.from("live_sessions").update({status:"ended",ended_at:new Date().toISOString()}).eq("id",sessionId).eq("creator_id",currentUser.id).select("id").maybeSingle();
  $("creatorLivePreview").classList.add("hidden");
+ activeLiveAccessMode="free";$("liveAccessMode").value="free";
  $("startLiveButton").classList.remove("hidden");
  $("localLiveVideo").srcObject=null;
  $("creatorLiveStatus").textContent=error||!data?"Connexion terminée, mais le statut du direct n'a pas été actualisé.":"Ton direct est terminé.";
