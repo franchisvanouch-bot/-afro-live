@@ -3445,7 +3445,7 @@ function closeCreateScreen(){
 }
 function csSoon(name){
  if(name==="Éditeur de photos"){closeCreateScreen();openGallery("post");return}
- if(name==="Légendes"){const caption=prompt("Écris la légende de ta prochaine publication :");if(caption?.trim()){galleryAskCaption=true;closeCreateScreen();openGallery("post")}return}
+ if(name==="Légendes"){csCaptionThenGallery();return}
  message(name+" nécessite encore son moteur dédié. Je préfère ne pas afficher un faux outil fonctionnel.");
 }
 function csOpen(mode){closeCreateScreen();openGallery(mode)}
