@@ -904,69 +904,6 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 @media(prefers-reduced-motion:reduce){
  button{transition:none!important}
 }
-
-/* AFRO LIVE — boutons fluides, sans cadres carrés */
-button{border-radius:999px}
-button.icon,.pf-icon{border-radius:50%!important}
-#navigation.bottomnav button{
- border-radius:0!important;background:transparent!important;
- border:0!important;box-shadow:none!important
-}
-#navigation.bottomnav .nav-create{
- flex:0 0 46px!important;width:46px!important;height:46px!important;
- border-radius:50%!important;margin:0 8px!important;
- background:linear-gradient(145deg,#ff9b2f,#ff7900)!important;
- color:#111!important;border:2px solid rgba(255,255,255,.16)!important;
- box-shadow:0 5px 22px rgba(255,121,0,.3)!important
-}
-#navigation.bottomnav .nav-create i{font-size:25px!important}
-#discoverPage .vtop .vtab,
-#discoverPage .vtop .vtop-btn{
- border-radius:999px!important;border:1px solid rgba(255,255,255,.12)!important;
- box-shadow:none!important
-}
-#discoverPage .vside .vbtn{
- width:auto!important;min-width:0!important;min-height:0!important;
- padding:0!important;border:0!important;border-radius:0!important;
- background:transparent!important;box-shadow:none!important;
- backdrop-filter:none!important;overflow:visible!important
-}
-#discoverPage .vside .vbtn i{
- font-size:30px!important;filter:drop-shadow(0 2px 5px rgba(0,0,0,.65))
-}
-#discoverPage .vside .vbtn .vcount{
- font-size:11px!important;font-weight:800!important;
- text-shadow:0 2px 5px #000!important
-}
-#liveViewer .live-tools button,
-#liveViewer .live-chat-form button,
-#liveViewer .lv-close{
- border-radius:999px!important;border:0!important;box-shadow:none!important
-}
-#liveViewer .live-chat-form button{border-radius:50%!important}
-#liveViewer .live-tools button{background:rgba(18,18,20,.66)!important}
-#liveViewer .live-tools button.danger{background:#ff7900!important;color:#111!important}
-#liveViewer .lv-close{border:1px solid rgba(255,255,255,.15)!important}
-main button:not(.nav-create):not(.vbtn):not(.vtab):not(.vtop-btn):not(.icon){
- border-radius:999px
-}
-button:focus-visible{outline:2px solid #ff9a35;outline-offset:3px}
-
-/* AFRO LIVE — finition compacte du fil */
-.vtop .vbrand-live{display:inline-flex!important;align-items:center!important;gap:7px!important;padding:8px 11px!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:999px!important;background:rgba(8,8,8,.42)!important;color:#fff!important;font-size:13px!important;font-weight:850!important;letter-spacing:.35px!important;backdrop-filter:blur(12px)}
-.vtop .vbrand-live i{font-size:19px!important;color:#ff922e!important}
-.vtop .vbrand-live span{white-space:nowrap}
-.vtop{gap:clamp(7px,2vw,16px)!important}
-.vtop .vtab,.vtop-btn{font-size:14px!important}
-.vtop .vtab{padding-left:4px!important;padding-right:4px!important}
-.vmeta{left:14px!important;right:82px!important;bottom:calc(26px + env(safe-area-inset-bottom))!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;backdrop-filter:none!important;box-shadow:none!important}
-.vmeta b{display:block;font-size:15px!important;margin-top:3px}
-.v-repost-note{display:inline-flex!important;align-items:center;gap:6px!important;margin:0 0 6px!important;padding:5px 9px!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:999px!important;background:rgba(0,0,0,.48)!important;backdrop-filter:blur(8px);font-size:10px!important;line-height:1.2!important}
-.vmeta p{font-size:13px!important;margin:4px 0!important}
-.v-soundline{display:inline-flex!important;width:max-content!important;max-width:68vw!important;margin-top:6px!important;padding:6px 10px!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:999px!important;background:rgba(0,0,0,.48)!important;backdrop-filter:blur(9px);font-size:11px!important}
-#navigation.bottomnav .nav-create,#navigation.bottomnav.over .nav-create{width:46px!important;height:46px!important;flex:0 0 46px!important;margin:-12px 7px 0!important;padding:0!important;border:2px solid rgba(255,255,255,.92)!important;border-radius:50%!important;background:linear-gradient(145deg,#ffad45,#ff7100 72%,#e95600)!important;color:#fff!important;box-shadow:0 5px 18px rgba(255,112,0,.42),inset 0 1px 2px rgba(255,255,255,.35)!important;opacity:1!important;transform:translateY(-1px)}
-#navigation.bottomnav .nav-create i,#navigation.bottomnav.over .nav-create i{color:#fff!important;font-size:27px!important;font-weight:700!important}
-
 </style>
 </head>
 <body>
@@ -997,7 +934,7 @@ button:focus-visible{outline:2px solid #ff9a35;outline-offset:3px}
  <section id="spectator">
   <section id="discoverPage" class="homefeed hidden">
    <div class="vtop">
-    <button class="vtop-btn vbrand-live" type="button" onclick="showPage('lives')" aria-label="Ouvrir les directs"><i class="ti ti-broadcast"></i><span>AFRO LIVE</span></button>
+    <button class="vtop-btn" type="button" onclick="showPage('lives')" aria-label="Directs"><i class="ti ti-broadcast"></i></button>
     <button class="vtop-btn" type="button" onclick="showPage('creators')">Communauté</button>
     <button class="vtab" data-filter="follows">Suivis</button>
     <button class="vtab active" data-filter="pour-toi">Pour toi</button>
@@ -1563,17 +1500,6 @@ async function loadAccount(){
   if(error){authMessage("Impossible de charger ton profil : "+error.message);return}
   if(!profile){authMessage("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");return}
   currentUser=user;currentProfile=profile;
-  // Une session LiveKit ne survit pas à un rechargement/une nouvelle connexion.
-  // Fermer les anciennes sessions encore marquées "live" évite les faux directs.
-  if(profile.role==="creator"&&!liveRoom){
-   const {data:staleLives,error:staleError}=await db.from("live_sessions")
-    .update({status:"ended",ended_at:new Date().toISOString()})
-    .eq("creator_id",user.id).eq("status","live").select("id");
-   if(!staleError&&staleLives?.length){
-    liveCreatorIds.delete(user.id);
-    updateFollowsBadge();
-   }
-  }
   $("auth").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");
   $("myProfile").textContent=(profile.display_name||profile.username)+" · @"+profile.username+" · "+user.email;
   renderView();
