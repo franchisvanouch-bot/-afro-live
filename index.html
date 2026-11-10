@@ -129,7 +129,7 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .lv-stage .live-video{position:absolute;inset:0;width:100%;height:100%;max-height:none;border-radius:0;object-fit:contain;background:#000}
 .lv-stage .live-tools{padding-top:max(56px,env(safe-area-inset-top))}
 .lv-close{position:absolute;top:max(10px,env(safe-area-inset-top));right:10px;z-index:30;background:rgba(0,0,0,.5);width:40px;height:40px;border-radius:50%;padding:0;font-size:18px;display:flex;align-items:center;justify-content:center}
-.lv-status{position:absolute;left:20px;right:20px;top:50%;transform:translateY(-50%);z-index:20;text-align:center;color:#fff;font-size:15px;text-shadow:0 1px 4px #000}
+.lv-status{position:absolute;top:max(58px,calc(env(safe-area-inset-top) + 56px));left:12px;right:58px;z-index:40;max-height:34vh;overflow:auto;padding:10px 12px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(0,0,0,.78);color:#fff;font-size:12px;line-height:1.45;text-align:left;white-space:pre-line;text-shadow:none;pointer-events:none;backdrop-filter:blur(8px)}
 
 /* Notifications */
 .notif{display:flex;gap:12px;align-items:center;width:100%;background:var(--surface);color:var(--text);text-align:left;border-radius:14px;padding:12px;margin:8px 0;font-weight:400}
@@ -2275,6 +2275,14 @@ async function enableLiveCamera(room){
   if(timer)clearTimeout(timer);
  }
 }
+function addLiveDiagnostic(status,message){
+ if(!status)return;
+ status.hidden=false;
+ const line=new Date().toLocaleTimeString("fr-FR")+" · "+String(message);
+ const lines=(status.textContent||"").split("\n").filter(Boolean);
+ if(lines[lines.length-1]!==line)lines.push(line);
+ status.textContent=lines.slice(-12).join("\n");
+}
 function attachLiveTrack(track,container,status=null){
  if(!track||!container)return;
  if(track.kind===LivekitClient.Track.Kind.Video){
@@ -2284,15 +2292,15 @@ function attachLiveTrack(track,container,status=null){
   video.setAttribute("muted","");video.setAttribute("playsinline","");video.setAttribute("autoplay","");
   if(video.parentElement!==container)container.prepend(video);
   const report=()=>{
-   if(video.videoWidth>0&&video.videoHeight>0){if(status){status.hidden=true;status.textContent=""}}
-   else if(status){status.hidden=false;status.textContent="Piste vidéo reçue, mais image non décodée. Attente du flux vidéo…"}
+   if(video.videoWidth>0&&video.videoHeight>0){if(status){addLiveDiagnostic(status,"Image vidéo décodée ("+video.videoWidth+"×"+video.videoHeight+").")}}
+   else if(status){addLiveDiagnostic(status,"Piste vidéo reçue, mais image non décodée. Attente du flux vidéo…")}
   };
   video.addEventListener("loadedmetadata",report);video.addEventListener("playing",report);
-  video.addEventListener("error",()=>{if(status){status.hidden=false;status.textContent="La vidéo est reçue, mais le navigateur signale une erreur de lecture."}});
-  if(status){status.hidden=false;status.textContent="Vidéo reçue. Démarrage de l’image…"}
+  video.addEventListener("error",()=>{if(status)addLiveDiagnostic(status,"La vidéo est reçue, mais le navigateur signale une erreur de lecture.")});
+  if(status)addLiveDiagnostic(status,"Vidéo reçue. Démarrage de l’image…")
   requestAnimationFrame(()=>video.play?.().then(report).catch(error=>{
    console.warn("Lecture vidéo du direct bloquée par le navigateur.",error);
-   if(status){status.hidden=false;status.textContent="Vidéo reçue, lecture bloquée par le navigateur. Touche l’écran pour réessayer."}
+   if(status)addLiveDiagnostic(status,"Vidéo reçue, lecture bloquée par le navigateur. Touche l’écran pour réessayer.")
   }));
   return;
  }
@@ -2591,10 +2599,10 @@ async function joinLive(sessionId){
  await stopAllPreviews();
  const viewer=$("liveViewer"),stage=$("lvStage"),status=$("lvStatus");
  stage.innerHTML="";
- status.hidden=false;status.textContent="Connexion au direct...";
+ status.hidden=false;status.textContent="";addLiveDiagnostic(status,"Connexion au direct...");
  viewer.classList.remove("hidden");
  let room=null;
- const diagnostic=(message)=>{status.hidden=false;status.textContent=message};
+ const diagnostic=(message)=>addLiveDiagnostic(status,message);
  try{
   const {data:liveInfo,error:liveInfoError}=await db.from("live_sessions").select("creator_id,access_mode").eq("id",sessionId).maybeSingle();
   if(liveInfoError||!liveInfo?.creator_id)throw new Error("Impossible d’identifier le créateur de ce direct.");
@@ -2653,8 +2661,7 @@ async function joinLive(sessionId){
   console.error("Erreur spectateur LiveKit :",error);
   if(room)room.disconnect().catch(()=>{});
   if(liveRoom===room){liveRoom=null;currentLiveSessionId=null;liveMode=null}
-  status.hidden=false;
-  status.textContent="Erreur pendant la connexion : "+(error.message||"erreur inconnue");
+  addLiveDiagnostic(status,"Erreur pendant la connexion : "+(error.message||"erreur inconnue"));
  }
 }
 async function closeLiveViewer(){
