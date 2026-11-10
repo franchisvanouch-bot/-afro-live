@@ -452,6 +452,84 @@ header{background:#000;border-bottom:0}
 .cs-countdown{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:120px;font-weight:800;color:#fff;text-shadow:0 4px 16px #000;z-index:5;pointer-events:none}
 .cs-shutter{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .cs-live-card p{color:#ccc}
+
+
+/* ===== THÈME TIKTOK · AFRO LIVE ===== */
+body.spectator header{display:none}
+body.spectator main{padding:0 0 96px!important;max-width:none!important}
+#creatorsPage{padding:12px 14px}
+#navigation.bottomnav,#navigation.bottomnav.over,body.feed-mode #navigation.bottomnav.over{background:#000!important;backdrop-filter:none!important;border:0!important;border-top:1px solid #161618!important;padding:6px 0 calc(8px + env(safe-area-inset-bottom))!important}
+#navigation.bottomnav button,#navigation.bottomnav.over button{color:#fff!important;font-size:10px!important;font-weight:500!important;text-shadow:none!important;gap:3px!important;opacity:.6;position:relative}
+#navigation.bottomnav button.active{opacity:1}
+#navigation.bottomnav button i{font-size:25px!important;filter:none!important;color:inherit!important}
+#navigation.bottomnav .nav-create{width:48px!important;height:30px!important;flex:0 0 48px!important;margin:0 6px!important;padding:0!important;border-radius:9px!important;box-shadow:none!important;background:linear-gradient(90deg,#ff9a35 0 18%,#fff 18% 82%,#ff5a00 82%)!important;opacity:1}
+#navigation.bottomnav .nav-create i{font-size:22px!important;color:#000!important}
+#navigation.bottomnav .navdot{position:absolute;top:2px;right:calc(50% - 14px);width:8px;height:8px;border-radius:50%;background:var(--red);opacity:1}
+.vtop{top:max(12px,env(safe-area-inset-top))!important;left:0!important;right:0!important;display:flex!important;justify-content:space-between!important;align-items:center!important;padding:0 10px!important;gap:0!important}
+.vtop .vtab,.vtop-btn{background:none!important;border-radius:0!important;color:rgba(255,255,255,.72)!important;font-size:16px!important;font-weight:700!important;padding:6px 6px!important;text-shadow:0 1px 6px #000!important;pointer-events:auto;box-shadow:none!important}
+.vtop-btn i{font-size:24px}
+.vtop .vtab.active{color:#fff!important}
+.vtop .vtab.active::after{content:"";display:block;height:3px;width:60%;margin:4px auto 0;border-radius:2px;background:var(--orange)}
+.vbell{display:none!important}
+.pf-top{display:flex;align-items:center;gap:8px;padding:10px 12px;min-height:50px}
+.pf-title{flex:1;text-align:center;font-size:16px;font-weight:800;color:#fff}
+.pf-icon{background:none!important;color:#fff!important;width:40px;height:40px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px}
+#followsPage{padding-bottom:12px}
+.amis-stories{display:flex;gap:14px;overflow-x:auto;padding:10px 14px 14px;scrollbar-width:none}
+.amis-stories::-webkit-scrollbar{display:none}
+.story{background:none!important;padding:0!important;color:#fff!important;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:74px;font-size:12px;font-weight:500;border-radius:0!important}
+.story-ring{width:70px;height:70px;border-radius:50%;padding:3px;background:linear-gradient(45deg,#ff9a35,#ff5a00,#ffd166);display:flex;align-items:center;justify-content:center}
+.story-ring.plus{background:#222226;color:#fff;font-size:26px}
+.story-ring .avatar-wrap{border-radius:50%;padding:0;background:none}
+.story-ring .avatar{width:62px;height:62px;border:2px solid #000}
+.story-name{max-width:74px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ami-row{display:flex;align-items:center;gap:12px;padding:10px 14px}
+.ami-info{flex:1;min-width:0;display:flex;flex-direction:column;cursor:pointer}
+.ami-info b{font-size:15px;color:#fff}
+.ami-info span{font-size:13px;color:var(--muted)}
+.ami-btn{background:#222226!important;color:#fff!important;padding:8px 14px!important;border-radius:6px!important;font-size:13px!important;font-weight:700!important;flex:0 0 auto}
+.ami-btn.primary{background:var(--orange)!important}
+#notifsList .notif{display:flex;align-items:center;gap:12px;width:100%;background:none!important;color:#fff;text-align:left;padding:12px 14px!important;margin:0!important;border-radius:0!important;box-shadow:none!important;font-weight:400}
+.notif-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+#notifsList .notif-text b{color:#fff;font-size:15px}
+#notifsList .notif-text .small{font-size:12px;color:var(--muted)}
+.notif-dot{width:9px;height:9px;border-radius:50%;background:var(--red);flex:0 0 auto}
+#searchPage{padding-bottom:12px}
+.sr-bar{display:flex;gap:8px;align-items:center;padding:10px 12px}
+#srInput{margin:0!important;border-radius:999px!important;background:#1f1f22!important;padding:10px 14px!important;font-size:15px!important}
+.sr-tabs{display:flex;border-bottom:1px solid #1a1a1c}
+.sr-tab{flex:1;background:none!important;color:var(--muted)!important;border-radius:0!important;padding:12px 0!important;font-weight:700!important;font-size:14px!important}
+.sr-tab.active{color:#fff!important;box-shadow:inset 0 -2px 0 var(--orange)}
+#srResults{padding:10px 0}
+#srResults .tiles{padding:0 2px}
+#publicProfile{padding-bottom:12px}
+.pf-head{display:flex;align-items:center;gap:20px;padding:14px 16px 6px}
+.pf-avatar{background:none!important;padding:0!important;border-radius:50%;position:relative;flex:0 0 auto}
+.pf-avatar .avatar-wrap{border-radius:50%}
+.pf-avatar .avatar{width:96px!important;height:96px!important;font-size:34px!important}
+.pf-edit-dot{position:absolute;right:2px;bottom:2px;width:24px;height:24px;border-radius:50%;background:#2a7bff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #000}
+.pf-stats{flex:1;display:flex;justify-content:space-around;text-align:center}
+.pf-stats b{display:block;font-size:18px;color:#fff;font-weight:800}
+.pf-stats span{font-size:12px;color:var(--muted)}
+.pf-info{padding:6px 16px 4px}
+.pf-info h2{margin:0;font-size:17px;font-weight:800;color:#fff}
+.pf-status{color:#ffb47c;font-size:13px;margin:4px 0 0;font-style:italic}
+.pf-bio{color:#e6e6ea;font-size:14px;margin:6px 0 0;white-space:pre-wrap}
+.pf-bio.muted{color:var(--muted)}
+.pf-actions{display:flex;gap:8px;padding:12px 16px}
+.pf-btn{flex:1;background:#222226!important;color:#fff!important;border-radius:6px!important;padding:11px 8px!important;font-size:14px!important;font-weight:700!important}
+.pf-btn.primary{background:var(--orange)!important}
+.pf-btn.pf-bell{flex:0 0 46px}
+.pf-pay{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 8px}
+.pf-plan{flex:1 1 30%;background:#1a1a1d!important;color:#fff!important;border:1px solid #2a2a2e;border-radius:8px!important;padding:9px 6px!important;font-size:12px!important;font-weight:600!important}
+.ptabs{display:flex;justify-content:space-around;border-top:1px solid #1a1a1c;border-bottom:1px solid #1a1a1c;margin:10px 0 2px}
+.ptab{flex:1;background:none!important;color:var(--muted)!important;border-radius:0!important;padding:12px 0!important;display:flex;justify-content:center}
+.ptab i{font-size:22px}
+.ptab.active{color:#fff!important;box-shadow:inset 0 -2px 0 #fff}
+.pf-empty{padding:30px 16px!important}
+.tiles{gap:2px!important}
+.tile{border-radius:0!important}
+#menuSheet .sheet{background:#161618}
 </style>
 </head>
 <body>
@@ -482,10 +560,13 @@ header{background:#000;border-bottom:0}
  <section id="spectator">
   <section id="discoverPage" class="homefeed hidden">
    <div class="vtop">
-    <button class="vtab active" data-filter="pour-toi">Pour toi</button>
+    <button class="vtop-btn" type="button" onclick="showPage('lives')" aria-label="Directs"><i class="ti ti-broadcast"></i></button>
+    <button class="vtop-btn" type="button" onclick="showPage('creators')">Communauté</button>
     <button class="vtab" data-filter="follows">Suivis</button>
+    <button class="vtab active" data-filter="pour-toi">Pour toi</button>
+    <button class="vtop-btn" type="button" onclick="showPage('search')" aria-label="Rechercher"><i class="ti ti-search"></i></button>
    </div>
-   <button class="vbell" id="bellBtn" aria-label="Notifications"><i class="ti ti-bell" aria-hidden="true"></i><span class="vdot" id="bellDot" hidden></span></button>
+   <button class="vbell" id="bellBtn" hidden aria-label="Notifications"><i class="ti ti-bell"></i><span class="vdot" id="bellDot" hidden></span></button>
    <div id="homeFeed" class="vfeed"></div>
   </section>
 
@@ -499,8 +580,7 @@ header{background:#000;border-bottom:0}
   </div>
 
   <div id="notifsPage" class="hidden">
-   <h2>Notifications</h2>
-   <p>Tu reçois une alerte quand un créateur que tu suis publie ou lance un direct, si tu as activé sa cloche.</p>
+   <div class="pf-top"><span class="pf-title">Messages</span></div>
    <div id="notifsList"></div>
   </div>
 
@@ -511,9 +591,20 @@ header{background:#000;border-bottom:0}
   </div>
 
   <div id="followsPage" class="hidden">
-   <h2>Mes suivis</h2>
-   <p>Le badge rouge apparaît quand l'un d'eux est en direct.</p>
+   <div class="pf-top"><span class="pf-title">Amis</span><button class="pf-icon" type="button" onclick="showPage('search')" aria-label="Rechercher"><i class="ti ti-search"></i></button></div>
+   <div id="amisStories" class="amis-stories"></div>
    <div id="followsList"></div>
+  </div>
+  <div id="searchPage" class="hidden">
+   <div class="sr-bar">
+    <button class="pf-icon" type="button" onclick="showPage('discover')" aria-label="Retour"><i class="ti ti-arrow-left"></i></button>
+    <input id="srInput" type="search" placeholder="Rechercher un créateur ou une vidéo" autocomplete="off" enterkeyhint="search">
+   </div>
+   <div class="sr-tabs">
+    <button class="sr-tab active" type="button" data-sr="creators">Créateurs</button>
+    <button class="sr-tab" type="button" data-sr="posts">Publications</button>
+   </div>
+   <div id="srResults"></div>
   </div>
 
   <div id="profilePage" class="hidden">
@@ -797,6 +888,19 @@ header{background:#000;border-bottom:0}
  </div>
 </div>
 
+<!-- Menu du profil -->
+<div id="menuSheet" class="sheet-back hidden">
+ <div class="sheet">
+  <button type="button" class="sheet-exit" onclick="closeMenuSheet()" aria-label="Fermer">×</button>
+  <div class="sheet-grab"></div>
+  <button class="sheet-opt" type="button" onclick="closeMenuSheet();showPage('subscriptions')"><i class="ti ti-star"></i><span>Mes abonnements</span></button>
+  <button class="sheet-opt" type="button" onclick="closeMenuSheet();showPage('application')"><i class="ti ti-badge"></i><span>Devenir créateur</span></button>
+  <button class="sheet-opt" type="button" id="menuCreator" onclick="closeMenuSheet();setViewMode('creator')"><i class="ti ti-layout-dashboard"></i><span>Espace créateur</span></button>
+  <button class="sheet-opt" type="button" onclick="closeMenuSheet();installApp()"><i class="ti ti-download"></i><span>Ajouter à l'écran d'accueil</span></button>
+  <button class="sheet-opt" type="button" style="color:#ff8a8a" onclick="closeMenuSheet();signOut()"><i class="ti ti-logout" style="color:#ff8a8a"></i><span>Déconnexion</span></button>
+ </div>
+</div>
+
 <!-- Composition -->
 <div id="composer" class="sheet-back hidden">
  <div class="sheet">
@@ -1035,11 +1139,11 @@ function renderView(){
  $("backCreatorBtn").classList.toggle("hidden",role!=="creator");
  nav.className="bottomnav";
  nav.innerHTML=
-  `<button class="active" data-page="discover" onclick="showPage('discover')"><i class="ti ti-home" aria-hidden="true"></i><span>Accueil</span></button>`+
-  `<button data-page="creators" onclick="showPage('creators')"><i class="ti ti-compass" aria-hidden="true"></i><span>Découvrir</span></button>`+
-  `<button class="nav-create" aria-label="Créer une publication ou passer en direct" onclick="openCreateAction()"><i class="ti ti-plus" aria-hidden="true"></i></button>`+
-  `<button data-page="lives" onclick="showPage('lives')"><i class="ti ti-broadcast" aria-hidden="true"></i><span>LIVE</span><i class="navdot" hidden></i></button>`+
-  `<button data-page="profile" onclick="showPage('profile')"><i class="ti ti-user" aria-hidden="true"></i><span>Profil</span></button>`;
+  `<button class="active" data-page="discover" onclick="showPage('discover')"><i class="ti ti-home"></i><span>Accueil</span></button>`+
+  `<button data-page="follows" onclick="showPage('follows')"><i class="ti ti-users"></i><span>Amis</span><i class="navdot" hidden></i></button>`+
+  `<button class="nav-create" aria-label="Créer" onclick="openCreateAction()"><i class="ti ti-plus"></i></button>`+
+  `<button data-page="notifs" onclick="showPage('notifs')"><i class="ti ti-message-circle"></i><span>Messages</span><i class="navdot" hidden></i></button>`+
+  `<button data-page="profile" onclick="showPage('profile')"><i class="ti ti-user"></i><span>Profil</span></button>`;
  loadSpectatorData();
 }
 async function loadSpectatorData(){
@@ -1071,23 +1175,28 @@ async function sharePostToNetwork(btn,repost=false){
  try{await navigator.clipboard.writeText(url);message(repost?"Lien prêt à republier : "+url:"Lien de partage copié : "+url,true)}
  catch{prompt("Copie ce lien AFRO LIVE :",url)}
 }
+function setNavActive(page){
+ document.querySelectorAll("#navigation button[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+}
 function showPage(page){
  closeOtherSheets();
+ if(page==="profile"){
+  if(!currentUser)return guestToAuth();
+  return openProfile(currentUser.id);
+ }
  $("publicProfile").classList.add("hidden");
  $("spectator").classList.remove("hidden");
  $("creator").classList.add("hidden");
  $("admin").classList.add("hidden");
- const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",profile:"profilePage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage"};
+ const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage",search:"searchPage"};
+ if(!pages[page])return;
  Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
  $(pages[page]).classList.remove("hidden");
  $("livesPage").classList.toggle("lfull",page==="lives");
- document.body.classList.toggle("feed-mode",page==="discover"||page==="lives");
- const nav=$("navigation");
- nav.classList.toggle("over",page==="discover"||page==="lives");
- nav.querySelectorAll("button[data-page]").forEach(b=>{
-  const active=b.dataset.page===page||(b.dataset.page==="profile"&&(page==="subscriptions"||page==="application"));
-  b.classList.toggle("active",active);
- });
+ const immersive=page==="discover"||page==="lives";
+ document.body.classList.toggle("feed-mode",immersive);
+ $("navigation").classList.toggle("over",immersive);
+ setNavActive(page==="subscriptions"||page==="application"?"profile":page);
  if(page!=="discover")pauseHomeFeed();
  if(page!=="lives")stopAllPreviews();
  if(page==="discover")loadHomeFeed();
@@ -1097,6 +1206,65 @@ function showPage(page){
  if(page==="subscriptions")loadSubscriptions();
  if(page==="application")loadApplication();
  if(page==="notifs")loadNotifications();
+ if(page==="search")focusSearch();
+}
+
+function openMenuSheet(){
+ closeOtherSheets("menuSheet");
+ const creatorButton=$("menuCreator");
+ if(creatorButton)creatorButton.hidden=currentProfile?.role!=="creator";
+ $("menuSheet").classList.remove("hidden");
+}
+function closeMenuSheet(){$("menuSheet").classList.add("hidden")}
+
+let srTimer=null,srTab="creators";
+const cleanQuery=q=>q.trim().replace(/[%_,()*"'\\]/g,"").slice(0,40);
+function focusSearch(){
+ const field=$("srInput");
+ if(!field)return;
+ field.focus();
+ runSearch();
+}
+$("srInput").addEventListener("input",()=>{
+ clearTimeout(srTimer);
+ srTimer=setTimeout(runSearch,300);
+});
+document.querySelectorAll(".sr-tab").forEach(tab=>tab.addEventListener("click",()=>{
+ srTab=tab.dataset.sr;
+ document.querySelectorAll(".sr-tab").forEach(x=>x.classList.toggle("active",x===tab));
+ runSearch();
+}));
+async function runSearch(){
+ const box=$("srResults");
+ if(!box)return;
+ const q=cleanQuery($("srInput").value);
+ if(!q){box.innerHTML="<p class='empty'>Tape un nom de créateur ou un mot de la légende.</p>";return}
+ box.innerHTML="<p class='empty'>Recherche...</p>";
+ if(srTab==="creators"){
+  const {data,error}=await db.from("profiles").select("id,username,display_name,avatar_url").eq("role","creator").or(`username.ilike.%${q}%,display_name.ilike.%${q}%`).limit(25);
+  if(error){box.innerHTML=`<p class='empty'>${escapeHTML(error.message)}</p>`;return}
+  if(!data?.length){box.innerHTML="<p class='empty'>Aucun créateur trouvé.</p>";return}
+  box.innerHTML=data.map(p=>{
+   const isMe=currentUser?.id===p.id;
+   const following=myFollows.has(p.id);
+   return `<div class="ami-row">
+    ${avatarHTML(p,liveCreatorIds.has(p.id))}
+    <div class="ami-info" onclick="openProfile('${p.id}')"><b>${escapeHTML(p.display_name||p.username)}</b><span>@${escapeHTML(p.username)}</span></div>
+    ${isMe?"":`<button class="ami-btn ${following?"":"primary"}" type="button" onclick="toggleFollow('${p.id}').then(runSearch)">${following?"Abonné":"Suivre"}</button>`}
+   </div>`;
+  }).join("");
+  return;
+ }
+ const {data:posts,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id,created_at").ilike("caption",`%${q}%`).order("created_at",{ascending:false}).limit(30);
+ if(error){box.innerHTML=`<p class='empty'>${escapeHTML(error.message)}</p>`;return}
+ if(!posts?.length){box.innerHTML="<p class='empty'>Aucune publication trouvée.</p>";return}
+ const ids=[...new Set(posts.map(x=>x.creator_id))];
+ const {data:profs}=await db.from("profiles").select("id,username").in("id",ids);
+ const names={};(profs||[]).forEach(p=>names[p.id]=p.username);
+ feedSources.search=posts.map(x=>({...x,username:names[x.creator_id]||""}));
+ box.innerHTML=`<div class="tiles">${feedSources.search.map((x,i)=>
+  `<button class="tile" type="button" onclick="openFeedFrom('search',${i})">${thumbHTML(x)}${x.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play"></i></span>':""}</button>`
+ ).join("")}</div>`;
 }
 
 /* DIRECTS EN COURS (point vert) */
@@ -1248,25 +1416,33 @@ async function getFollowerCount(creatorId){
  return error||!data?.length?null:Number(data[0].follower_count);
 }
 async function loadFollowsPage(){
- const box=$("followsList");
- if(!followsReady){box.innerHTML="<div class='notice'>Les suivis ne sont pas encore activés sur la base.</div>";return}
+ const stories=$("amisStories"),list=$("followsList");
+ if(!followsReady){
+  stories.innerHTML="";
+  list.innerHTML="<div class='notice'>Les suivis ne sont pas encore activés sur la base.</div>";
+  return;
+ }
  const ids=[...myFollows];
- if(!ids.length){box.innerHTML="<p>Tu ne suis encore aucun créateur.</p>";return}
- const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
- box.innerHTML=(profiles||[]).map(p=>{
-  const live=liveCreatorIds.has(p.id);
-  return `<div class="item creator-card">
-   ${avatarHTML(p,live)}
-   <div>
-    <h3>${escapeHTML(p.display_name||p.username)}${live?'<span class="tag-live">EN DIRECT</span>':""}</h3>
-    <p class="small">@${escapeHTML(p.username)}${myNotify.has(p.id)?' · <span class="follow-tag">Cloche activée</span>':""}</p>
-   </div>
-   <div class="card-actions">
-    <button class="soft" onclick="openProfile('${p.id}')">Profil</button>
-    <button class="soft" onclick="toggleFollow('${p.id}')">Ne plus suivre</button>
-   </div>
-  </div>`;
- }).join("")||"<p>Tu ne suis encore aucun créateur.</p>";
+ if(!ids.length){
+  stories.innerHTML=`<button class="story" type="button" onclick="openCreateAction()"><span class="story-ring plus"><i class="ti ti-plus"></i></span><span class="story-name">Créer</span></button>`;
+  list.innerHTML="<p class='empty'>Tu ne suis encore aucun créateur.</p>";
+  return;
+ }
+ const {data:profiles,error}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ if(error){list.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
+ const pmap={};(profiles||[]).forEach(p=>pmap[p.id]=p);
+ const withStatus=ids.filter(id=>statusByCreator.has(id));
+ stories.innerHTML=
+  `<button class="story" type="button" onclick="openCreateAction()"><span class="story-ring plus"><i class="ti ti-plus"></i></span><span class="story-name">Créer</span></button>`+
+  withStatus.map(id=>{
+   const p=pmap[id]||{id,username:"créateur"};
+   return `<button class="story" type="button" onclick="openStatusViewer('${id}')"><span class="story-ring">${avatarHTML(p,liveCreatorIds.has(id))}</span><span class="story-name">${escapeHTML(p.display_name||p.username)}</span></button>`;
+  }).join("");
+ list.innerHTML=(profiles||[]).map(p=>`<div class="ami-row">
+  ${avatarHTML(p,liveCreatorIds.has(p.id))}
+  <div class="ami-info" onclick="openProfile('${p.id}')"><b>${escapeHTML(p.display_name||p.username)}${liveCreatorIds.has(p.id)?' <span class="tag-live">EN DIRECT</span>':""}</b><span>@${escapeHTML(p.username)}</span></div>
+  <button class="ami-btn" type="button" onclick="toggleFollow('${p.id}')">Ne plus suivre</button>
+ </div>`).join("")||"<p class='empty'>Tu ne suis encore aucun créateur.</p>";
  updateFollowsBadge();
 }
 
@@ -1275,6 +1451,8 @@ async function refreshUnread(){
  if(!currentUser)return;
  const {count}=await db.from("notifications").select("id",{count:"exact",head:true}).eq("read",false);
  $("bellDot").hidden=!count;
+ const navDot=document.querySelector('#navigation button[data-page="notifs"] .navdot');
+ if(navDot)navDot.hidden=!count;
 }
 async function loadNotifications(){
  const box=$("notifsList");
@@ -1296,6 +1474,8 @@ async function loadNotifications(){
  }).join("");
  await db.from("notifications").update({read:true}).eq("read",false);
  $("bellDot").hidden=true;
+ const navDot=document.querySelector('#navigation button[data-page="notifs"] .navdot');
+ if(navDot)navDot.hidden=true;
 }
 
 /* ACCUEIL : PUBLICATIONS PLEIN ÉCRAN */
@@ -1457,7 +1637,7 @@ function closeViewer(){
  $("viewer").classList.add("hidden");
 }
 function closeOtherSheets(keepId=null){
- ["createScreen","createSheet","moreSheet","composer","giftPicker","mbotePayModal"].forEach(id=>{
+ ["createScreen","createSheet","moreSheet","composer","giftPicker","mbotePayModal","menuSheet"].forEach(id=>{
   if(id!==keepId){const el=$(id);if(el)el.classList.add("hidden")}
  });
  if(keepId!=="moreSheet")moreTarget=null;
@@ -1522,6 +1702,7 @@ function guestToAuth(){
 /* PROFIL PUBLIC */
 async function openProfile(id){
  if(!id)return;
+ const isMe=currentUser?.id===id;
  pauseHomeFeed();
  ["spectator","creator","admin"].forEach(s=>$(s).classList.add("hidden"));
  document.body.classList.remove("feed-mode","spectator");
@@ -1529,93 +1710,118 @@ async function openProfile(id){
  $("livesPage").classList.remove("lfull");
  const profile=$("publicProfile");
  profile.classList.remove("hidden");
- profile.innerHTML="<p>Chargement...</p>";
+ profile.innerHTML="<p class='empty'>Chargement...</p>";
  const {data,error}=await db.rpc("public_profile",{p_id:id});
  const p=data?.[0];
- if(error||!p){profile.innerHTML="<p>Profil introuvable.</p><button class='soft' id='profileBack'>Retour</button>";$("profileBack").onclick=closeProfile;return}
- const [{data:posts},{data:creatorSettings}]=await Promise.all([
-  db.from("posts").select("id,kind,media_path,caption").eq("creator_id",id).order("created_at",{ascending:false}),
+ if(error||!p){
+  profile.innerHTML="<div class='pf-top'><button class='pf-icon' type='button' onclick=\"closeProfile()\" aria-label='Retour'><i class='ti ti-arrow-left'></i></button></div><p class='empty'>Profil introuvable.</p>";
+  return;
+ }
+ const [{data:posts},{data:settings}]=await Promise.all([
+  db.from("posts").select("id,kind,media_path,caption,created_at").eq("creator_id",id).order("created_at",{ascending:false}),
   db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",id).maybeSingle()
  ]);
  const list=(posts||[]).map(x=>({...x,username:p.username,creator_id:id}));
  feedSources.profile=list;
  let liveSessionId=null;
  if(p.is_live){
-  const {data:s}=await db.from("live_sessions").select("id").eq("creator_id",id).eq("status","live").gte("started_at",liveSinceIso()).order("started_at",{ascending:false}).limit(1).maybeSingle();
-  liveSessionId=s?.id||null;
+  const {data:live}=await db.from("live_sessions").select("id").eq("creator_id",id).eq("status","live").gte("started_at",liveSinceIso()).order("started_at",{ascending:false}).limit(1).maybeSingle();
+  liveSessionId=live?.id||null;
  }
  const hasStatus=statusByCreator.has(id);
- const following=myFollows.has(id),isMe=currentUser?.id===id;
- const avatarBlock=hasStatus
-  ?`<button class="vavatar" style="cursor:pointer" onclick="openStatusViewer('${id}')" aria-label="Voir le statut">${avatarHTML(p,p.is_live)}</button>`
-  :`<div>${avatarHTML(p,p.is_live)}</div>`;
-
+ const following=myFollows.has(id);
+ const name=p.display_name||p.username;
+ const videos=list.filter(x=>x.kind==="video").length;
+ const photos=list.length-videos;
  profile.innerHTML=`
-  <div class="p-top">
-   ${avatarBlock}
-   <div class="p-info">
-    <h2>${escapeHTML(p.display_name||p.username)}${p.is_live?'<span class="tag-live">EN DIRECT</span>':""}</h2>
-    <p class="small">@${escapeHTML(p.username)}</p>
-    ${hasStatus?`<p class="status">Statut actif · touche la photo pour le voir</p>`:""}
-    ${p.status_text?`<p class="status">${escapeHTML(p.status_text)}</p>`:""}
-    ${p.bio?`<p>${escapeHTML(p.bio)}</p>`:""}
-    <div class="stats">
-     <span><b>${p.follower_count}</b> abonnés</span>
-     <span><b>${p.video_count}</b> vidéos</span>
-     <span><b>${p.photo_count}</b> photos</span>
-    </div>
-    <div class="card-actions" id="profileActions"></div>
+  <div class="pf-top">
+   ${isMe?"":'<button class="pf-icon" type="button" id="pfBack" aria-label="Retour"><i class="ti ti-arrow-left"></i></button>'}
+   <span class="pf-title">@${escapeHTML(p.username)}</span>
+   <button class="pf-icon" type="button" id="pfMenu" aria-label="${isMe?"Menu":"Partager"}"><i class="ti ${isMe?"ti-menu-2":"ti-share"}"></i></button>
+  </div>
+  <div class="pf-head">
+   <button class="pf-avatar" type="button" id="pfAvatar" aria-label="${hasStatus?"Voir le statut":"Photo de profil"}">
+    ${avatarHTML(p,p.is_live)}${isMe?'<span class="pf-edit-dot"><i class="ti ti-plus"></i></span>':""}
+   </button>
+   <div class="pf-stats">
+    <div><b>${Number(p.follower_count)||0}</b><span>Abonnés</span></div>
+    <div><b>${videos}</b><span>Vidéos</span></div>
+    <div><b>${photos}</b><span>Photos</span></div>
    </div>
   </div>
-  ${currentUser?"":`<div class="notice">Connecte-toi ou crée un compte pour suivre ce créateur et regarder ses directs.</div><button class="soft" onclick="guestToAuth()" style="width:100%">Se connecter / créer un compte</button>`}
-  <div class="tiles" style="margin-top:14px">${list.length?list.map((x,i)=>
-   `<button class="tile" onclick="openFeedFrom('profile',${i})">${thumbHTML(x)}${x.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play" aria-hidden="true"></i></span>':""}</button>`
-  ).join(""):"<p class='empty' style='grid-column:1/-1'>Aucune publication.</p>"}</div>
-  <div style="margin-top:14px"><button class="soft" id="profileBack">Retour</button></div>`;
-
- const actions=$("profileActions");
- const share=document.createElement("button");
- share.className="soft";share.innerHTML='<i class="ti ti-share" aria-hidden="true"></i> Partager';
- share.onclick=()=>shareCreator(p.username,p.display_name||p.username);
- actions.appendChild(share);
- if(!isMe&&creatorSettings?.is_accepting_subscriptions){
-  const payBox=document.createElement("div");payBox.className="profile-pay-actions";
-  const plans=[["daily","1 jour",creatorSettings.daily_price_fcfa],["weekly","7 jours",creatorSettings.weekly_price_fcfa],["monthly","30 jours",creatorSettings.monthly_price_fcfa]];
-  plans.forEach(([plan,label,price])=>{
-   const amount=Number(price);if(!Number.isInteger(amount)||amount<100||amount>1000000)return;
-   const b=document.createElement("button");b.type="button";b.textContent=label+" · "+amount.toLocaleString("fr-FR")+" FCFA";
-   b.onclick=()=>openMbotePay(id,"subscription",plan,amount);payBox.appendChild(b);
+  <div class="pf-info">
+   <h2>${escapeHTML(name)}${p.is_live?' <span class="tag-live">EN DIRECT</span>':""}</h2>
+   ${hasStatus?'<p class="pf-status">Statut actif · touche la photo pour le voir</p>':""}
+   ${p.status_text?`<p class="pf-status">${escapeHTML(p.status_text)}</p>`:""}
+   ${p.bio?`<p class="pf-bio">${escapeHTML(p.bio)}</p>`:(isMe?'<p class="pf-bio muted">Ajoute une bio pour te présenter.</p>':"")}
+  </div>
+  <div class="pf-actions" id="pfActions"></div>
+  <div class="pf-pay" id="pfPay"></div>
+  <div class="ptabs">
+   <button class="ptab active" type="button" data-ptab="all" aria-label="Toutes"><i class="ti ti-layout-grid"></i></button>
+   <button class="ptab" type="button" data-ptab="video" aria-label="Vidéos"><i class="ti ti-player-play"></i></button>
+   <button class="ptab" type="button" data-ptab="photo" aria-label="Photos"><i class="ti ti-photo"></i></button>
+  </div>
+  <div class="tiles" id="pfTiles">${list.length?list.map((x,i)=>
+   `<button class="tile" type="button" data-kind="${x.kind}" onclick="openFeedFrom('profile',${i})">${thumbHTML(x)}${x.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play"></i></span>':""}</button>`
+  ).join(""):`<p class="empty pf-empty" style="grid-column:1/-1">${isMe?"Tu n'as encore rien publié. Appuie sur + pour commencer.":"Aucune publication."}</p>`}</div>`;
+ const actions=$("pfActions");
+ const mk=(cls,html,fn)=>{
+  const b=document.createElement("button");b.type="button";b.className=cls;b.innerHTML=html;b.onclick=fn;return b;
+ };
+ if(isMe){
+  actions.append(
+   mk("pf-btn","Modifier le profil",editMyProfile),
+   mk("pf-btn",currentProfile?.role==="creator"?"Espace créateur":"Devenir créateur",()=>currentProfile?.role==="creator"?setViewMode("creator"):showPage("application"))
+  );
+ }else{
+  actions.append(mk(following?"pf-btn":"pf-btn primary",following?"Abonné":"Suivre",()=>toggleFollow(id)));
+  actions.append(mk("pf-btn","Offrir un cadeau",()=>openGiftPicker(id)));
+  if(following)actions.append(mk("pf-btn pf-bell",`<i class="ti ${myNotify.has(id)?"ti-bell-ringing":"ti-bell"}"></i>`,()=>toggleNotify(id).then(()=>openProfile(id))));
+ }
+ if(!isMe&&settings?.is_accepting_subscriptions){
+  [["daily","1 jour",settings.daily_price_fcfa],["weekly","7 jours",settings.weekly_price_fcfa],["monthly","30 jours",settings.monthly_price_fcfa]].forEach(([plan,label,price])=>{
+   const amount=Number(price);
+   if(!Number.isInteger(amount)||amount<100||amount>1000000)return;
+   const b=document.createElement("button");b.type="button";b.className="pf-plan";
+   b.textContent=`${label} · ${amount.toLocaleString("fr-FR")} FCFA`;
+   b.onclick=()=>openMbotePay(id,"subscription",plan,amount);
+   $("pfPay").appendChild(b);
   });
-  if(payBox.children.length)actions.appendChild(payBox);
  }
- if(!isMe){
-  const f=document.createElement("button");
-  f.textContent=following?"Ne plus suivre":"Suivre";
-  if(following)f.className="soft";
-  f.onclick=()=>toggleFollow(id);
-  actions.appendChild(f);
-  const gift=document.createElement("button");gift.className="soft";gift.type="button";gift.textContent="Offrir un cadeau";
-  gift.onclick=()=>openGiftPicker(id);actions.appendChild(gift);
-  const bell=document.createElement("button");
-  bell.className="soft";bell.dataset.notifyBtn=id;bell.setAttribute("aria-label","Notifications");
-  bell.hidden=!following;
-  bell.onclick=()=>toggleNotify(id);
-  actions.appendChild(bell);
- }
- if(liveSessionId){
-  const v=document.createElement("button");
-  v.textContent="Voir le direct";
-  v.onclick=()=>joinLive(liveSessionId);
-  actions.appendChild(v);
- }
+ const back=$("pfBack");if(back)back.onclick=()=>showPage("discover");
+ $("pfMenu").onclick=()=>isMe?openMenuSheet():shareCreator(p.username,name);
+ $("pfAvatar").onclick=()=>{
+  if(hasStatus)openStatusViewer(id);
+  else if(isMe)$("avatarInput").click();
+ };
+ profile.querySelectorAll(".ptab").forEach(tab=>tab.onclick=()=>{
+  profile.querySelectorAll(".ptab").forEach(x=>x.classList.toggle("active",x===tab));
+  const filter=tab.dataset.ptab;
+  profile.querySelectorAll("#pfTiles .tile").forEach(tile=>{
+   tile.style.display=(filter==="all"||tile.dataset.kind===(filter==="video"?"video":"photo"))?"":"none";
+  });
+ });
  refreshFollowUI();
- $("profileBack").onclick=closeProfile;
 }
-function closeProfile(){
- $("publicProfile").classList.add("hidden");
- if(currentProfile)renderView();
- else{$("app").classList.add("hidden");$("auth").classList.remove("hidden")}
+function closeProfile(){showPage("discover")}
+async function editMyProfile(){
+ if(!currentUser)return;
+ const name=prompt("Nom affiché :",currentProfile.display_name||"");
+ if(name===null)return;
+ const bio=prompt("Bio :",currentProfile.bio||"");
+ if(bio===null)return;
+ const cleanName=name.trim().slice(0,60)||currentProfile.username;
+ const cleanBio=bio.trim().slice(0,300);
+ const {error}=await db.from("profiles").update({display_name:cleanName,bio:cleanBio}).eq("id",currentUser.id);
+ if(error)return message("Enregistrement impossible : "+error.message);
+ currentProfile.display_name=cleanName;
+ currentProfile.bio=cleanBio;
+ $("myProfile").textContent=cleanName+" · @"+currentProfile.username+" · "+currentUser.email;
+ message("Profil mis à jour.",true);
+ openProfile(currentUser.id);
 }
+
 
 /* CANDIDATURE CRÉATEUR */
 async function loadApplication(){
@@ -2280,13 +2486,14 @@ function closeMbotePay(){$("mbotePayModal").classList.add("hidden");mbotePayCont
 /* Fermeture fiable des panneaux par toucher sur le fond. */
 document.addEventListener("click",event=>{
  const overlay=event.target;
- if(!overlay || !["createSheet","moreSheet","composer","giftPicker","mbotePayModal"].includes(overlay.id))return;
+ if(!overlay || !["createSheet","moreSheet","composer","giftPicker","mbotePayModal","menuSheet"].includes(overlay.id))return;
  if(overlay.classList.contains("hidden"))return;
  if(overlay.id==="createSheet")closeSheet();
  else if(overlay.id==="moreSheet")closeMoreSheet();
  else if(overlay.id==="composer")closeComposer();
  else if(overlay.id==="giftPicker")closeGiftPicker();
  else if(overlay.id==="mbotePayModal")closeMbotePay();
+ else if(overlay.id==="menuSheet")closeMenuSheet();
 });
 
 async function submitMbotePay(){
