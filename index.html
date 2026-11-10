@@ -1267,6 +1267,7 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
    <button type="button" data-mode="60" onclick="csSetMode('60')">60 s</button>
    <button type="button" data-mode="180" onclick="csSetMode('180')">3 min</button>
    <button type="button" data-mode="photo" class="active" onclick="csSetMode('photo')">PHOTO</button>
+   <button type="button" data-mode="text" onclick="csSetMode('text')">TEXTE</button>
   </div>
   <div class="cs-row">
    <button class="cs-thumb" type="button" onclick="csFromGallery()" aria-label="Galerie"><i class="ti ti-photo"></i></button>
@@ -3442,7 +3443,11 @@ function closeCreateScreen(){
  csStopStream();
  $("createScreen").classList.add("hidden");
 }
-function csSoon(name){message(name+" : bientôt disponible.")}
+function csSoon(name){
+ if(name==="Éditeur de photos"){closeCreateScreen();openGallery("post");return}
+ if(name==="Légendes"){const caption=prompt("Écris la légende de ta prochaine publication :");if(caption?.trim()){galleryAskCaption=true;closeCreateScreen();openGallery("post")}return}
+ message(name+" nécessite encore son moteur dédié. Je préfère ne pas afficher un faux outil fonctionnel.");
+}
 function csOpen(mode){closeCreateScreen();openGallery(mode)}
 function csFromGallery(){closeCreateScreen();openGallery("post")}
 function csGoLive(){closeCreateScreen();setViewMode("creator");creatorPage("live")}
@@ -3480,12 +3485,33 @@ function csSetMode(mode){
  if(csRecorder)return;
  csMode=mode;
  document.querySelectorAll("#createScreen .cs-modes button").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
- $("csShutter").classList.toggle("video",mode!=="photo");
+ $("csShutter").classList.toggle("video",mode!=="photo"&&mode!=="text");
+ $("csShutter").setAttribute("aria-label",mode==="text"?"Créer un visuel texte":mode==="photo"?"Capturer une photo":"Enregistrer une vidéo");
 }
 function csShoot(){
  if(csMode==="photo")return csWithCountdown(csTakePhoto);
+ if(csMode==="text")return csCreateTextCard();
  if(csRecorder)return csStopRecording();
  csWithCountdown(()=>csStartRecording(Number(csMode)));
+}
+function csCreateTextCard(){
+ const textValue=prompt("Écris le texte à afficher sur ton visuel :");
+ if(!textValue||!textValue.trim())return;
+ const v=$("csVideo"),w=v.videoWidth||1080,h=v.videoHeight||1920;
+ const c=document.createElement("canvas");c.width=w;c.height=h;
+ const ctx=c.getContext("2d");
+ if(v.videoWidth)ctx.drawImage(v,0,0,w,h);
+ else{const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,"#171717");g.addColorStop(1,"#6b2c00");ctx.fillStyle=g;ctx.fillRect(0,0,w,h)}
+ ctx.fillStyle="rgba(0,0,0,.38)";ctx.fillRect(0,h*.28,w,h*.44);
+ ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";
+ const words=textValue.trim().split(/\\s+/);let lines=[],line="";
+ ctx.font="800 "+Math.round(w*.075)+"px system-ui";
+ for(const word of words){const test=line?line+" "+word:word;if(ctx.measureText(test).width>w*.82&&line){lines.push(line);line=word}else line=test}
+ if(line)lines.push(line);
+ const lineH=Math.round(w*.105),start=h/2-(lines.length-1)*lineH/2;
+ lines.forEach((ln,i)=>ctx.fillText(ln,w/2,start+i*lineH,w*.84));
+ ctx.font="600 "+Math.round(w*.026)+"px system-ui";ctx.fillStyle="#ff9a38";ctx.fillText("AFRO LIVE",w/2,h*.76);
+ c.toBlob(blob=>{if(blob)csSendToComposer(blob,"texte-"+Date.now()+".jpg")},"image/jpeg",.94);
 }
 function csTakePhoto(){
  const v=$("csVideo");
