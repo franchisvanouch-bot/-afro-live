@@ -904,6 +904,71 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 @media(prefers-reduced-motion:reduce){
  button{transition:none!important}
 }
+
+/* AFRO LIVE — finition professionnelle, sans cadres superflus ni libellés répétés */
+.vtop{
+ top:max(12px,env(safe-area-inset-top))!important;
+ padding:0 16px!important;gap:clamp(10px,2.4vw,22px)!important;
+ align-items:center!important;
+}
+.vtop .vtop-btn,.vtop .vtab{
+ min-width:0!important;padding:8px 2px!important;
+ border:0!important;outline:0!important;border-radius:0!important;
+ background:transparent!important;box-shadow:none!important;
+ font-size:clamp(12px,3.5vw,15px)!important;font-weight:750!important;
+ letter-spacing:-.2px!important;white-space:nowrap!important;
+}
+.vtop .vtop-btn:first-child{
+ width:34px!important;height:34px!important;flex:0 0 34px!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ color:#ff8a24!important;
+}
+.vtop .vtop-btn:first-child i{font-size:25px!important}
+.vtop .vtop-btn:last-child{
+ width:34px!important;height:34px!important;flex:0 0 34px!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+}
+.vtop .vtop-btn:last-child i{font-size:23px!important}
+.vtop .vtab{flex:0 1 auto!important;color:rgba(255,255,255,.72)!important}
+.vtop .vtab.active{color:#fff!important}
+.vtop .vtab.active::after{height:3px!important;width:22px!important;margin:5px auto 0!important;background:#ff8424!important}
+.vmeta{
+ left:16px!important;right:84px!important;
+ bottom:calc(108px + env(safe-area-inset-bottom))!important;
+ padding:0!important;border:0!important;border-radius:0!important;
+ background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+.vmeta b{font-size:15px!important;font-weight:800!important}
+.vmeta p{margin:5px 0 0!important;font-size:13px!important;line-height:1.4!important}
+.v-repost-note{
+ display:inline-flex!important;width:max-content!important;max-width:100%!important;
+ align-items:center!important;gap:5px!important;
+ margin:0 0 7px!important;padding:0!important;
+ border:0!important;border-radius:0!important;background:transparent!important;
+ box-shadow:none!important;font-size:11px!important;font-weight:650!important;
+ color:rgba(255,255,255,.88)!important;
+}
+.v-soundline{display:none!important}
+.vside{right:10px!important;bottom:calc(112px + env(safe-area-inset-bottom))!important;gap:15px!important}
+.vside .vbtn{min-width:44px!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.vside .vbtn i{font-size:29px!important}
+#navigation.bottomnav,#navigation.bottomnav.over{
+ border:0!important;border-top:1px solid rgba(255,255,255,.08)!important;
+ box-shadow:none!important;
+}
+#navigation.bottomnav .nav-create{
+ width:44px!important;height:44px!important;flex:0 0 44px!important;
+ margin:-8px 7px 0!important;padding:0!important;
+ border:0!important;border-radius:50%!important;
+ background:linear-gradient(145deg,#ffad48,#ff7900 72%,#e85b00)!important;
+ color:#fff!important;box-shadow:0 4px 16px rgba(255,119,0,.28)!important;
+}
+#navigation.bottomnav .nav-create i{font-size:25px!important;color:#fff!important}
+@media(max-width:390px){
+ .vtop{padding-left:12px!important;padding-right:12px!important;gap:8px!important}
+ .vtop .vtop-btn,.vtop .vtab{font-size:12px!important}
+}
+
 </style>
 </head>
 <body>
@@ -1948,7 +2013,6 @@ function vitemHTML(p){
    ${p.is_repost?`<div class="v-repost-note"><i class="ti ti-repeat"></i> ${escapeHTML(p.reposted_by_name||"")} a republié</div>`:""}
    <b>@${escapeHTML(p.username||"")}</b>${live?' <span class="tag-live">EN DIRECT</span>':""}
    ${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}
-   <div class="v-soundline"><i class="ti ti-music"></i> Son original · AFRO LIVE</div>
   </div>
  </section>`;
 }
