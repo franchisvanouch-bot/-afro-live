@@ -2249,24 +2249,24 @@ async function getLiveToken(sessionId){
 function attachLiveTrack(track,container){
  if(!track||!container)return;
  if(track.kind===LivekitClient.Track.Kind.Video){
-  let video=container.querySelector("video.live-video");
-  if(!video){
-   video=document.createElement("video");
-   video.className="live-video";
-   video.autoplay=true;
-   video.playsInline=true;
-   video.muted=true;
-   video.setAttribute("muted","");
-   video.setAttribute("playsinline","");
-   video.setAttribute("autoplay","");
-   container.prepend(video);
-  }
-  if(!track.attachedElements?.includes(video))track.attach(video);
-  video.play?.().catch(error=>console.warn("Lecture vidéo du direct bloquée par le navigateur.",error));
+  // Utiliser l'élément créé par LiveKit lui-même (comme dans l'aperçu
+  // qui fonctionne), plutôt que de lui imposer un élément vidéo externe.
+  let video=track.attachedElements?.find(el=>el instanceof HTMLVideoElement);
+  if(!video)video=track.attach();
+  video.classList.add("live-video");
+  video.autoplay=true;
+  video.playsInline=true;
+  video.muted=true;
+  video.setAttribute("muted","");
+  video.setAttribute("playsinline","");
+  video.setAttribute("autoplay","");
+  if(video.parentElement!==container)container.prepend(video);
+  requestAnimationFrame(()=>video.play?.().catch(error=>console.warn("Lecture vidéo du direct bloquée par le navigateur.",error)));
   return;
  }
  if(track.kind===LivekitClient.Track.Kind.Audio){
-  if(track.attachedElements?.length)return;
+  const existing=track.attachedElements?.find(el=>el instanceof HTMLAudioElement);
+  if(existing)return;
   const audio=track.attach();
   audio.autoplay=true;
   audio.playsInline=true;
@@ -2556,8 +2556,10 @@ async function joinLive(sessionId){
  if(!currentUser)return message("Connecte-toi pour regarder ce direct.");
  if(liveRoom&&liveMode==="spectator"&&currentLiveSessionId===sessionId){$("liveViewer").classList.remove("hidden");return}
  if(liveRoom)await closeLiveViewer();
- // Fermer complètement les connexions d'aperçu avant d'ouvrir le lecteur :
- // éviter deux connexions LiveKit simultanées pour le même spectateur.
+ // Suspendre l'observateur : sinon il peut relancer les aperçus
+ // pendant que le lecteur plein écran ouvre sa propre connexion LiveKit.
+ if(previewObserver){previewObserver.disconnect();previewObserver=null}
+ // Fermer complètement les connexions d'aperçu avant d'ouvrir le lecteur.
  await stopAllPreviews();
  const viewer=$("liveViewer"),stage=$("lvStage"),status=$("lvStatus");
  stage.innerHTML="";
