@@ -2285,7 +2285,7 @@ async function startPreview(sessionId){
  const box=$("livePreview_"+sessionId);if(!box)return;
  previewRooms.set(sessionId,null);
  let room=null;
- const diagnostic=(message)=>{status.hidden=false;status.textContent=message};
+
  try{
   const credentials=await getLiveToken(sessionId);
   if(!previewRooms.has(sessionId))return;
@@ -2565,6 +2565,7 @@ async function joinLive(sessionId){
  status.hidden=false;status.textContent="Connexion au direct...";
  viewer.classList.remove("hidden");
  let room=null;
+ const diagnostic=(message)=>{status.hidden=false;status.textContent=message};
  try{
   const {data:liveInfo,error:liveInfoError}=await db.from("live_sessions").select("creator_id,access_mode").eq("id",sessionId).maybeSingle();
   if(liveInfoError||!liveInfo?.creator_id)throw new Error("Impossible d’identifier le créateur de ce direct.");
