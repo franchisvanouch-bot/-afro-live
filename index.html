@@ -225,8 +225,39 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .live-floating-heart{position:absolute;z-index:18;left:var(--heart-x,72%);bottom:22%;font-size:26px;line-height:1;pointer-events:none;animation:afroHeartFloat 1.35s ease-out forwards;text-shadow:0 2px 8px rgba(0,0,0,.45)}
 @keyframes afroHeartFloat{0%{opacity:0;transform:translate3d(0,12px,0) scale(.55)}15%{opacity:1}100%{opacity:0;transform:translate3d(var(--heart-drift,-20px),-150px,0) scale(1.35)}}
 .live-gift-pop{top:38%;max-width:78%;padding:8px 12px;border-radius:16px;background:rgba(0,0,0,.24);backdrop-filter:blur(2px)}
-.live-gift-pop .art{font-size:clamp(38px,10vw,64px);filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
-.live-gift-pop .caption{font-size:12px;padding:4px 8px;border-radius:999px;background:rgba(0,0,0,.55);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.live-gift-pop .art{font-size:clamp(34px,8vw,52px);filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+.live-gift-pop .caption{font-size:11px;padding:4px 8px;border-radius:999px;background:rgba(0,0,0,.55);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#creatorLivePreview.creator-live-on{position:static!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+#creatorLivePreview.creator-live-on>h3,#creatorLivePreview.creator-live-on>#creatorLiveAccessStatus,#creatorLivePreview.creator-live-on>#liveParticipantCount{display:none!important}
+#creatorLivePreview.creator-live-on>#creatorLiveStage{position:fixed!important;inset:0!important;z-index:99998!important;width:100vw!important;height:100dvh!important;max-height:none!important;min-height:0!important;margin:0!important;border-radius:0!important;background:#000!important}
+#creatorLivePreview.creator-live-on>#creatorLiveStage>video{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-height:none!important;object-fit:cover!important;border-radius:0!important}
+#creatorLivePreview.creator-live-on>.danger{position:fixed!important;z-index:100001!important;left:14px!important;right:14px!important;bottom:max(12px,env(safe-area-inset-bottom))!important;width:calc(100% - 28px)!important;min-height:38px!important;padding:8px 12px!important;font-size:13px!important;opacity:.92}
+#creatorLivePreview.creator-live-on .live-overlay-tools{inset:0!important;padding:0!important}
+#creatorLivePreview.creator-live-on .live-tools{gap:5px!important;padding:max(8px,env(safe-area-inset-top)) 8px 6px!important;flex-wrap:nowrap!important;justify-content:flex-start!important;background:linear-gradient(rgba(0,0,0,.48),transparent)!important}
+#creatorLivePreview.creator-live-on .live-tools button{padding:6px 8px!important;font-size:11px!important;min-height:30px!important;border-radius:9px!important;white-space:nowrap!important}
+#creatorLivePreview.creator-live-on .live-tools .count{font-size:11px!important;padding:5px 7px!important;white-space:nowrap}
+#creatorLivePreview.creator-live-on .live-chat{padding:8px 9px calc(58px + env(safe-area-inset-bottom))!important}
+#creatorLivePreview.creator-live-on .live-chat-title{display:none!important}
+#creatorLivePreview.creator-live-on .live-chat-messages{max-height:16dvh!important;margin-bottom:5px!important}
+#creatorLivePreview.creator-live-on .live-chat-message{font-size:11px!important;padding:3px 7px!important}
+#creatorLivePreview.creator-live-on .live-chat-form input{font-size:14px!important;min-height:38px!important}
+#creatorLivePreview.creator-live-on .live-chat-form button{padding:7px 10px!important;font-size:12px!important}
+.gift-sheet{display:flex;flex-direction:column;gap:5px;max-height:min(82dvh,680px)!important;overflow:hidden!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom))!important;touch-action:pan-y}
+.gift-head h3{font-size:15px!important;margin:2px 0!important}
+.gift-balance{font-size:11px!important;padding:5px 8px!important}
+.gift-sheet>.small{font-size:11px!important;margin:2px 0!important}
+.gift-test-note{font-size:10px!important;padding:5px 8px!important;margin:2px 0!important}
+.gift-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important;margin:4px 0!important;overflow-y:auto!important;min-height:0!important;flex:1 1 auto!important;overscroll-behavior:contain}
+.gift-card{min-height:68px!important;padding:5px 2px!important;border-radius:10px!important;gap:2px!important}
+.gift-art{font-size:25px!important}
+.gift-name{font-size:9px!important;line-height:1.15!important}
+.gift-price{font-size:9px!important;line-height:1.1!important}
+.gift-selected{padding:6px 8px!important;margin:2px 0!important;font-size:11px!important;flex:0 0 auto}
+.gift-send{position:sticky!important;bottom:0!important;z-index:2;flex:0 0 auto;width:100%!important;margin:2px 0 0!important;min-height:38px!important;padding:8px!important;font-size:12px!important}
+.gift-status{font-size:10px!important;min-height:14px!important;margin:0!important;flex:0 0 auto}
+.gift-sheet>.divider,.gift-sheet>h3,.gift-sheet>p:not(.small),.gift-sheet>#giftCoinPacks,.gift-sheet>button[onclick="closeGiftPicker()"]{display:none!important}
+@media(max-width:380px){.gift-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.gift-card{min-height:64px!important}}
+
 .gift-test-note{padding:9px 11px;border-radius:10px;background:#14271b;color:#b8f5c9;font-size:12px;line-height:1.4;margin:8px 0}
 .gift-back{position:fixed;inset:0;z-index:100030;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center}
 .gift-sheet{width:100%;max-width:560px;max-height:88dvh;overflow:auto;background:#171719;border:1px solid #34343a;border-radius:22px 22px 0 0;padding:14px 14px calc(18px + env(safe-area-inset-bottom))}
@@ -1456,14 +1487,14 @@ function installLiveInterface(stage,room,mode,creatorId=null){
 
  if(mode==="creator"){
   let micEnabled=true;
-  const mic=document.createElement("button");mic.className="soft";mic.type="button";mic.textContent="Micro activé";
+  const mic=document.createElement("button");mic.className="soft";mic.type="button";mic.textContent="🎙 Micro ✓";
   mic.addEventListener("click",async()=>{
    mic.disabled=true;
    try{
     const nextState=!micEnabled;
     await room.localParticipant.setMicrophoneEnabled(nextState);
     micEnabled=nextState;
-    mic.textContent=micEnabled?"Micro activé":"Micro coupé";
+    mic.textContent=micEnabled?"🎙 Micro ✓":"🔇 Micro ✕";
     mic.classList.toggle("danger",!micEnabled);
    }catch(error){message("Impossible de modifier le microphone : "+(error.message||"Erreur"))}
    finally{mic.disabled=false}
@@ -1471,7 +1502,7 @@ function installLiveInterface(stage,room,mode,creatorId=null){
   bar.appendChild(mic);
 
   const cam=document.createElement("button");cam.className="soft";cam.type="button";
-  cam.textContent=facingMode==="environment"?"Caméra avant":"Caméra arrière";
+  cam.textContent=facingMode==="environment"?"🤳 Avant":"📷 Arrière";
   cam.addEventListener("click",()=>switchCamera(room,cam));
   bar.appendChild(cam);
 
@@ -1576,7 +1607,7 @@ async function switchCamera(room,btn){
   await pub.track.restartTrack({facingMode:next});
   facingMode=next;
   pub.track.attach($("localLiveVideo"));
-  btn.textContent=next==="environment"?"Caméra avant":"Caméra arrière";
+  btn.textContent=next==="environment"?"🤳 Avant":"📷 Arrière";
   message("Caméra "+(next==="environment"?"arrière":"avant")+" activée.",true);
  }catch(error){message("Impossible de changer de caméra : "+(error.message||"erreur"))}
  finally{btn.disabled=false}
@@ -1755,6 +1786,7 @@ async function startCreatorLive(){
   activeLiveAccessMode=accessMode;
   liveCreatorIds.add(currentUser.id);
   $("creatorLiveAccessStatus").textContent=accessMode==="paid"?"🔒 Mode payant · abonnement requis":"🌍 Mode gratuit · accès libre";
+  $("creatorLivePreview").classList.add("creator-live-on");
   $("creatorLivePreview").classList.remove("hidden");
   button.classList.add("hidden");
   installLiveInterface($("creatorLiveStage"),room,"creator");
@@ -1782,6 +1814,7 @@ async function stopCreatorLive(){
  cleanLiveInterface($("creatorLiveStage"));
  liveCreatorIds.delete(currentUser.id);
  const {data,error}=await db.from("live_sessions").update({status:"ended",ended_at:new Date().toISOString()}).eq("id",sessionId).eq("creator_id",currentUser.id).select("id").maybeSingle();
+ $("creatorLivePreview").classList.remove("creator-live-on");
  $("creatorLivePreview").classList.add("hidden");
  activeLiveAccessMode="free";$("liveAccessMode").value="free";
  $("startLiveButton").classList.remove("hidden");
@@ -1951,26 +1984,55 @@ async function submitMbotePay(){
 
 const AFRO_GIFT_TEST_MODE=true;
 const AFRO_GIFTS=[
- {code:"rose",name:"Petite rose",art:"🌹",coins:10},
- {code:"drum",name:"Tambour",art:"🥁",coins:20},
- {code:"bracelet",name:"Bracelet",art:"📿",coins:50},
- {code:"mask",name:"Masque africain",art:"🎭",coins:100},
- {code:"lion",name:"Lion royal",art:"🦁",coins:250},
- {code:"dancer",name:"Danseur",art:"💃🏿",coins:500},
- {code:"panther",name:"Panthère",art:"🐆",coins:750},
- {code:"elephant",name:"Éléphant",art:"🐘",coins:1000},
- {code:"gorilla",name:"Gorille",art:"🦍",coins:1500},
- {code:"baobab",name:"Baobab",art:"🌳",coins:2500},
- {code:"kora",name:"Kora",art:"🪕",coins:5000},
- {code:"calebasse",name:"Calebasse",art:"🏺",coins:75},
- {code:"fire",name:"Feu africain",art:"🔥",coins:150},
- {code:"crown",name:"Couronne du roi",art:"👑",coins:300},
- {code:"flag",name:"Drapeau du Congo",art:"🇨🇬",coins:400},
- {code:"giraffe",name:"Girafe",art:"🦒",coins:600},
- {code:"zebra",name:"Zèbre",art:"🦓",coins:800},
- {code:"rhino",name:"Rhinocéros",art:"🦏",coins:1200},
- {code:"gorilla_gold",name:"Gorille doré",art:"🦍✨",coins:3000},
- {code:"africa_star",name:"Étoile d’Afrique",art:"🌟",coins:10000}
+ {code:"rose",name:"Petite rose",art:"🌹",coins:5},
+ {code:"heart",name:"Cœur orange",art:"🧡",coins:10},
+ {code:"kiss",name:"Bisou",art:"💋",coins:15},
+ {code:"flower",name:"Fleur tropicale",art:"🌺",coins:20},
+ {code:"drum",name:"Tambour",art:"🥁",coins:25},
+ {code:"shell",name:"Coquillage",art:"🐚",coins:30},
+ {code:"calebasse",name:"Calebasse",art:"🏺",coins:35},
+ {code:"bracelet",name:"Bracelet",art:"📿",coins:40},
+ {code:"fire",name:"Flamme",art:"🔥",coins:50},
+ {code:"mask",name:"Masque africain",art:"🎭",coins:60},
+ {code:"crown",name:"Couronne",art:"👑",coins:75},
+ {code:"flag",name:"Drapeau du Congo",art:"🇨🇬",coins:100},
+ {code:"dancer",name:"Danseur",art:"💃🏿",coins:120},
+ {code:"lion",name:"Lion",art:"🦁",coins:150},
+ {code:"giraffe",name:"Girafe",art:"🦒",coins:180},
+ {code:"zebra",name:"Zèbre",art:"🦓",coins:200},
+ {code:"elephant",name:"Éléphant",art:"🐘",coins:250},
+ {code:"panther",name:"Panthère",art:"🐆",coins:300},
+ {code:"rhino",name:"Rhinocéros",art:"🦏",coins:350},
+ {code:"gorilla",name:"Gorille",art:"🦍",coins:400},
+ {code:"baobab",name:"Baobab",art:"🌳",coins:450},
+ {code:"kora",name:"Kora",art:"🪕",coins:500},
+ {code:"safari",name:"Safari",art:"🦓🦒",coins:600},
+ {code:"sun",name:"Soleil africain",art:"☀️",coins:700},
+ {code:"moon",name:"Lune du Congo",art:"🌙",coins:800},
+ {code:"star",name:"Étoile",art:"🌟",coins:900},
+ {code:"diamond",name:"Diamant",art:"💎",coins:1000},
+ {code:"rainbow",name:"Arc-en-ciel",art:"🌈",coins:1200},
+ {code:"eagle",name:"Aigle",art:"🦅",coins:1500},
+ {code:"buffalo",name:"Buffle",art:"🐃",coins:1800},
+ {code:"hippo",name:"Hippopotame",art:"🦛",coins:2000},
+ {code:"croc",name:"Crocodile",art:"🐊",coins:2500},
+ {code:"flamingo",name:"Flamant rose",art:"🦩",coins:3000},
+ {code:"peacock",name:"Paon",art:"🦚",coins:3500},
+ {code:"tiger",name:"Tigre",art:"🐅",coins:4000},
+ {code:"horse",name:"Cheval",art:"🐎",coins:4500},
+ {code:"rocket",name:"Fusée",art:"🚀",coins:5000},
+ {code:"castle",name:"Palais royal",art:"🏰",coins:6000},
+ {code:"trophy",name:"Trophée",art:"🏆",coins:7000},
+ {code:"comet",name:"Comète",art:"☄️",coins:8000},
+ {code:"africa_star",name:"Étoile d’Afrique",art:"🌍✨",coins:10000},
+ {code:"gold_lion",name:"Lion doré",art:"🦁✨",coins:15000},
+ {code:"royal_mask",name:"Masque royal",art:"🎭✨",coins:20000},
+ {code:"king",name:"Roi d’Afrique",art:"🤴🏿",coins:25000},
+ {code:"queen",name:"Reine d’Afrique",art:"👸🏿",coins:30000},
+ {code:"grand_drum",name:"Grand tambour",art:"🥁✨",coins:40000},
+ {code:"gold_elephant",name:"Éléphant doré",art:"🐘✨",coins:50000},
+ {code:"diamond_crown",name:"Couronne diamant",art:"💎👑",coins:75000},
+ {code:"africa_legend",name:"Légende africaine",art:"🌍👑",coins:100000}
 ];
 let giftPickerCreatorId=null,selectedAfroGift="rose";
 async function refreshAfroCoinBalance(){
