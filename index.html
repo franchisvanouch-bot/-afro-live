@@ -988,6 +988,37 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 .af-invite-row .af-invite-name small{color:#aaa}
 .af-invite-send{border:0;border-radius:999px;background:#ff7a18;color:#fff;font-weight:800;padding:9px 13px}
 .af-invite-send:disabled{opacity:.55}
+
+/* AFRO LIVE — commandes LIVE compactes, verre transparent et lecteur immersif */
+#liveViewer .live-tools{position:absolute;top:0;left:0;right:0;display:flex;flex-wrap:nowrap;justify-content:flex-start;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 60px 0 12px;background:none!important;z-index:30}
+#liveViewer .live-tools button{width:40px;height:40px;min-width:40px;min-height:40px;padding:0!important;border-radius:50%;font-size:0!important;color:transparent!important;background:rgba(12,12,14,.36)!important;border:1px solid rgba(255,255,255,.14)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:inline-flex;align-items:center;justify-content:center;flex:0 0 40px}
+#liveViewer .live-tools button::before{font-family:"tabler-icons";font-size:20px;color:#fff;line-height:1}
+#liveViewer .live-tools button.live-ic-invite::before{content:"\eb4a"}
+#liveViewer .live-tools button.live-ic-mic::before{content:"\ed1b"}
+#liveViewer .live-tools button.live-ic-mic-off::before{content:"\ed1d"}
+#liveViewer .live-tools button.live-ic-cam::before{content:"\eb8b"}
+#liveViewer .live-tools button.live-ic-access::before{content:"\ea2a"}
+#liveViewer .live-tools button.live-ic-end::before,#liveViewer .live-tools button.live-ic-leave::before{content:"\eb55";color:#ff4d6d}
+#liveViewer .live-tools button.live-ic-full::before{content:"\ef6c"}
+#liveViewer .live-tools .count{position:static!important;height:40px;min-width:40px;padding:0 12px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;font-size:13px!important;font-weight:800;background:rgba(255,49,91,.85)!important;color:#fff!important;border:0;backdrop-filter:blur(10px);flex:0 0 auto}
+#liveViewer .live-overlay-tools{background:none!important}
+#liveViewer .live-chat{position:absolute;left:0;right:0;bottom:0;margin-top:0;background:none!important;padding:0 12px calc(12px + env(safe-area-inset-bottom));z-index:25}
+#liveViewer .live-chat-title{display:none!important}
+#liveViewer .live-chat-messages{max-height:30dvh;background:none!important;padding:0 0 6px;mask-image:linear-gradient(180deg,transparent 0%,#000 25%);-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 25%)}
+#liveViewer .live-chat-message{background:rgba(0,0,0,.28)!important;border:0!important;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:12px;padding:5px 9px;font-size:13px}
+#liveViewer .live-chat-form{background:rgba(0,0,0,.22)!important;border:0!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:none}
+#liveViewer .live-chat-form input{background:transparent!important;color:#fff}
+#liveViewer .live-chat-form button{width:40px;height:40px;min-width:40px;font-size:0!important;background:rgba(255,121,0,.85)!important}
+#liveViewer .live-chat-form button::before{font-family:"tabler-icons";content:"\ea1f";font-size:18px;color:#111}
+#liveViewer .lv-close{top:calc(env(safe-area-inset-top) + 10px);right:10px;width:40px;height:40px;background:rgba(12,12,14,.36)!important;border:1px solid rgba(255,255,255,.14)!important}
+#lvStage .live-gift-pop{pointer-events:none}
+#lvStage .live-gift-pop .art{font-size:clamp(90px,26vw,170px)!important}
+#lvStage .live-gift-pop .caption{font-size:12px!important;background:none!important;text-shadow:0 2px 8px #000}
+#liveViewer.lv{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;overflow:hidden!important}
+#liveViewer #lvStage{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+#liveViewer #lvStage video.live-video{object-fit:cover!important}
+@media(orientation:landscape){#liveViewer .live-tools{padding-right:70px}#liveViewer .live-chat-messages{max-height:40dvh}}
+
 </style>
 </head>
 <body>
@@ -2760,7 +2791,7 @@ function installLiveInterface(stage,room,mode,creatorId=null){
  const bar=document.createElement("div");bar.className="live-tools";
  const count=document.createElement("span");count.className="count";
 
- const full=document.createElement("button");full.className="soft";full.type="button";full.textContent="Plein écran";
+ const full=document.createElement("button");full.className="soft live-ic-full";full.type="button";full.setAttribute("aria-label","Plein écran");full.textContent="";
  full.addEventListener("click",()=>{
   const active=stage.classList.toggle("live-fullscreen");
   full.textContent=active?"Réduire":"Plein écran";
@@ -2768,38 +2799,40 @@ function installLiveInterface(stage,room,mode,creatorId=null){
  bar.appendChild(count);
 
  if(mode==="creator"){
-  const invite=document.createElement("button");invite.className="soft";invite.type="button";invite.textContent="Inviter";
+  const invite=document.createElement("button");invite.className="soft live-ic-invite";invite.type="button";invite.setAttribute("aria-label","Inviter");invite.textContent="";
   invite.addEventListener("click",()=>openInvitePanel(currentLiveSessionId));
   bar.appendChild(invite);
   let micEnabled=true;
-  const mic=document.createElement("button");mic.className="soft";mic.type="button";mic.textContent="🎙 Micro ✓";
+  const mic=document.createElement("button");mic.className="soft live-ic-mic";mic.type="button";mic.setAttribute("aria-label","Micro activé");mic.textContent="";
   mic.addEventListener("click",async()=>{
    mic.disabled=true;
    try{
     const nextState=!micEnabled;
     await room.localParticipant.setMicrophoneEnabled(nextState);
     micEnabled=nextState;
-    mic.textContent=micEnabled?"🎙 Micro ✓":"🔇 Micro ✕";
+    mic.setAttribute("aria-label",micEnabled?"Micro activé":"Micro coupé");
+    mic.classList.toggle("live-ic-mic-off",!micEnabled);
+    mic.classList.toggle("live-ic-mic",micEnabled);
     mic.classList.toggle("danger",!micEnabled);
    }catch(error){message("Impossible de modifier le microphone : "+(error.message||"Erreur"))}
    finally{mic.disabled=false}
   });
   bar.appendChild(mic);
 
-  const cam=document.createElement("button");cam.className="soft";cam.type="button";
-  cam.textContent=facingMode==="environment"?"🤳 Avant":"📷 Arrière";
+  const cam=document.createElement("button");cam.className="soft live-ic-cam";cam.type="button";
+  cam.setAttribute("aria-label","Changer de caméra");cam.textContent="";
   cam.addEventListener("click",()=>switchCamera(room,cam));
   bar.appendChild(cam);
 
-  const end=document.createElement("button");end.className="danger";end.type="button";end.textContent="Terminer";
+  const end=document.createElement("button");end.className="danger live-ic-end";end.type="button";end.setAttribute("aria-label","Terminer le direct");end.textContent="";
   end.addEventListener("click",()=>{if(confirm("Veux-tu vraiment terminer ce direct ?"))stopCreatorLive()});
-  const access=document.createElement("button");access.id="liveAccessToggle";access.className="soft";access.type="button";access.textContent=activeLiveAccessMode==="paid"?"Passer en mode gratuit":"Passer en mode payant";
+  const access=document.createElement("button");access.id="liveAccessToggle";access.className="soft live-ic-access";access.type="button";access.textContent=activeLiveAccessMode==="paid"?"Passer en mode gratuit":"Passer en mode payant";
   access.addEventListener("click",()=>setLiveAccessMode(activeLiveAccessMode==="paid"?"free":"paid"));
   bar.appendChild(access);
   bar.appendChild(end);
  }
  if(mode==="spectator"){
-  const leave=document.createElement("button");leave.className="danger";leave.type="button";leave.textContent="Quitter";
+  const leave=document.createElement("button");leave.className="danger live-ic-leave";leave.type="button";leave.setAttribute("aria-label","Quitter le direct");leave.textContent="";
   leave.addEventListener("click",leaveSpectatorLive);
   bar.appendChild(leave);
  }
