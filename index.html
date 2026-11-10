@@ -672,29 +672,2463 @@ header{background:#000;border-bottom:0}
 
 <!-- Écran de création façon TikTok -->
 <div id="createScreen" class="cs hidden">
- <div class="cs-top">
-  <button class="cs-x" type="button" onclick="closeCreateScreen()" aria-label="Fermer"><i class="ti ti-x" aria-hidden="true"></i></button>
-  <div class="cs-title" id="csTitle">CRÉER</div>
-  <span style="width:40px"></span>
- </div>
- <div class="cs-page hidden" id="csCamera">
-  <div class="cs-cam-tools">
-   <button type="button" onclick="csFlip()"><i class="ti ti-refresh" aria-hidden="true"></i><span>Retourner</span></button>
-   <button type="button" onclick="closeCreateScreen();openComposer('post')"><i class="ti ti-photo" aria-hidden="true"></i><span>Galerie</span></button>
+ <div class="cs-page" id="csPageCamera">
+  <video id="csVideo" class="cs-video" autoplay playsinline muted></video>
+  <div class="cs-top">
+   <button class="cs-icon" type="button" onclick="closeCreateScreen()" aria-label="Fermer"><i class="ti ti-x"></i></button>
+   <button class="cs-sound" type="button" onclick="csSoon('Ajout de son')"><i class="ti ti-music"></i> Ajouter un son</button>
+   <span style="width:42px"></span>
   </div>
-  <div class="cs-cam-preview"><p>Choisis « Publication » ou « Direct » ci-dessous</p></div>
-  <div class="cs-cam-actions"><button type="button" class="cs-shutter" onclick="closeCreateScreen();openComposer('post')" aria-label="Publier une photo ou vidéo"></button></div>
+  <div class="cs-side">
+   <button type="button" onclick="csFlip()"><span>Retourner</span><i class="ti ti-refresh"></i></button>
+   <button type="button" onclick="csSoon('Flash')"><span>Flash</span><i class="ti ti-bolt-off"></i></button>
+   <button type="button" onclick="csSoon('Minuterie')"><span>Minuterie</span><i class="ti ti-clock"></i></button>
+   <button type="button" onclick="csSoon('Disposition')"><span>Disposition</span><i class="ti ti-layout-grid"></i></button>
+   <button type="button" onclick="csSoon('Retouche')"><span>Retouche</span><i class="ti ti-sparkles"></i></button>
+   <button type="button" onclick="csSoon('Téléprompteur')"><span>Téléprompteur</span><i class="ti ti-blockquote"></i></button>
+   <button type="button" onclick="csSoon('Format')"><span>Format</span><i class="ti ti-arrows-diagonal-minimize-2"></i></button>
+  </div>
+  <div class="cs-rec" id="csRec"><i class="ti ti-circle-filled"></i> <span id="csRecTime">0:00</span></div>
+  <div class="cs-modes">
+   <button type="button" data-mode="60" onclick="csSetMode('60')">60 s</button>
+   <button type="button" data-mode="15" onclick="csSetMode('15')">15 s</button>
+   <button type="button" data-mode="photo" class="active" onclick="csSetMode('photo')">PHOTO</button>
+  </div>
+  <div class="cs-row">
+   <button class="cs-thumb" type="button" onclick="csFromGallery()" aria-label="Galerie"><i class="ti ti-photo"></i></button>
+   <button id="csShutter" class="cs-shutter" type="button" onclick="csShoot()" aria-label="Capturer"></button>
+   <span></span>
+  </div>
  </div>
- <div class="cs-page" id="csCreer">
-  <button class="sheet-opt" onclick="closeCreateScreen();openComposer('post')"><i class="ti ti-photo" aria-hidden="true"></i><span>Publication<small>Photo ou vidéo sur ton profil</small></span></button>
-  <button class="sheet-opt" onclick="closeCreateScreen();openComposer('status')"><i class="ti ti-circle-dashed" aria-hidden="true"></i><span>Statut<small>Visible pendant 24 h</small></span></button>
+ <div class="cs-page hidden" id="csPageCreer">
+  <div class="cs-scroll">
+   <div class="cs-head">CRÉER</div>
+   <div class="cs-grid5">
+    <button type="button" onclick="csSoon('Éditeur de photos')"><i class="ti ti-photo-edit"></i>Éditeur de photos</button>
+    <button type="button" onclick="csSoon('AutoCut')"><i class="ti ti-movie"></i>AutoCut</button>
+    <button type="button" onclick="csSoon('Légendes')"><i class="ti ti-captions"></i>Légendes</button>
+    <button type="button" onclick="csSoon('AI Self')"><i class="ti ti-robot"></i>AI Self</button>
+    <button type="button" onclick="csSoon('Détourage')"><i class="ti ti-cut"></i>Détourage</button>
+   </div>
+   <button class="cs-new" type="button" onclick="csTab('camera')"><i class="ti ti-plus"></i> Nouvelle vidéo</button>
+   <button class="cs-card-btn" type="button" onclick="csOpen('post')"><i class="ti ti-photo"></i> Publication depuis la galerie</button>
+   <button class="cs-card-btn" type="button" onclick="csOpen('status')"><i class="ti ti-circle-dashed"></i> Publier un statut</button>
+  </div>
  </div>
- <div class="cs-page hidden" id="csLive">
-  <div class="cs-live-card"><p class="small">Lance un direct pour discuter avec ta communauté.</p><button class="cs-live-btn" type="button" onclick="closeCreateScreen();creatorPage('live')">Passer en LIVE</button></div>
+ <div class="cs-page hidden" id="csPageLive">
+  <div class="cs-scroll">
+   <div class="cs-head">LIVE</div>
+   <div class="cs-live-card">
+    <p>Lance un direct et discute avec ta communauté.</p>
+    <button class="cs-live-btn" type="button" onclick="csGoLive()">Passer en LIVE</button>
+   </div>
+  </div>
  </div>
  <div class="cs-tabs">
-  <button type="button" data-cs="camera" onclick="csTab('camera')">CAMÉRA</button>
-  <button type="button" data-cs="creer" class="active" onclick="csTab('creer')">CRÉER</button>
+  <button type="button" data-cs="camera" class="active" onclick="csTab('camera')">CAMÉRA</button>
+  <button type="button" data-cs="creer" onclick="csTab('creer')">CRÉER</button>
+  <button type="button" data-cs="live" onclick="csTab('live')">LIVE</button>
+ </div>
+</div>
+
+<!-- Menu du bouton + -->
+<div id="createSheet" class="sheet-back hidden">
+ <div class="sheet">
+  <button type="button" class="sheet-exit" onclick="closeSheet()" aria-label="Fermer">×</button>
+  <div class="sheet-grab"></div>
+  <button class="sheet-opt" onclick="closeSheet();openComposer('post')"><i class="ti ti-photo" aria-hidden="true"></i><span>Publication<small>Photo ou vidéo sur ton profil</small></span></button>
+  <button class="sheet-opt" onclick="closeSheet();openComposer('status')"><i class="ti ti-circle-dashed" aria-hidden="true"></i><span>Statut<small>Visible pendant 24 h</small></span></button>
+  <button class="sheet-opt" onclick="closeSheet();creatorPage('live')"><i class="ti ti-broadcast" aria-hidden="true"></i><span>Direct<small>Diffuser en direct</small></span></button>
+ </div>
+</div>
+
+<!-- Menu ⋯ d'une publication -->
+<div id="moreSheet" class="sheet-back hidden">
+ <div class="sheet">
+  <button type="button" class="sheet-exit" onclick="closeMoreSheet()" aria-label="Fermer">×</button>
+  <div class="sheet-grab"></div>
+  <button class="sheet-opt" id="moreDelete" style="color:#ff8a8a"><i class="ti ti-trash" aria-hidden="true" style="color:#ff8a8a"></i><span>Supprimer la publication</span></button>
+  <p id="moreNote" class="small" style="color:#ffb47c;min-height:18px;margin:8px 4px"></p>
+  <button class="soft" style="width:100%;margin-top:8px" onclick="closeMoreSheet()">Annuler</button>
+ </div>
+</div>
+
+<!-- Composition -->
+<div id="composer" class="sheet-back hidden">
+ <div class="sheet">
+  <button type="button" class="sheet-exit" onclick="closeComposer()" aria-label="Fermer">×</button>
+  <div class="sheet-grab"></div>
+  <h3 id="composerTitle">Nouvelle publication</h3>
+  <p class="small" id="composerHint"></p>
+  <input id="composerFile" type="file" accept="image/*,video/*">
+  <div id="composerPreview"></div>
+  <label for="composerCaption">Légende (facultatif)</label>
+  <textarea id="composerCaption" maxlength="500" rows="2"></textarea>
+  <button id="composerSubmit" style="width:100%">Publier</button>
+  <button class="soft" style="width:100%;margin-top:8px" onclick="closeComposer()">Annuler</button>
+ </div>
+</div>
+
+<!-- Visionneuse de grille -->
+<div id="viewer" class="viewer hidden">
+ <button id="viewerClose" class="viewer-close" aria-label="Fermer"><i class="ti ti-x" aria-hidden="true"></i></button>
+ <div id="feedBody" style="height:100%"></div>
+</div>
+
+<!-- Visionneuse des statuts -->
+<div id="statusViewer" class="sv hidden">
+ <div class="sv-top">
+  <div class="sv-bars" id="svBars"></div>
+  <div class="sv-head">
+   <div id="svAvatar"></div>
+   <div><b id="svName"></b><div class="small" id="svTime"></div></div>
+   <button id="svClose" class="sv-close" aria-label="Fermer"><i class="ti ti-x" aria-hidden="true"></i></button>
+  </div>
+ </div>
+ <div class="sv-body" id="svBody">
+  <button class="sv-tap prev" id="svPrev" aria-label="Statut précédent"></button>
+  <button class="sv-tap next" id="svNext" aria-label="Statut suivant"></button>
+ </div>
+ <div class="sv-caption" id="svCaption" hidden></div>
+</div>
+
+<script>
+const SUPABASE_URL="https://imhlbguhcafbxjszmjag.supabase.co";
+const SUPABASE_KEY="sb_publishable_FGSth0t3t-gbyqNeV4Nj-g_69kDOar7";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const LIVE_MAX_AGE_MS=12*3600*1000;
+let currentUser=null,currentProfile=null,liveRoom=null,currentLiveSessionId=null,liveMode=null,viewMode=null;
+let myFollows=new Set(),myNotify=new Set(),followsReady=false,facingMode="user",accountLoading=false,applicationFilled=false;
+let liveCreatorIds=new Set();
+let statusByCreator=new Map();
+const feedSources={};
+let feedObserver=null,homeObserver=null,bellTimer=null,moreTarget=null;
+let homeFilter="pour-toi",homeMuted=true;
+let composerMode="post";
+let sv={group:null,index:0,timer:null};
+let installPrompt=null;
+
+/* Lien partagé : ?c=pseudo ouvre directement le profil du créateur */
+let pendingDeepLink=new URLSearchParams(location.search).get("c");
+if(pendingDeepLink){history.replaceState(null,"",location.pathname)}
+
+const $=id=>document.getElementById(id);
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+const liveSinceIso=()=>new Date(Date.now()-LIVE_MAX_AGE_MS).toISOString();
+
+/* UTILITAIRES */
+function message(text,success=false){
+ const box=$("status");
+ box.textContent=text;
+ box.className=success?"success":"";
+ clearTimeout(box._t);
+ box._t=setTimeout(()=>{box.textContent="";box.className=""},3500);
+}
+function authMessage(text){$("authMessage").textContent=text;$("authMessage").classList.remove("hidden")}
+function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function safeHttpUrl(value){try{const u=new URL(value);return["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}}
+function mediaUrl(path){return db.storage.from("creator-media").getPublicUrl(path).data.publicUrl}
+function fmtCount(n){
+ if(n>=1000000)return (n/1000000).toFixed(1).replace(".0","")+" M";
+ if(n>=1000)return (n/1000).toFixed(1).replace(".0","")+" K";
+ return String(n);
+}
+function thumbHTML(p){
+ const url=escapeHTML(mediaUrl(p.media_path));
+ return p.kind==="video"?`<video src="${url}" muted playsinline preload="metadata"></video>`:`<img src="${url}" alt="" loading="lazy">`;
+}
+function feedMediaHTML(p){
+ const url=escapeHTML(mediaUrl(p.media_path));
+ return p.kind==="video"?`<video class="feed-media" src="${url}" loop muted playsinline preload="metadata"></video>`:`<img class="feed-media" src="${url}" alt="">`;
+}
+function avatarHTML(p,live=false){
+ const initial=escapeHTML(((p.display_name||p.username||"?")[0]||"?").toUpperCase());
+ const img=safeHttpUrl(p.avatar_url);
+ const ring=statusByCreator.has(p.id);
+ return `<span class="avatar-wrap${ring?" ring":""}">${img?`<img class="avatar" src="${escapeHTML(img)}" alt="">`:`<span class="avatar">${initial}</span>`}${live?'<span class="dot-live" title="En direct"></span>':""}</span>`;
+}
+function fileInfo(file){
+ if(!file)return null;
+ const kind=file.type.startsWith("video/")?"video":file.type.startsWith("image/")?"photo":null;
+ if(!kind)return null;
+ const ext=((file.name.split(".").pop()||"bin").replace(/[^a-z0-9]/gi,"")||"bin").toLowerCase();
+ return {kind,ext};
+}
+function updateFollowsBadge(){
+ const dot=document.querySelector('#navigation button[data-page="follows"] .navdot');
+ if(dot)dot.hidden=![...liveCreatorIds].some(id=>myFollows.has(id));
+}
+
+/* PARTAGE, LIEN ET INSTALLATION */
+function creatorLink(username){return location.origin+location.pathname+"?c="+encodeURIComponent(username)}
+async function shareCreator(username,label){
+ const url=creatorLink(username);
+ if(navigator.share){try{await navigator.share({title:"AFRO LIVE",text:"Regarde "+(label||username)+" sur AFRO LIVE",url});return}catch{}}
+ try{await navigator.clipboard.writeText(url);message("Lien copié : "+url,true)}
+ catch{prompt("Copie ce lien :",url)}
+}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e});
+window.addEventListener("appinstalled",()=>{installPrompt=null;message("AFRO LIVE est ajouté à l'écran d'accueil.",true)});
+async function installApp(){
+ if(installPrompt){
+  installPrompt.prompt();
+  await installPrompt.userChoice.catch(()=>{});
+  installPrompt=null;
+  return;
+ }
+ message("Sur Android : ouvre le menu ⋮ de Chrome, puis choisis « Ajouter à l'écran d'accueil ».",true);
+}
+if("serviceWorker" in navigator){
+ window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));
+}
+
+/* AUTHENTIFICATION */
+async function signUp(){
+ const name=$("signupName").value.trim(),username=$("signupUsername").value.trim().toLowerCase(),email=$("signupEmail").value.trim(),password=$("signupPassword").value;
+ if(!$("signupAge").checked)return authMessage("Tu dois avoir 18 ans ou plus pour utiliser AFRO LIVE.");
+ if(!name||!username||!email||password.length<6)return authMessage("Remplis tous les champs. Le mot de passe doit contenir au moins 6 caractères.");
+ if(!/^[a-z0-9_]{3,30}$/.test(username))return authMessage("Le nom d'utilisateur doit contenir 3 à 30 caractères : lettres, chiffres ou _.");
+ const {data,error}=await db.auth.signUp({email,password,options:{data:{display_name:name,username}}});
+ if(error)return authMessage(error.message);
+ if(!data.session)authMessage("Compte créé. Vérifie ton e-mail pour confirmer ton inscription, puis connecte-toi.");
+ else{authMessage("Compte créé avec succès.");await loadAccount()}
+}
+async function signIn(){
+ const email=$("loginEmail").value.trim(),password=$("loginPassword").value;
+ const {error}=await db.auth.signInWithPassword({email,password});
+ if(error)return authMessage(error.message);
+ await loadAccount();
+}
+async function signOut(){
+ stopAllPreviews();
+ await closeLiveViewer();
+ await db.auth.signOut();
+ resetSession();
+}
+function resetSession(){
+ currentUser=null;currentProfile=null;viewMode=null;myFollows=new Set();myNotify=new Set();followsReady=false;liveCreatorIds=new Set();
+ statusByCreator=new Map();applicationFilled=false;
+ clearInterval(bellTimer);bellTimer=null;
+ pauseHomeFeed();closeViewer();closeStatusViewer();closeSheet();closeComposer();closeMoreSheet();
+ document.body.classList.remove("spectator","feed-mode");
+ $("liveViewer").classList.add("hidden");
+ $("app").classList.add("hidden");$("auth").classList.remove("hidden");$("logout").classList.add("hidden");
+ $("publicProfile").classList.add("hidden");
+ $("navigation").className="pills";$("navigation").innerHTML="";
+}
+async function loadAccount(){
+ if(accountLoading)return;
+ accountLoading=true;
+ try{
+  const {data:{user},error:ue}=await db.auth.getUser();
+  if(ue||!user)return;
+  const {data:profile,error}=await db.from("profiles")
+   .select("id,username,display_name,role,bio,avatar_url").eq("id",user.id).maybeSingle();
+  if(error){authMessage("Impossible de charger ton profil : "+error.message);return}
+  if(!profile){authMessage("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");return}
+  currentUser=user;currentProfile=profile;
+  $("auth").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");
+  $("myProfile").textContent=(profile.display_name||profile.username)+" · @"+profile.username+" · "+user.email;
+  renderView();
+ }finally{accountLoading=false}
+}
+
+/* AFFICHAGE SELON LE RÔLE */
+function setViewMode(mode){viewMode=mode;renderView()}
+function renderView(){
+ if(!currentProfile)return;
+ const role=currentProfile.role;
+ const mode=role==="creator"?(viewMode||"spectator"):"spectator";
+ ["spectator","creator","admin","publicProfile"].forEach(id=>$(id).classList.add("hidden"));
+ const nav=$("navigation");
+
+ if(role==="admin"){
+  document.body.classList.remove("spectator","feed-mode");
+  nav.className="pills";nav.innerHTML='<button class="active">Administration</button>';
+  $("admin").classList.remove("hidden");
+  loadAdminApplications();
+  return;
+ }
+ if(mode==="creator"){
+  document.body.classList.remove("spectator","feed-mode");
+  $("creator").classList.remove("hidden");
+  nav.className="pills";
+  nav.innerHTML='<button class="active" onclick="setViewMode(\'creator\')">Espace créateur</button><button onclick="setViewMode(\'spectator\')">Voir comme spectateur</button>';
+  $("creatorTitle").textContent="@"+currentProfile.username;
+  creatorPage("posts");
+  loadCreator();
+  if(pendingDeepLink)openDeepLink();
+  return;
+ }
+ document.body.classList.add("spectator");
+ $("spectator").classList.remove("hidden");
+ $("backCreatorBtn").classList.toggle("hidden",role!=="creator");
+ nav.className="bottomnav";
+ nav.innerHTML=
+  `<button class="active" data-page="discover" onclick="showPage('discover')"><i class="ti ti-home" aria-hidden="true"></i><span>Accueil</span></button>`+
+  `<button data-page="creators" onclick="showPage('creators')"><i class="ti ti-compass" aria-hidden="true"></i><span>Découvrir</span></button>`+
+  `<button class="nav-create" aria-label="Créer une publication ou passer en direct" onclick="openCreateAction()"><i class="ti ti-plus" aria-hidden="true"></i></button>`+
+  `<button data-page="lives" onclick="showPage('lives')"><i class="ti ti-broadcast" aria-hidden="true"></i><span>LIVE</span><i class="navdot" hidden></i></button>`+
+  `<button data-page="profile" onclick="showPage('profile')"><i class="ti ti-user" aria-hidden="true"></i><span>Profil</span></button>`;
+ loadSpectatorData();
+}
+async function loadSpectatorData(){
+ await loadMyFollows();
+ await refreshLiveIds();
+ await loadStatuses();
+ if(pendingDeepLink){await openDeepLink()}else{showPage("discover")}
+ refreshUnread();
+ clearInterval(bellTimer);
+ bellTimer=setInterval(refreshUnread,60000);
+}
+
+/* NAVIGATION SPECTATEUR */
+function openCreateAction(){
+ if(!currentUser)return guestToAuth();
+ if(currentProfile?.role==="creator"){openCreateScreen();return}
+ showPage("application");
+}
+async function sharePostToNetwork(btn,repost=false){
+ const creator=btn.dataset.creator,username=btn.dataset.username||"créateur AFRO LIVE";
+ const caption=(btn.dataset.caption||"").trim();
+ const url=creatorLink(username);
+ const title=repost?"Publication recommandée sur AFRO LIVE":"Regarde cette vidéo sur AFRO LIVE";
+ const messageText=(repost?"Je recommande cette vidéo de @":"Découvre la vidéo de @")+username+(caption?" : "+caption:"");
+ if(navigator.share){
+  try{await navigator.share({title,text:messageText,url});return}
+  catch(error){if(error?.name==="AbortError")return}
+ }
+ try{await navigator.clipboard.writeText(url);message(repost?"Lien prêt à republier : "+url:"Lien de partage copié : "+url,true)}
+ catch{prompt("Copie ce lien AFRO LIVE :",url)}
+}
+function showPage(page){
+ closeOtherSheets();
+ const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",profile:"profilePage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage"};
+ Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
+ $(pages[page]).classList.remove("hidden");
+ $("livesPage").classList.toggle("lfull",page==="lives");
+ document.body.classList.toggle("feed-mode",page==="discover"||page==="lives");
+ const nav=$("navigation");
+ nav.classList.toggle("over",page==="discover"||page==="lives");
+ nav.querySelectorAll("button[data-page]").forEach(b=>{
+  const active=b.dataset.page===page||(b.dataset.page==="profile"&&(page==="subscriptions"||page==="application"));
+  b.classList.toggle("active",active);
+ });
+ if(page!=="discover")pauseHomeFeed();
+ if(page!=="lives")stopAllPreviews();
+ if(page==="discover")loadHomeFeed();
+ if(page==="creators")loadCreatorsPage();
+ if(page==="lives")loadLives();
+ if(page==="follows")loadFollowsPage();
+ if(page==="subscriptions")loadSubscriptions();
+ if(page==="application")loadApplication();
+ if(page==="notifs")loadNotifications();
+}
+
+/* DIRECTS EN COURS (point vert) */
+async function refreshLiveIds(){
+ const {data,error}=await db.from("live_sessions").select("creator_id").eq("status","live").gte("started_at",liveSinceIso());
+ if(!error)liveCreatorIds=new Set((data||[]).map(l=>l.creator_id));
+ updateFollowsBadge();
+}
+let liveRealtimeChannel=null,liveRefreshPending=false;
+function subscribeToLiveChanges(){
+ if(liveRealtimeChannel)return;
+ liveRealtimeChannel=db.channel("afro-live-sessions-watch")
+  .on("postgres_changes",{event:"*",schema:"public",table:"live_sessions"},payload=>{
+   const row=payload.new||payload.old||{};
+   if(currentLiveSessionId&&row.id===currentLiveSessionId&&liveMode==="spectator"&&(payload.eventType==="DELETE"||row.status&&row.status!=="live")){
+    closeLiveViewer().then(()=>message("Le créateur a terminé son direct.",true));
+   }
+   if(liveRefreshPending)return;
+   liveRefreshPending=true;
+   setTimeout(async()=>{
+    liveRefreshPending=false;
+    await refreshLiveIds();
+    if(!$("livesPage").classList.contains("hidden"))loadLives();
+   },250);
+  })
+  .subscribe();
+}
+
+/* STATUTS (photo ou vidéo, 24 h) */
+async function loadStatuses(){
+ const {data,error}=await db.from("statuses")
+  .select("id,creator_id,kind,media_path,caption,created_at")
+  .gt("expires_at",new Date().toISOString())
+  .order("created_at",{ascending:true});
+ statusByCreator=new Map();
+ if(error||!data?.length)return;
+ const ids=[...new Set(data.map(s=>s.creator_id))];
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ const pmap={};(profiles||[]).forEach(p=>pmap[p.id]=p);
+ data.forEach(s=>{
+  if(!statusByCreator.has(s.creator_id))
+   statusByCreator.set(s.creator_id,{profile:pmap[s.creator_id]||{id:s.creator_id,username:"créateur"},items:[]});
+  statusByCreator.get(s.creator_id).items.push(s);
+ });
+}
+function openStatusViewer(creatorId){
+ const g=statusByCreator.get(creatorId);if(!g||!g.items.length)return;
+ sv={group:g,index:0,timer:null};
+ $("statusViewer").classList.remove("hidden");
+ showStatusItem();
+}
+function showStatusItem(){
+ clearTimeout(sv.timer);
+ const {group,index}=sv;
+ const item=group.items[index];
+ if(!item)return closeStatusViewer();
+ const p=group.profile;
+ $("svAvatar").innerHTML=avatarHTML(p,liveCreatorIds.has(p.id));
+ $("svName").textContent=p.display_name||p.username||"";
+ $("svTime").textContent=new Date(item.created_at).toLocaleString("fr-FR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"});
+ $("svBars").innerHTML=group.items.map((_,i)=>`<div class="sv-bar"><span class="${i<index?"done":""}" id="${i===index?"svCurrent":""}"></span></div>`).join("");
+ const body=$("svBody");
+ body.querySelectorAll("img,video").forEach(el=>el.remove());
+ const url=escapeHTML(mediaUrl(item.media_path));
+ const bar=$("svCurrent");
+ const run=ms=>{if(!bar)return;bar.style.animationDuration=ms+"ms";void bar.offsetWidth;bar.classList.add("run")};
+ if(item.kind==="video"){
+  body.insertAdjacentHTML("afterbegin",`<video src="${url}" autoplay playsinline></video>`);
+  const v=body.querySelector("video");
+  v.onloadedmetadata=()=>{const ms=Math.min(v.duration||15,30)*1000;run(ms);clearTimeout(sv.timer);sv.timer=setTimeout(nextStatus,ms)};
+  v.onerror=()=>{run(5000);sv.timer=setTimeout(nextStatus,5000)};
+ }else{
+  body.insertAdjacentHTML("afterbegin",`<img src="${url}" alt="">`);
+  run(5000);
+  sv.timer=setTimeout(nextStatus,5000);
+ }
+ const capEl=$("svCaption");
+ capEl.textContent=item.caption||"";capEl.hidden=!item.caption;
+}
+function nextStatus(){
+ if(!sv.group)return;
+ if(sv.index<sv.group.items.length-1){sv.index++;showStatusItem()}
+ else closeStatusViewer();
+}
+function prevStatus(){
+ if(!sv.group)return;
+ if(sv.index>0)sv.index--;
+ showStatusItem();
+}
+function closeStatusViewer(){
+ clearTimeout(sv.timer);
+ $("statusViewer").classList.add("hidden");
+ $("svBody").querySelectorAll("img,video").forEach(el=>{if(el.pause)el.pause();el.remove()});
+ sv={group:null,index:0,timer:null};
+}
+
+/* SUIVIS ET CLOCHE (notifications par créateur) */
+async function loadMyFollows(){
+ if(!currentUser)return;
+ const {data,error}=await db.from("follows").select("creator_id,notify").eq("spectator_id",currentUser.id);
+ if(error){followsReady=false;myFollows=new Set();myNotify=new Set();return}
+ followsReady=true;
+ myFollows=new Set(data.map(r=>r.creator_id));
+ myNotify=new Set(data.filter(r=>r.notify).map(r=>r.creator_id));
+}
+async function toggleFollow(creatorId){
+ if(!currentUser)return message("Connecte-toi pour suivre un créateur.");
+ if(!followsReady)return message("Les suivis ne sont pas encore activés sur la base.");
+ if(myFollows.has(creatorId)){
+  const {error}=await db.from("follows").delete().eq("spectator_id",currentUser.id).eq("creator_id",creatorId);
+  if(error)return message("Impossible de ne plus suivre : "+error.message);
+  myNotify.delete(creatorId);
+ }else{
+  const {error}=await db.from("follows").insert({spectator_id:currentUser.id,creator_id:creatorId,notify:false});
+  if(error)return message("Impossible de suivre : "+error.message);
+ }
+ await loadMyFollows();
+ refreshFollowUI();
+ if(homeFilter==="follows")loadHomeFeed();
+ loadFollowsPage();
+ if(!$("creatorsPage").classList.contains("hidden"))loadCreatorsPage();
+ if(!$("publicProfile").classList.contains("hidden"))openProfile(creatorId);
+}
+async function toggleNotify(creatorId){
+ if(!currentUser)return;
+ if(!myFollows.has(creatorId))return message("Abonne-toi d'abord à ce créateur.");
+ const on=!myNotify.has(creatorId);
+ const {error}=await db.from("follows").update({notify:on}).eq("spectator_id",currentUser.id).eq("creator_id",creatorId);
+ if(error)return message("Impossible de modifier la cloche : "+error.message);
+ if(on)myNotify.add(creatorId);else myNotify.delete(creatorId);
+ refreshFollowUI();
+ message(on?"Notifications activées pour ce créateur.":"Notifications désactivées pour ce créateur.",true);
+}
+function refreshFollowUI(){
+ document.querySelectorAll(".vfollow").forEach(b=>{
+  const on=myFollows.has(b.dataset.creator);
+  b.classList.toggle("done",on);
+  b.innerHTML=on?'<i class="ti ti-check" aria-hidden="true"></i>':'<i class="ti ti-plus" aria-hidden="true"></i>';
+ });
+ document.querySelectorAll("[data-notify-btn]").forEach(b=>{
+  const id=b.dataset.notifyBtn,following=myFollows.has(id),on=myNotify.has(id);
+  b.hidden=!following;
+  b.classList.toggle("on",on);
+  b.innerHTML=`<i class="ti ${on?"ti-bell-ringing":"ti-bell"}" aria-hidden="true"></i>`;
+ });
+}
+async function getFollowerCount(creatorId){
+ const {data,error}=await db.rpc("public_profile",{p_id:creatorId});
+ return error||!data?.length?null:Number(data[0].follower_count);
+}
+async function loadFollowsPage(){
+ const box=$("followsList");
+ if(!followsReady){box.innerHTML="<div class='notice'>Les suivis ne sont pas encore activés sur la base.</div>";return}
+ const ids=[...myFollows];
+ if(!ids.length){box.innerHTML="<p>Tu ne suis encore aucun créateur.</p>";return}
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ box.innerHTML=(profiles||[]).map(p=>{
+  const live=liveCreatorIds.has(p.id);
+  return `<div class="item creator-card">
+   ${avatarHTML(p,live)}
+   <div>
+    <h3>${escapeHTML(p.display_name||p.username)}${live?'<span class="tag-live">EN DIRECT</span>':""}</h3>
+    <p class="small">@${escapeHTML(p.username)}${myNotify.has(p.id)?' · <span class="follow-tag">Cloche activée</span>':""}</p>
+   </div>
+   <div class="card-actions">
+    <button class="soft" onclick="openProfile('${p.id}')">Profil</button>
+    <button class="soft" onclick="toggleFollow('${p.id}')">Ne plus suivre</button>
+   </div>
+  </div>`;
+ }).join("")||"<p>Tu ne suis encore aucun créateur.</p>";
+ updateFollowsBadge();
+}
+
+/* NOTIFICATIONS */
+async function refreshUnread(){
+ if(!currentUser)return;
+ const {count}=await db.from("notifications").select("id",{count:"exact",head:true}).eq("read",false);
+ $("bellDot").hidden=!count;
+}
+async function loadNotifications(){
+ const box=$("notifsList");
+ box.innerHTML="<p>Chargement...</p>";
+ const {data,error}=await db.from("notifications").select("id,creator_id,kind,created_at,read").order("created_at",{ascending:false}).limit(50);
+ if(error){box.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
+ if(!data.length){box.innerHTML="<p class='empty'>Aucune notification pour le moment.</p>";return}
+ const ids=[...new Set(data.map(n=>n.creator_id))];
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ const txt={post:"a publié une nouvelle publication",status:"a publié un statut",live:"est en direct"};
+ box.innerHTML=data.map(n=>{
+  const p=map[n.creator_id]||{id:n.creator_id,username:"créateur"};
+  return `<button class="notif${n.read?"":" unread"}" data-notif-creator="${escapeHTML(n.creator_id)}" data-notif-kind="${escapeHTML(n.kind)}">
+   ${avatarHTML(p)}
+   <div class="notif-text"><span><b>${escapeHTML(p.display_name||p.username)}</b> ${txt[n.kind]||""}</span>
+   <span class="small">${new Date(n.created_at).toLocaleString("fr-FR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"})}</span></div>
+  </button>`;
+ }).join("");
+ await db.from("notifications").update({read:true}).eq("read",false);
+ $("bellDot").hidden=true;
+}
+
+/* ACCUEIL : PUBLICATIONS PLEIN ÉCRAN */
+async function loadHomeFeed(){
+ const box=$("homeFeed");
+ box.innerHTML="<div class='vempty'>Chargement...</div>";
+ const {data,error}=await db.rpc("feed_posts",{p_only_follows:homeFilter==="follows",p_limit:40});
+ if(error){box.innerHTML=`<div class="vempty">${escapeHTML(error.message)}</div>`;return}
+ if(!data?.length){
+  box.innerHTML=`<div class="vempty">${homeFilter==="follows"?"Aucune publication de tes suivis pour le moment.":"Pas encore de publications."}</div>`;
+  return;
+ }
+ box.innerHTML=data.map(vitemHTML).join("");
+ box.scrollTop=0;
+ observeHomeVideos();
+}
+function vitemHTML(p){
+ const prof={id:p.creator_id,username:p.username,display_name:p.display_name,avatar_url:p.avatar_url};
+ const name=p.display_name||p.username||"";
+ const live=liveCreatorIds.has(p.creator_id),isMe=currentUser?.id===p.creator_id,following=myFollows.has(p.creator_id),notifyOn=myNotify.has(p.creator_id);
+ const url=escapeHTML(mediaUrl(p.media_path));
+ const media=p.kind==="video"
+  ?`<video class="vmedia" src="${url}" loop muted playsinline preload="auto"></video>`
+  :`<img class="vmedia" src="${url}" alt="">`;
+ const liked=!!p.liked,count=Number(p.like_count)||0;
+ return `<section class="vitem" data-post="${escapeHTML(p.id)}">
+  ${media}
+  <div class="vshade"></div>
+  <div class="vside">
+   <button class="vavatar" data-action="profile" data-creator="${escapeHTML(p.creator_id)}" aria-label="Voir le profil de ${escapeHTML(name)}">${avatarHTML(prof,live)}</button>
+   ${isMe?"":`<button class="vfollow${following?" done":""}" data-action="follow" data-creator="${escapeHTML(p.creator_id)}" aria-label="Suivre">${following?'<i class="ti ti-check" aria-hidden="true"></i>':'<i class="ti ti-plus" aria-hidden="true"></i>'}</button>`}
+   ${isMe?"":`<button class="vbtn vnotify${notifyOn?" on":""}" data-action="notify" data-creator="${escapeHTML(p.creator_id)}" data-notify-btn="${escapeHTML(p.creator_id)}" ${following?"":"hidden"} aria-label="Notifications"><i class="ti ${notifyOn?"ti-bell-ringing":"ti-bell"}" aria-hidden="true"></i></button>`}
+   <button class="vbtn${liked?" on":""}" data-action="like" data-post="${escapeHTML(p.id)}" data-liked="${liked?1:0}" aria-label="J'aime">
+    <i class="ti ${liked?"ti-heart-filled":"ti-heart"}" aria-hidden="true"></i>
+    <span class="vcount" data-n="${count}">${fmtCount(count)}</span>
+   </button>
+   <button class="vbtn" data-action="share" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Partager"><i class="ti ti-share-3" aria-hidden="true"></i><span class="vcount">Partager</span></button>
+   <button class="vbtn" data-action="repost" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">Republier</span></button>
+   <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}<span class="vcount">Son</span></button>
+  </div>
+  <div class="vmeta">
+   <b>@${escapeHTML(p.username||"")}</b>${live?' <span class="tag-live">EN DIRECT</span>':""}
+   ${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}
+   <div class="v-soundline"><i class="ti ti-music"></i> Son original · AFRO LIVE</div>
+  </div>
+ </section>`;
+}
+function observeHomeVideos(){
+ const feed=$("homeFeed");
+ homeObserver?.disconnect();
+ homeObserver=new IntersectionObserver(entries=>entries.forEach(e=>{
+  const v=e.target.querySelector("video");if(!v)return;
+  v.muted=homeMuted;
+  if(e.isIntersecting&&e.intersectionRatio>=0.6)v.play().catch(()=>{});else v.pause();
+ }),{root:feed,threshold:[0.6]});
+ feed.querySelectorAll(".vitem").forEach(el=>homeObserver.observe(el));
+}
+function pauseHomeFeed(){
+ homeObserver?.disconnect();homeObserver=null;
+ document.querySelectorAll("#homeFeed video").forEach(v=>v.pause());
+}
+function setLikeUI(btn,on,n){
+ btn.classList.toggle("on",on);
+ btn.dataset.liked=on?1:0;
+ btn.querySelector("i").className=`ti ${on?"ti-heart-filled":"ti-heart"}`;
+ const c=btn.querySelector(".vcount");c.dataset.n=n;c.textContent=fmtCount(n);
+}
+async function toggleLike(btn){
+ if(!currentUser)return message("Connecte-toi pour aimer une publication.");
+ if(btn.dataset.busy)return;
+ btn.dataset.busy="1";
+ const postId=btn.dataset.post;
+ const wasLiked=btn.dataset.liked==="1";
+ const n=Number(btn.querySelector(".vcount").dataset.n)||0;
+ setLikeUI(btn,!wasLiked,wasLiked?Math.max(0,n-1):n+1);
+ const req=wasLiked
+  ?db.from("post_likes").delete().eq("post_id",postId).eq("user_id",currentUser.id)
+  :db.from("post_likes").insert({post_id:postId,user_id:currentUser.id});
+ const {error}=await req;
+ if(error){setLikeUI(btn,wasLiked,n);message("Like impossible : "+error.message)}
+ delete btn.dataset.busy;
+}
+
+/* CRÉATEURS */
+function creatorCard(c,followers){
+ const live=liveCreatorIds.has(c.id),isMe=currentUser?.id===c.id,following=myFollows.has(c.id);
+ const countText=followers===null?"":` · ${followers} abonné(s)`;
+ return `<div class="item creator-card">
+  ${avatarHTML(c,live)}
+  <div>
+   <h3>${escapeHTML(c.display_name||c.username)}${live?'<span class="tag-live">EN DIRECT</span>':""}</h3>
+   <p class="small">@${escapeHTML(c.username)}${countText}</p>
+  </div>
+  <div class="card-actions">
+   <button class="soft" onclick="openProfile('${c.id}')">Profil</button>
+   ${isMe?"":`<button onclick="toggleFollow('${c.id}')">${following?"Ne plus suivre":"Suivre"}</button>`}
+  </div>
+ </div>`;
+}
+async function loadCreatorsPage(){
+ const box=$("creators");box.innerHTML="<p>Chargement...</p>";
+ const {data,error}=await db.from("profiles").select("id,username,display_name,bio,avatar_url").eq("role","creator").limit(30);
+ if(error)box.innerHTML="<p>Impossible de charger les créateurs : "+escapeHTML(error.message)+"</p>";
+ else if(!data.length)box.innerHTML="<p>Aucun créateur pour le moment. Reviens bientôt !</p>";
+ else{
+  const counts=await Promise.all(data.map(c=>getFollowerCount(c.id)));
+  box.innerHTML=data.map((c,i)=>creatorCard(c,counts[i])).join("");
+ }
+}
+
+/* VISIONNEUSE DE GRILLE */
+function openFeedFrom(key,index){
+ const list=feedSources[key]||[];
+ if(!list.length)return;
+ const owner=key==="creator";
+ const body=$("feedBody");
+ body.innerHTML=`<div class="feed" id="feedScroll">${list.map(p=>`
+  <section class="feed-item" data-id="${escapeHTML(p.id||"")}">
+   ${feedMediaHTML(p)}
+   <div class="feed-shade"></div>
+   <div class="feed-side">
+    ${owner?`<button class="feed-more" type="button" aria-label="Plus d'options"><i class="ti ti-dots" aria-hidden="true"></i></button>`:""}
+    <button class="sound-btn" type="button" aria-label="Activer le son"><i class="ti ti-volume-off" aria-hidden="true"></i></button>
+   </div>
+   <div class="feed-meta">
+    <b>@${escapeHTML(p.username||"")}</b>
+    ${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}
+    ${owner?"":`<button class="feed-profile" type="button" data-creator="${escapeHTML(p.creator_id||"")}">Voir le profil</button>`}
+   </div>
+  </section>`).join("")}</div>`;
+ const feed=$("feedScroll");
+ $("viewer").classList.remove("hidden");
+ feed.addEventListener("click",e=>{
+  const more=e.target.closest(".feed-more");
+  if(more){const id=more.closest(".feed-item").dataset.id;openMoreSheet(id);return}
+  const profileBtn=e.target.closest(".feed-profile");
+  if(profileBtn){closeViewer();openProfile(profileBtn.dataset.creator);return}
+  const soundBtn=e.target.closest(".sound-btn");
+  const item=e.target.closest(".feed-item");
+  const v=item?.querySelector("video");
+  if(soundBtn){
+   if(v){v.muted=!v.muted;soundBtn.innerHTML=`<i class="ti ${v.muted?"ti-volume-off":"ti-volume"}" aria-hidden="true"></i>`}
+   return;
+  }
+  if(v&&e.target.tagName==="VIDEO"){v.paused?v.play().catch(()=>{}):v.pause()}
+ });
+ feedObserver?.disconnect();
+ feedObserver=new IntersectionObserver(entries=>entries.forEach(e=>{
+  const v=e.target.querySelector("video");if(!v)return;
+  if(e.isIntersecting&&e.intersectionRatio>=0.6)v.play().catch(()=>{});else v.pause();
+ }),{root:feed,threshold:[0.6]});
+ feed.querySelectorAll(".feed-item").forEach(el=>feedObserver.observe(el));
+ requestAnimationFrame(()=>{feed.scrollTop=index*feed.clientHeight});
+}
+function closeViewer(){
+ feedObserver?.disconnect();feedObserver=null;
+ document.querySelectorAll("#feedBody video").forEach(v=>v.pause());
+ $("feedBody").innerHTML="";
+ $("viewer").classList.add("hidden");
+}
+function closeOtherSheets(keepId=null){
+ ["createScreen","createSheet","moreSheet","composer","giftPicker","mbotePayModal"].forEach(id=>{
+  if(id!==keepId){const el=$(id);if(el)el.classList.add("hidden")}
+ });
+ if(keepId!=="moreSheet")moreTarget=null;
+ if(keepId!=="giftPicker")giftPickerCreatorId=null;
+}
+function openMoreSheet(postId){
+ closeOtherSheets("moreSheet");
+ moreTarget=(feedSources.creator||[]).find(p=>p.id===postId)||null;
+ if(!moreTarget)return;
+ resetDeleteBtn();
+ $("moreNote").textContent="";
+ $("moreSheet").classList.remove("hidden");
+}
+function closeMoreSheet(){moreTarget=null;resetDeleteBtn();$("moreSheet").classList.add("hidden")}
+function resetDeleteBtn(){
+ const btn=$("moreDelete");
+ btn.dataset.confirm="";
+ btn.disabled=false;
+ btn.querySelector("span").textContent="Supprimer la publication";
+}
+async function deleteFromViewer(){
+ const p=moreTarget,btn=$("moreDelete"),note=$("moreNote");
+ if(!p)return;
+ if(btn.dataset.confirm!=="1"){
+  btn.dataset.confirm="1";
+  btn.querySelector("span").textContent="Appuie encore pour confirmer";
+  return;
+ }
+ btn.disabled=true;
+ note.textContent="Suppression en cours...";
+ const {data,error}=await db.from("posts").delete().eq("id",p.id).eq("creator_id",currentUser.id).select("id");
+ if(error){note.textContent="Erreur : "+error.message;resetDeleteBtn();return}
+ if(!data?.length){note.textContent="La base a refusé la suppression. Vérifie la règle « createur supprime ses posts » dans Supabase.";resetDeleteBtn();return}
+ try{await db.storage.from("creator-media").remove([p.media_path])}catch{}
+ closeMoreSheet();
+ closeViewer();
+ message("Publication supprimée.",true);
+ loadCreatorPosts();
+}
+
+/* LIEN PARTAGÉ : ouvre le profil du créateur (et son direct s'il est en ligne) */
+async function openDeepLink(){
+ if(!pendingDeepLink)return false;
+ const username=pendingDeepLink.toLowerCase();
+ pendingDeepLink=null;
+ const {data:id,error}=await db.rpc("creator_id_by_username",{p_username:username});
+ if(error||!id){
+  if(currentUser)message("Ce créateur est introuvable.");
+  else authMessage("Ce créateur est introuvable.");
+  return false;
+ }
+ if(!currentUser){$("auth").classList.add("hidden");$("app").classList.remove("hidden")}
+ await openProfile(id);
+ return true;
+}
+function guestToAuth(){
+ $("publicProfile").classList.add("hidden");
+ $("app").classList.add("hidden");
+ $("auth").classList.remove("hidden");
+}
+
+/* PROFIL PUBLIC */
+async function openProfile(id){
+ if(!id)return;
+ pauseHomeFeed();
+ ["spectator","creator","admin"].forEach(s=>$(s).classList.add("hidden"));
+ document.body.classList.remove("feed-mode","spectator");
+ $("navigation").classList.remove("over");
+ $("livesPage").classList.remove("lfull");
+ const profile=$("publicProfile");
+ profile.classList.remove("hidden");
+ profile.innerHTML="<p>Chargement...</p>";
+ const {data,error}=await db.rpc("public_profile",{p_id:id});
+ const p=data?.[0];
+ if(error||!p){profile.innerHTML="<p>Profil introuvable.</p><button class='soft' id='profileBack'>Retour</button>";$("profileBack").onclick=closeProfile;return}
+ const [{data:posts},{data:creatorSettings}]=await Promise.all([
+  db.from("posts").select("id,kind,media_path,caption").eq("creator_id",id).order("created_at",{ascending:false}),
+  db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",id).maybeSingle()
+ ]);
+ const list=(posts||[]).map(x=>({...x,username:p.username,creator_id:id}));
+ feedSources.profile=list;
+ let liveSessionId=null;
+ if(p.is_live){
+  const {data:s}=await db.from("live_sessions").select("id").eq("creator_id",id).eq("status","live").gte("started_at",liveSinceIso()).order("started_at",{ascending:false}).limit(1).maybeSingle();
+  liveSessionId=s?.id||null;
+ }
+ const hasStatus=statusByCreator.has(id);
+ const following=myFollows.has(id),isMe=currentUser?.id===id;
+ const avatarBlock=hasStatus
+  ?`<button class="vavatar" style="cursor:pointer" onclick="openStatusViewer('${id}')" aria-label="Voir le statut">${avatarHTML(p,p.is_live)}</button>`
+  :`<div>${avatarHTML(p,p.is_live)}</div>`;
+
+ profile.innerHTML=`
+  <div class="p-top">
+   ${avatarBlock}
+   <div class="p-info">
+    <h2>${escapeHTML(p.display_name||p.username)}${p.is_live?'<span class="tag-live">EN DIRECT</span>':""}</h2>
+    <p class="small">@${escapeHTML(p.username)}</p>
+    ${hasStatus?`<p class="status">Statut actif · touche la photo pour le voir</p>`:""}
+    ${p.status_text?`<p class="status">${escapeHTML(p.status_text)}</p>`:""}
+    ${p.bio?`<p>${escapeHTML(p.bio)}</p>`:""}
+    <div class="stats">
+     <span><b>${p.follower_count}</b> abonnés</span>
+     <span><b>${p.video_count}</b> vidéos</span>
+     <span><b>${p.photo_count}</b> photos</span>
+    </div>
+    <div class="card-actions" id="profileActions"></div>
+   </div>
+  </div>
+  ${currentUser?"":`<div class="notice">Connecte-toi ou crée un compte pour suivre ce créateur et regarder ses directs.</div><button class="soft" onclick="guestToAuth()" style="width:100%">Se connecter / créer un compte</button>`}
+  <div class="tiles" style="margin-top:14px">${list.length?list.map((x,i)=>
+   `<button class="tile" onclick="openFeedFrom('profile',${i})">${thumbHTML(x)}${x.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play" aria-hidden="true"></i></span>':""}</button>`
+  ).join(""):"<p class='empty' style='grid-column:1/-1'>Aucune publication.</p>"}</div>
+  <div style="margin-top:14px"><button class="soft" id="profileBack">Retour</button></div>`;
+
+ const actions=$("profileActions");
+ const share=document.createElement("button");
+ share.className="soft";share.innerHTML='<i class="ti ti-share" aria-hidden="true"></i> Partager';
+ share.onclick=()=>shareCreator(p.username,p.display_name||p.username);
+ actions.appendChild(share);
+ if(!isMe&&creatorSettings?.is_accepting_subscriptions){
+  const payBox=document.createElement("div");payBox.className="profile-pay-actions";
+  const plans=[["daily","1 jour",creatorSettings.daily_price_fcfa],["weekly","7 jours",creatorSettings.weekly_price_fcfa],["monthly","30 jours",creatorSettings.monthly_price_fcfa]];
+  plans.forEach(([plan,label,price])=>{
+   const amount=Number(price);if(!Number.isInteger(amount)||amount<100||amount>1000000)return;
+   const b=document.createElement("button");b.type="button";b.textContent=label+" · "+amount.toLocaleString("fr-FR")+" FCFA";
+   b.onclick=()=>openMbotePay(id,"subscription",plan,amount);payBox.appendChild(b);
+  });
+  if(payBox.children.length)actions.appendChild(payBox);
+ }
+ if(!isMe){
+  const f=document.createElement("button");
+  f.textContent=following?"Ne plus suivre":"Suivre";
+  if(following)f.className="soft";
+  f.onclick=()=>toggleFollow(id);
+  actions.appendChild(f);
+  const gift=document.createElement("button");gift.className="soft";gift.type="button";gift.textContent="Offrir un cadeau";
+  gift.onclick=()=>openGiftPicker(id);actions.appendChild(gift);
+  const bell=document.createElement("button");
+  bell.className="soft";bell.dataset.notifyBtn=id;bell.setAttribute("aria-label","Notifications");
+  bell.hidden=!following;
+  bell.onclick=()=>toggleNotify(id);
+  actions.appendChild(bell);
+ }
+ if(liveSessionId){
+  const v=document.createElement("button");
+  v.textContent="Voir le direct";
+  v.onclick=()=>joinLive(liveSessionId);
+  actions.appendChild(v);
+ }
+ refreshFollowUI();
+ $("profileBack").onclick=closeProfile;
+}
+function closeProfile(){
+ $("publicProfile").classList.add("hidden");
+ if(currentProfile)renderView();
+ else{$("app").classList.add("hidden");$("auth").classList.remove("hidden")}
+}
+
+/* CANDIDATURE CRÉATEUR */
+async function loadApplication(){
+ if(!currentUser)return;
+ const box=$("applicationStatus"),form=$("creatorApplicationForm"),button=$("submitApplication");
+ box.textContent="Vérification de ta demande...";
+ form.classList.remove("hidden");button.disabled=false;button.textContent="Envoyer ma demande";
+ const {data,error}=await db.from("creator_applications")
+  .select("id,channel_name,bio,category,country,social_link,status,admin_note,created_at")
+  .eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
+ if(error){box.textContent="Impossible de vérifier ta demande : "+error.message;return}
+ if(!data){box.textContent="Tu n'as pas encore envoyé de demande. Remplis le formulaire ci-dessous.";return}
+ if(!applicationFilled){
+  $("channelName").value=data.channel_name;$("creatorBio").value=data.bio;
+  $("creatorCategory").value=data.category;$("creatorCountry").value=data.country;
+  $("creatorSocial").value=data.social_link||"";
+  applicationFilled=true;
+ }
+ if(data.status==="pending"){box.textContent="⏳ Ta demande pour la chaîne « "+data.channel_name+" » est en attente d'examen.";button.disabled=true;button.textContent="Demande déjà envoyée"}
+ else if(data.status==="approved"){box.textContent="✅ Ta demande a été acceptée. Ton espace créateur est activé.";button.disabled=true;button.textContent="Demande acceptée"}
+ else{box.textContent="❌ Ta demande précédente a été refusée."+(data.admin_note?" Motif : "+data.admin_note:"")+" Tu peux modifier tes informations et envoyer une nouvelle demande.";button.textContent="Renvoyer ma demande"}
+}
+async function submitCreatorApplication(event){
+ event.preventDefault();
+ if(!currentUser)return message("Connecte-toi pour envoyer une demande.");
+ const channel=$("channelName").value.trim(),bio=$("creatorBio").value.trim(),category=$("creatorCategory").value,country=$("creatorCountry").value.trim(),social=$("creatorSocial").value.trim();
+ if(channel.length<2||bio.length<10||!category||country.length<2)return message("Vérifie les informations du formulaire.");
+ if(social&&!safeHttpUrl(social))return message("Le lien du réseau social doit commencer par https:// ou http://.");
+ const button=$("submitApplication");button.disabled=true;button.textContent="Envoi en cours...";
+ const {data:previous,error:re}=await db.from("creator_applications").select("id,status").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
+ if(re){message("Impossible de vérifier ta demande : "+re.message);button.disabled=false;button.textContent="Envoyer ma demande";return}
+ if(previous&&previous.status!=="rejected"){message("Tu as déjà une demande qui n'est pas refusée.");await loadApplication();return}
+ const {error}=await db.from("creator_applications").insert({user_id:currentUser.id,channel_name:channel,bio,category,country,social_link:social||null,status:"pending"});
+ if(error){message("Erreur lors de l'envoi : "+error.message);button.disabled=false;button.textContent="Envoyer ma demande";return}
+ message("Ta demande a bien été envoyée. Elle est en attente d'examen.",true);
+ applicationFilled=false;await loadApplication();
+}
+
+/* ABONNEMENTS */
+async function loadSubscriptions(){
+ const box=$("mySubscriptions");
+ const {data,error}=await db.from("subscriptions").select("creator_id,starts_at,expires_at,status").eq("spectator_id",currentUser.id).order("expires_at",{ascending:false});
+ if(error){box.textContent="Impossible de charger les abonnements : "+error.message;return}
+ if(!data.length){box.innerHTML="<p>Tu n'as pas encore d'abonnement.</p>";return}
+ box.innerHTML=data.map(s=>`<div class="item"><p>Statut : ${escapeHTML(s.status)}</p><p>Expire le : ${new Date(s.expires_at).toLocaleDateString("fr-FR")}</p></div>`).join("");
+}
+
+/* LIVEKIT */
+function createLiveRoom(){
+ if(!window.LivekitClient)throw new Error("La bibliothèque LiveKit n'est pas chargée. Actualise la page.");
+ return new LivekitClient.Room({adaptiveStream:true,dynacast:true});
+}
+async function getLiveToken(sessionId){
+ const {data,error}=await db.functions.invoke("livekit-token",{body:{session_id:sessionId}});
+ if(error)throw new Error(data?.error||error.message||"Impossible d'obtenir le jeton du direct.");
+ if(!data?.token||!data?.livekit_url)throw new Error(data?.error||"Réponse invalide du serveur LiveKit.");
+ return data;
+}
+function attachLiveTrack(track,container){
+ if(!track||!container)return;
+ if(track.kind===LivekitClient.Track.Kind.Video){
+  let video=container.querySelector("video.live-video");
+  if(!video){
+   video=document.createElement("video");
+   video.className="live-video";video.autoplay=true;video.playsInline=true;
+   container.prepend(video);
+  }
+  if(track.attachedElements?.includes(video))return;
+  track.attach(video);
+  return;
+ }
+ if(track.kind===LivekitClient.Track.Kind.Audio){
+  if(track.attachedElements?.length)return;
+  const audio=track.attach();
+  audio.autoplay=true;audio.style.display="none";
+  container.appendChild(audio);
+ }
+}
+
+/* APERÇUS SILENCIEUX DANS LA LISTE PLEIN ÉCRAN (3 maximum) */
+const previewRooms=new Map();
+const PREVIEW_LIMIT=3;
+let previewObserver=null;
+
+async function startPreview(sessionId){
+ if(liveMode==="spectator"&&sessionId===currentLiveSessionId)return;
+ if(previewRooms.has(sessionId)||previewRooms.size>=PREVIEW_LIMIT)return;
+ const box=$("livePreview_"+sessionId);if(!box)return;
+ previewRooms.set(sessionId,null);
+ let room=null;
+ try{
+  const credentials=await getLiveToken(sessionId);
+  if(!previewRooms.has(sessionId))return;
+  room=createLiveRoom();
+  previewRooms.set(sessionId,room);
+  room.on(LivekitClient.RoomEvent.TrackSubscribed,track=>{
+   if(track.kind!==LivekitClient.Track.Kind.Video)return;
+   box.innerHTML="";
+   const v=track.attach();v.muted=true;v.autoplay=true;v.playsInline=true;v.className="live-video";
+   box.appendChild(v);
+  });
+  await room.connect(credentials.livekit_url,credentials.token,{autoSubscribe:false});
+  if(!previewRooms.has(sessionId)){room.disconnect().catch(()=>{});return}
+  for(const p of room.remoteParticipants.values())
+   for(const pub of p.trackPublications.values())
+    if(pub.kind===LivekitClient.Track.Kind.Video)pub.setSubscribed(true);
+  room.on(LivekitClient.RoomEvent.TrackPublished,pub=>{
+   if(pub.kind===LivekitClient.Track.Kind.Video)pub.setSubscribed(true);
+  });
+ }catch(error){
+  if(room)room.disconnect().catch(()=>{});
+  previewRooms.delete(sessionId);
+  if(box&&!box.querySelector(".live-video"))box.innerHTML="<p class='small'>Aperçu indisponible</p>";
+ }
+}
+function stopPreview(sessionId){
+ const room=previewRooms.get(sessionId);
+ previewRooms.delete(sessionId);
+ if(room)room.disconnect().catch(()=>{});
+ if(liveMode==="spectator"&&sessionId===currentLiveSessionId)return;
+ const box=$("livePreview_"+sessionId);
+ if(box&&!box.querySelector(".live-video"))box.innerHTML="<p class='small'>Aperçu en pause</p>";
+}
+function stopAllPreviews(){[...previewRooms.keys()].forEach(stopPreview)}
+function observeLivePreviews(lives){
+ if(previewObserver)previewObserver.disconnect();
+ previewObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+   const id=e.target.id.replace("livePreview_","");
+   if(liveMode==="spectator"&&id===currentLiveSessionId)return;
+   if(e.isIntersecting)startPreview(id);else stopPreview(id);
+  });
+ },{root:$("liveList"),threshold:0.6});
+ lives.forEach(l=>{const el=$("livePreview_"+l.id);if(el)previewObserver.observe(el)});
+}
+
+/* CHAT TEMPORAIRE (LiveKit data packets, rien n'est enregistré) */
+function addChatMessage(list,name,text,isMine=false){
+ const row=document.createElement("div");
+ row.className="live-chat-message";
+ const who=document.createElement("strong");
+ who.textContent=(name||"Spectateur")+(isMine?" (toi)":"")+" : ";
+ const body=document.createElement("span");
+ body.textContent=text;
+ row.append(who,body);
+ list.appendChild(row);
+ while(list.children.length>100)list.removeChild(list.firstChild);
+ list.scrollTop=list.scrollHeight;
+ setTimeout(()=>row.remove(),5000);
+}
+function installLiveInterface(stage,room,mode,creatorId=null){
+ if(!stage||!room)return;
+ const old=stage.querySelector(".live-overlay-tools");if(old)old.remove();
+
+ const tools=document.createElement("div");tools.className="live-overlay-tools";
+ const bar=document.createElement("div");bar.className="live-tools";
+ const count=document.createElement("span");count.className="count";
+
+ const full=document.createElement("button");full.className="soft";full.type="button";full.textContent="Plein écran";
+ full.addEventListener("click",()=>{
+  const active=stage.classList.toggle("live-fullscreen");
+  full.textContent=active?"Réduire":"Plein écran";
+ });
+ bar.appendChild(count);
+
+ if(mode==="creator"){
+  let micEnabled=true;
+  const mic=document.createElement("button");mic.className="soft";mic.type="button";mic.textContent="🎙 Micro ✓";
+  mic.addEventListener("click",async()=>{
+   mic.disabled=true;
+   try{
+    const nextState=!micEnabled;
+    await room.localParticipant.setMicrophoneEnabled(nextState);
+    micEnabled=nextState;
+    mic.textContent=micEnabled?"🎙 Micro ✓":"🔇 Micro ✕";
+    mic.classList.toggle("danger",!micEnabled);
+   }catch(error){message("Impossible de modifier le microphone : "+(error.message||"Erreur"))}
+   finally{mic.disabled=false}
+  });
+  bar.appendChild(mic);
+
+  const cam=document.createElement("button");cam.className="soft";cam.type="button";
+  cam.textContent=facingMode==="environment"?"🤳 Avant":"📷 Arrière";
+  cam.addEventListener("click",()=>switchCamera(room,cam));
+  bar.appendChild(cam);
+
+  const end=document.createElement("button");end.className="danger";end.type="button";end.textContent="Terminer";
+  end.addEventListener("click",()=>{if(confirm("Veux-tu vraiment terminer ce direct ?"))stopCreatorLive()});
+  const access=document.createElement("button");access.id="liveAccessToggle";access.className="soft";access.type="button";access.textContent=activeLiveAccessMode==="paid"?"Passer en mode gratuit":"Passer en mode payant";
+  access.addEventListener("click",()=>setLiveAccessMode(activeLiveAccessMode==="paid"?"free":"paid"));
+  bar.appendChild(access);
+  bar.appendChild(end);
+ }
+ if(mode==="spectator"){
+  const leave=document.createElement("button");leave.className="danger";leave.type="button";leave.textContent="Quitter";
+  leave.addEventListener("click",leaveSpectatorLive);
+  bar.appendChild(leave);
+ }
+ bar.appendChild(full);
+
+ const chat=document.createElement("div");chat.className="live-chat";
+ const title=document.createElement("div");title.className="live-chat-title";title.textContent="Discussion en direct";
+ const list=document.createElement("div");list.className="live-chat-messages";list.setAttribute("aria-live","polite");
+ const form=document.createElement("form");form.className="live-chat-form";
+ const input=document.createElement("input");
+ input.type="text";input.maxLength=300;input.placeholder="Écris un message...";input.autocomplete="off";
+ input.enterKeyHint="send";input.setAttribute("aria-label","Message du chat");
+ if(mode==="spectator"&&creatorId&&creatorId!==currentUser?.id){
+  const gift=document.createElement("button");gift.type="button";gift.className="soft live-gift-button";gift.textContent="🎁";gift.title="Envoyer un cadeau";gift.setAttribute("aria-label","Envoyer un cadeau au créateur");
+  gift.addEventListener("click",()=>openGiftPicker(creatorId));
+  form.appendChild(gift);
+ }
+ const send=document.createElement("button");send.type="submit";send.textContent="Envoyer";
+ form.append(input,send);chat.append(title,list,form);
+ tools.append(bar,chat);stage.appendChild(tools);
+
+ const update=()=>{
+  const n=room.remoteParticipants.size;
+  const viewers=mode==="spectator"?Math.max(0,n-1):n;
+  count.textContent="👁 "+viewers+" spectateur(s)";
+ };
+ update();
+ room.on(LivekitClient.RoomEvent.ParticipantConnected,update);
+ room.on(LivekitClient.RoomEvent.ParticipantDisconnected,update);
+
+ room.on(LivekitClient.RoomEvent.DataReceived,(payload)=>{
+  try{
+   const data=JSON.parse(new TextDecoder().decode(payload));
+   if(data?.type==="afro_gift"){
+    showLiveGift(stage,String(data.code||""),String(data.name||"Spectateur").slice(0,35));
+    playAfroGiftSound(data.code);
+    return;
+   }
+   if(data?.type==="afro_tap"){showLiveHeart(stage);return}
+   if(data?.type!=="afro_chat"||typeof data.text!=="string")return;
+   const clean=data.text.trim().slice(0,300);if(!clean)return;
+   addChatMessage(list,String(data.name||"Spectateur").slice(0,40),clean,false);
+  }catch(e){console.warn("Message de chat ignoré.",e)}
+ });
+
+ let lastSent=0,lastTap=0,touchStartY=null;
+ stage.addEventListener("touchstart",event=>{touchStartY=event.touches?.[0]?.clientY??null},{passive:true});
+ stage.addEventListener("touchend",event=>{
+  const endY=event.changedTouches?.[0]?.clientY;
+  if(touchStartY!==null&&endY!==undefined&&endY-touchStartY>55&&document.activeElement===input)input.blur();
+  touchStartY=null;
+ },{passive:true});
+ stage.addEventListener("pointerup",async event=>{
+  if(mode!=="spectator"||!creatorId||creatorId===currentUser?.id)return;
+  if(event.target.closest("button,input,textarea,select,form"))return;
+  if(event.target!==stage&&!event.target.matches("video.live-video")&&!event.target.closest(".live-tap-zone"))return;
+  if(Date.now()-lastTap<140)return;lastTap=Date.now();
+  showLiveHeart(stage);
+  try{await room.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({type:"afro_tap"})),{reliable:false})}
+  catch(e){console.warn("Tapotement non transmis",e)}
+ },{passive:true});
+ form.addEventListener("submit",async event=>{
+  event.preventDefault();
+  const text=input.value.trim();if(!text)return;
+  if(Date.now()-lastSent<900){message("Attends un instant avant d'envoyer un autre message.");return}
+  lastSent=Date.now();send.disabled=true;
+  try{
+   const name=(currentProfile?.display_name||currentProfile?.username||"Spectateur").slice(0,40);
+   const packet=new TextEncoder().encode(JSON.stringify({type:"afro_chat",name,text:text.slice(0,300)}));
+   await room.localParticipant.publishData(packet,{reliable:true});
+   addChatMessage(list,name,text.slice(0,300),true);
+   input.value="";
+  }catch(error){message("Impossible d'envoyer le message : "+(error.message||"erreur"))}
+  finally{send.disabled=false;input.focus()}
+ });
+}
+function cleanLiveInterface(stage){
+ if(!stage)return;
+ stage.classList.remove("live-fullscreen");
+ const overlay=stage.querySelector(".live-overlay-tools");if(overlay)overlay.remove();
+}
+
+/* Retour de l'appli au premier plan : relancer la vidéo (évite l'écran noir) */
+document.addEventListener("visibilitychange",()=>{
+ if(document.hidden)return;
+ if(liveRoom)liveRoom.startAudio?.().catch(()=>{});
+ refreshLiveIds();
+ if(!$("livesPage").classList.contains("hidden"))loadLives();
+ document.querySelectorAll(".live-stage video, .lv-stage video").forEach(v=>v.play?.().catch(()=>{}));
+});
+
+async function switchCamera(room,btn){
+ const pub=[...room.localParticipant.videoTrackPublications.values()].find(p=>p.track);
+ if(!pub)return message("Caméra indisponible.");
+ const next=facingMode==="user"?"environment":"user";
+ btn.disabled=true;
+ try{
+  await pub.track.restartTrack({facingMode:next});
+  facingMode=next;
+  pub.track.attach($("localLiveVideo"));
+  btn.textContent=next==="environment"?"🤳 Avant":"📷 Arrière";
+  message("Caméra "+(next==="environment"?"arrière":"avant")+" activée.",true);
+ }catch(error){message("Impossible de changer de caméra : "+(error.message||"erreur"))}
+ finally{btn.disabled=false}
+}
+
+/* LISTE DES DIRECTS EN PLEIN ÉCRAN */
+async function loadLives(){
+ const box=$("liveList");
+ box.innerHTML="<div class='vempty'>Chargement des directs...</div>";
+ stopAllPreviews();
+ const {data:lives,error}=await db.from("live_sessions").select("id,title,status,creator_id").eq("status","live").gte("started_at",liveSinceIso()).order("started_at",{ascending:false}).limit(30);
+ if(error){box.innerHTML=`<div class="vempty">Impossible de charger les directs : ${escapeHTML(error.message)}</div>`;return}
+ liveCreatorIds=new Set(lives.map(l=>l.creator_id));
+ updateFollowsBadge();
+ if(!lives.length){box.innerHTML="<div class='vempty'>Aucun direct en cours. Reviens bientôt !</div>";return}
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",lives.map(l=>l.creator_id));
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ box.innerHTML=lives.map(l=>{
+  const p=map[l.creator_id]||{id:l.creator_id};
+  return `<section class="lf-item">
+   <div id="livePreview_${l.id}" class="lf-preview"><p class="small">Aperçu...</p></div>
+   <div class="vshade"></div>
+   <div class="lf-info">
+    <div class="lf-who">${avatarHTML(p,true)}<div><b>${escapeHTML(p.display_name||p.username||"Créateur")}</b> <span class="tag-live">EN DIRECT</span><div class="small">${escapeHTML(l.title)}</div></div></div>
+    <button class="lf-watch" onclick="joinLive('${l.id}')">Regarder en direct</button>
+   </div>
+  </section>`;
+ }).join("");
+ observeLivePreviews(lives);
+}
+
+/* DIRECT SPECTATEUR EN PLEIN ÉCRAN */
+async function showLiveSubscriptionOptions(creatorId,sessionId,status){
+ status.hidden=false;status.textContent="";
+ const wrap=document.createElement("div");wrap.className="lv-paywall";
+ const title=document.createElement("div");title.textContent="🔒 Ce direct est réservé aux abonnés";wrap.appendChild(title);
+ const note=document.createElement("p");note.textContent="Choisis un accès pour rejoindre ce direct. Après confirmation du paiement, appuie sur Actualiser.";wrap.appendChild(note);
+ const {data:settings,error}=await db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",creatorId).maybeSingle();
+ if(error||!settings?.is_accepting_subscriptions){const msg=document.createElement("p");msg.textContent="Les abonnements ne sont pas disponibles pour le moment.";wrap.appendChild(msg)}
+ else{
+  [["daily","1 jour",settings.daily_price_fcfa],["weekly","7 jours",settings.weekly_price_fcfa],["monthly","30 jours",settings.monthly_price_fcfa]].forEach(([plan,label,price])=>{
+   const amount=Number(price);if(!Number.isInteger(amount)||amount<100)return;
+   const b=document.createElement("button");b.type="button";b.textContent=label+" · "+amount.toLocaleString("fr-FR")+" FCFA";
+   b.addEventListener("click",()=>openMbotePay(creatorId,"subscription",plan,amount));wrap.appendChild(b);
+  });
+ }
+ const retry=document.createElement("button");retry.type="button";retry.className="soft";retry.textContent="Actualiser / rejoindre";retry.addEventListener("click",()=>joinLive(sessionId));wrap.appendChild(retry);
+ status.appendChild(wrap);
+}
+let liveStatusPollTimer=null;
+async function joinLive(sessionId){
+ if(!currentUser)return message("Connecte-toi pour regarder ce direct.");
+ if(liveRoom&&liveMode==="spectator"&&currentLiveSessionId===sessionId){$("liveViewer").classList.remove("hidden");return}
+ if(liveRoom)await closeLiveViewer();
+ stopAllPreviews();
+ const viewer=$("liveViewer"),stage=$("lvStage"),status=$("lvStatus");
+ stage.innerHTML="";
+ status.hidden=false;status.textContent="Connexion au direct...";
+ viewer.classList.remove("hidden");
+ let room=null;
+ try{
+  const {data:liveInfo,error:liveInfoError}=await db.from("live_sessions").select("creator_id,access_mode").eq("id",sessionId).maybeSingle();
+  if(liveInfoError||!liveInfo?.creator_id)throw new Error("Impossible d’identifier le créateur de ce direct.");
+  if(liveInfo.access_mode==="paid"&&currentUser.id!==liveInfo.creator_id){
+   const now=new Date().toISOString();
+   const {data:sub,error:subError}=await db.from("subscriptions").select("id").eq("spectator_id",currentUser.id).eq("creator_id",liveInfo.creator_id).eq("status","active").lte("starts_at",now).gt("expires_at",now).limit(1).maybeSingle();
+   if(subError)throw subError;
+   if(!sub){await showLiveSubscriptionOptions(liveInfo.creator_id,sessionId,status);return}
+  }
+  const credentials=await getLiveToken(sessionId);
+  room=createLiveRoom();
+  liveRoom=room;currentLiveSessionId=sessionId;liveMode="spectator";
+  room.on(LivekitClient.RoomEvent.TrackSubscribed,track=>attachLiveTrack(track,stage));
+  room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>{
+   if(track.kind===LivekitClient.Track.Kind.Video){
+    const currentVideo=stage.querySelector("video.live-video");
+    if(currentVideo){track.detach(currentVideo);currentVideo.srcObject=null}
+   }else{track.detach().forEach(el=>el.remove())}
+  });
+  room.on(LivekitClient.RoomEvent.Disconnected,()=>{
+   if(liveRoom===room){
+    closeLiveViewer().then(()=>message("Le direct s'est terminé ou la connexion a été interrompue."));
+   }
+  });
+  await room.connect(credentials.livekit_url,credentials.token);
+  try{await room.startAudio()}catch(error){console.log("Activation audio différée par le navigateur.",error)}
+  for(const participant of room.remoteParticipants.values())
+   for(const publication of participant.trackPublications.values())
+    if(publication.track)attachLiveTrack(publication.track,stage);
+  installLiveInterface(stage,room,"spectator",liveInfo.creator_id);
+  status.hidden=true;
+  clearInterval(liveStatusPollTimer);
+  liveStatusPollTimer=setInterval(async()=>{
+   if(liveMode!=="spectator"||currentLiveSessionId!==sessionId){clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;return}
+   const {data:state,error:stateError}=await db.from("live_sessions").select("status").eq("id",sessionId).maybeSingle();
+   if(!stateError&&(!state||state.status!=="live")){
+    clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;
+    await closeLiveViewer();
+    message("🔴 Le créateur a terminé son direct. Tu as été automatiquement déconnecté.",true);
+   }
+  },4000);
+ }catch(error){
+  console.error("Erreur spectateur LiveKit :",error);
+  if(room)room.disconnect().catch(()=>{});
+  if(liveRoom===room){liveRoom=null;currentLiveSessionId=null;liveMode=null}
+  status.hidden=false;
+  status.textContent="Impossible de rejoindre ce direct : "+(error.message||"erreur inconnue");
+ }
+}
+async function closeLiveViewer(){
+ clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;
+ const room=liveRoom;
+ liveRoom=null;currentLiveSessionId=null;liveMode=null;
+ if(room)await room.disconnect().catch(()=>{});
+ const stage=$("lvStage");
+ cleanLiveInterface(stage);
+ stage.innerHTML="";
+ $("liveViewer").classList.add("hidden");
+ if(currentUser&&!$("livesPage").classList.contains("hidden"))loadLives();
+}
+async function leaveSpectatorLive(){
+ if(liveMode!=="spectator")return;
+ await closeLiveViewer();
+}
+$("lvClose").addEventListener("click",()=>closeLiveViewer());
+
+/* DIRECT CRÉATEUR */
+let activeLiveAccessMode="free";
+async function creatorHasPaidLivePlans(){
+ const {data,error}=await db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",currentUser.id).maybeSingle();
+ if(error)throw error;
+ return !!data?.is_accepting_subscriptions&&[data.daily_price_fcfa,data.weekly_price_fcfa,data.monthly_price_fcfa].some(v=>Number.isInteger(Number(v))&&Number(v)>=100);
+}
+async function setLiveAccessMode(nextMode){
+ if(!["free","paid"].includes(nextMode))return;
+ if(liveMode!=="creator"||!currentLiveSessionId)return message("Tu dois être en direct pour changer ce mode.");
+ if(nextMode==="paid"){
+  try{if(!await creatorHasPaidLivePlans())return message("Configure d’abord au moins un tarif et active les abonnements dans l’onglet Tarifs et revenus.");}
+  catch(error){return message("Impossible de vérifier tes tarifs : "+error.message)}
+ }
+ const button=$("liveAccessToggle");if(button)button.disabled=true;
+ const {data,error}=await db.from("live_sessions").update({access_mode:nextMode}).eq("id",currentLiveSessionId).eq("creator_id",currentUser.id).select("id,access_mode").maybeSingle();
+ if(error||!data){if(button)button.disabled=false;return message("Le mode n’a pas été modifié : "+(error?.message||"aucune confirmation du serveur."))}
+ activeLiveAccessMode=data.access_mode||nextMode;
+ $("creatorLiveAccessStatus").textContent=activeLiveAccessMode==="paid"?"🔒 Mode payant · abonnement requis":"🌍 Mode gratuit · accès libre";
+ if(button){button.textContent=activeLiveAccessMode==="paid"?"Passer en mode gratuit":"Passer en mode payant";button.disabled=false}
+ message(activeLiveAccessMode==="paid"?"Le direct est maintenant réservé aux abonnés actifs.":"Le direct est de nouveau gratuit pour tout le monde.",true);
+}
+function updateLiveParticipantCount(){
+ if(!liveRoom||liveMode!=="creator")return;
+ const count=liveRoom.remoteParticipants.size;
+ $("liveParticipantCount").textContent=count===0?"En attente de spectateurs...":count+" spectateur(s) connecté(s).";
+}
+async function startCreatorLive(){
+ if(!currentUser||currentProfile?.role!=="creator")return message("Seuls les créateurs peuvent démarrer un direct.");
+ if(liveRoom)return message("Tu es déjà connecté à un direct.");
+ if(!window.isSecureContext)return message("La caméra nécessite une connexion HTTPS.");
+ const title=$("liveTitle").value.trim(),description=$("liveDescription").value.trim(),button=$("startLiveButton");
+ const accessMode=$("liveAccessMode").value==="paid"?"paid":"free";
+ if(title.length<3)return message("Donne un titre d'au moins 3 caractères.");
+ if(accessMode==="paid"){
+  try{if(!await creatorHasPaidLivePlans())return message("Pour lancer un direct payant, configure au moins un tarif et active les abonnements dans Tarifs et revenus.");}
+  catch(error){return message("Impossible de vérifier tes tarifs : "+error.message)}
+ }
+ button.disabled=true;button.textContent="Préparation du direct...";
+ $("creatorLiveStatus").textContent="Création de ta salle...";
+ let sessionId=null,room=null;
+ facingMode="user";
+ try{
+  const {data:session,error:ie}=await db.from("live_sessions").insert({creator_id:currentUser.id,title,description,status:"scheduled",access_mode:accessMode}).select("id").single();
+  if(ie)throw ie;
+  sessionId=session.id;
+  $("creatorLiveStatus").textContent="Connexion au serveur vidéo...";
+  const credentials=await getLiveToken(sessionId);
+  room=createLiveRoom();
+  liveRoom=room;currentLiveSessionId=sessionId;liveMode="creator";
+  room.on(LivekitClient.RoomEvent.Disconnected,()=>{if(liveMode==="creator")$("creatorLiveStatus").textContent="Connexion au direct interrompue."});
+  room.on(LivekitClient.RoomEvent.ParticipantConnected,updateLiveParticipantCount);
+  room.on(LivekitClient.RoomEvent.ParticipantDisconnected,updateLiveParticipantCount);
+  await room.connect(credentials.livekit_url,credentials.token);
+  $("creatorLiveStatus").textContent="Activation de la caméra et du microphone...";
+  await room.localParticipant.enableCameraAndMicrophone();
+  const cameraPub=[...room.localParticipant.videoTrackPublications.values()].find(p=>p.track);
+  if(!cameraPub)throw new Error("La caméra n'a pas pu démarrer.");
+  cameraPub.track.attach($("localLiveVideo"));
+  const {data:updated,error:ue}=await db.from("live_sessions").update({status:"live",started_at:new Date().toISOString()}).eq("id",sessionId).eq("creator_id",currentUser.id).select("id").maybeSingle();
+  if(ue||!updated)throw new Error(ue?.message||"Impossible de publier le direct.");
+  activeLiveAccessMode=accessMode;
+  liveCreatorIds.add(currentUser.id);
+  $("creatorLiveAccessStatus").textContent=accessMode==="paid"?"🔒 Mode payant · abonnement requis":"🌍 Mode gratuit · accès libre";
+  $("creatorLivePreview").classList.add("creator-live-on");
+  $("creatorLivePreview").classList.remove("hidden");
+  button.classList.add("hidden");
+  installLiveInterface($("creatorLiveStage"),room,"creator");
+  $("creatorLiveStatus").textContent="Tu es en direct !";
+  updateLiveParticipantCount();
+  message("Ton direct est maintenant en ligne.",true);
+ }catch(error){
+  console.error("Erreur LiveKit :",error);
+  if(room)await room.disconnect().catch(()=>{});
+  liveRoom=null;currentLiveSessionId=null;liveMode=null;
+  if(sessionId)await db.from("live_sessions").update({status:"cancelled"}).eq("id",sessionId).eq("creator_id",currentUser.id);
+  $("creatorLiveStatus").textContent="Erreur : "+(error.message||"Impossible de démarrer le direct.");
+  message("Le direct n'a pas pu démarrer : "+(error.message||"Erreur inconnue."));
+ }finally{
+  button.disabled=false;button.textContent="Lancer le direct";
+ }
+}
+async function stopCreatorLive(){
+ if(liveMode!=="creator"||!currentLiveSessionId)return message("Aucun direct créateur en cours.");
+ const sessionId=currentLiveSessionId;
+ $("creatorLiveStatus").textContent="Fermeture du direct...";
+ const room=liveRoom;
+ liveRoom=null;currentLiveSessionId=null;liveMode=null;
+ if(room)await room.disconnect().catch(()=>{});
+ cleanLiveInterface($("creatorLiveStage"));
+ liveCreatorIds.delete(currentUser.id);
+ const {data,error}=await db.from("live_sessions").update({status:"ended",ended_at:new Date().toISOString()}).eq("id",sessionId).eq("creator_id",currentUser.id).select("id").maybeSingle();
+ $("creatorLivePreview").classList.remove("creator-live-on");
+ $("creatorLivePreview").classList.add("hidden");
+ activeLiveAccessMode="free";$("liveAccessMode").value="free";
+ $("startLiveButton").classList.remove("hidden");
+ $("localLiveVideo").srcObject=null;
+ $("creatorLiveStatus").textContent=error||!data?"Connexion terminée, mais le statut du direct n'a pas été actualisé.":"Ton direct est terminé.";
+ $("liveTitle").value="";$("liveDescription").value="";
+ if(error||!data)message("Le direct est déconnecté, mais son statut n'a pas été actualisé.");
+ else message("Direct terminé.",true);
+}
+
+/* ESPACE CRÉATEUR */
+const CREATOR_PAGES=["posts","statuts","live","subscribers","earnings"];
+function creatorPage(page){
+ closeOtherSheets();
+ CREATOR_PAGES.forEach(n=>$("creator"+cap(n)).classList.toggle("hidden",n!==page));
+ document.querySelectorAll(".c-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===page));
+ if(page==="posts")loadCreatorPosts();
+ if(page==="statuts")loadMyStatuses();
+ if(page==="subscribers")loadCreatorFollowers();
+ if(page==="earnings")loadCreatorEarnings();
+}
+async function loadCreator(){
+ if(liveMode!=="creator"){
+  await db.from("live_sessions").update({status:"ended",ended_at:new Date().toISOString()}).eq("creator_id",currentUser.id).eq("status","live");
+  liveCreatorIds.delete(currentUser.id);
+ }
+ const [{data:price,error:pe},{data:stats}]=await Promise.all([
+  db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",currentUser.id).maybeSingle(),
+  db.rpc("public_profile",{p_id:currentUser.id})
+ ]);
+ if(pe)message("Tarifs non chargés : "+pe.message);
+ if(price){
+  $("creatorDailyPrice").value=price.daily_price_fcfa??"";
+  $("creatorWeeklyPrice").value=price.weekly_price_fcfa??"";
+  $("creatorMonthlyPrice").value=price.monthly_price_fcfa??"";
+  $("acceptSubscriptions").checked=price.is_accepting_subscriptions===true;
+ }
+ await loadCreatorEarnings();
+ const s=stats?.[0]||{follower_count:0,video_count:0,photo_count:0};
+ await loadStatuses();
+ const name=currentProfile.display_name||currentProfile.username;
+ $("creatorHeader").innerHTML=`
+  <div class="c-head">
+   ${avatarHTML(currentProfile)}
+   <div class="c-stats">
+    <div><b>${s.video_count}</b><span>vidéos</span></div>
+    <div><b>${s.photo_count}</b><span>photos</span></div>
+    <div><b>${s.follower_count}</b><span>abonnés</span></div>
+   </div>
+  </div>
+  <div class="c-name"><b>${escapeHTML(name)}</b><span class="small">@${escapeHTML(currentProfile.username)}</span>${currentProfile.bio?`<p>${escapeHTML(currentProfile.bio)}</p>`:""}</div>
+  <div class="c-actions">
+   <button onclick="$('avatarInput').click()">Changer la photo</button>
+   <button onclick="openProfile('${currentUser.id}')">Voir mon profil public</button>
+   <button class="soft" onclick="shareCreator('${escapeHTML(currentProfile.username)}','${escapeHTML(name)}')"><i class="ti ti-share" aria-hidden="true"></i> Partager mon lien</button>
+  </div>`;
+}
+async function savePrice(){
+ const daily=Number($("creatorDailyPrice").value),weekly=Number($("creatorWeeklyPrice").value),monthly=Number($("creatorMonthlyPrice").value);
+ const accepting=$("acceptSubscriptions").checked;
+ if(accepting&&[daily,weekly,monthly].some(v=>!Number.isInteger(v)||v<100||v>1000000))
+  return message("Renseigne les trois tarifs entre 100 et 1 000 000 FCFA, ou désactive les abonnements.");
+ const valid=v=>Number.isInteger(v)&&v>=100&&v<=1000000?v:null;
+ const {error}=await db.from("creator_settings").upsert({
+  creator_id:currentUser.id,daily_price_fcfa:valid(daily),weekly_price_fcfa:valid(weekly),monthly_price_fcfa:valid(monthly),
+  is_accepting_subscriptions:accepting,updated_at:new Date().toISOString()
+ },{onConflict:"creator_id"});
+ if(error)return message("Enregistrement refusé : "+error.message);
+ message(accepting?"Tes trois tarifs sont enregistrés.":"Les abonnements sont désactivés.",true);
+ await loadCreatorEarnings();
+}
+function normalizeCongoPhoneClient(value){
+ const digits=String(value||"").replace(/[^0-9]/g,"");
+ if(/^242[0-9]{9}$/.test(digits))return digits;
+ if(/^[0-9]{9}$/.test(digits))return "242"+digits;
+ return null;
+}
+async function savePayoutAccount(){
+ const phone=normalizeCongoPhoneClient($("payoutPhone").value);
+ if(!phone)return message("Entre un numéro du Congo avec 9 chiffres.");
+ const {error}=await db.from("creator_payout_accounts").upsert({
+  creator_id:currentUser.id,payout_method:$("payoutMethod").value,payout_phone:phone,
+  payout_name:$("payoutName").value.trim().slice(0,100)||null,updated_at:new Date().toISOString()
+ },{onConflict:"creator_id"});
+ if(error)return message("Compte de retrait non enregistré : "+error.message);
+ $("payoutPhone").value=phone;
+ message("Compte de retrait enregistré.",true);
+}
+async function loadCreatorEarnings(){
+ if(!currentUser)return;
+ const [ledgerResult,withdrawalResult,accountResult]=await Promise.all([
+  db.from("creator_ledger").select("entry_type,amount_fcfa,note,created_at").eq("creator_id",currentUser.id).order("created_at",{ascending:false}).limit(1000),
+  db.from("withdrawal_requests").select("id,amount_fcfa,status,method,phone,requested_at,processed_at").eq("creator_id",currentUser.id).order("requested_at",{ascending:false}).limit(10),
+  db.from("creator_payout_accounts").select("payout_method,payout_phone,payout_name").eq("creator_id",currentUser.id).maybeSingle()
+ ]);
+ if(ledgerResult.error)message("Revenus non chargés : "+ledgerResult.error.message);
+ const ledger=ledgerResult.data||[];
+ const balance=ledger.reduce((sum,row)=>sum+Number(row.amount_fcfa||0),0);
+ $("creatorAvailableBalance").textContent=balance.toLocaleString("fr-FR")+" FCFA";
+ $("creatorLedgerList").innerHTML=ledger.length?ledger.slice(0,12).map(row=>{
+  const amount=Number(row.amount_fcfa||0),positive=amount>=0;
+  const labels={subscription_credit:"Abonnement confirmé",tip_credit:"Cadeau reçu",withdrawal_debit:"Retrait réservé",withdrawal_refund:"Retrait remboursé",adjustment:"Ajustement"};
+  const label=labels[row.entry_type]||row.entry_type||"Mouvement";
+  return "<div class='ledger-row'><span>"+escapeHTML(label)+"<br><span class='small'>"+new Date(row.created_at).toLocaleDateString("fr-FR")+"</span></span><strong class='"+(positive?"ledger-positive":"ledger-negative")+"'>"+(positive?"+":"")+amount.toLocaleString("fr-FR")+" FCFA</strong></div>";
+ }).join(""):"<p class='small'>Aucun revenu confirmé pour le moment.</p>";
+ const withdrawals=withdrawalResult.data||[];
+ const statuses={requested:"Demandé",processing:"En traitement",paid:"Payé",rejected:"Refusé",failed:"Échoué"};
+ $("creatorWithdrawalsList").innerHTML=withdrawals.length?withdrawals.map(row=>
+  "<div class='ledger-row'><span>"+escapeHTML(statuses[row.status]||row.status)+"<br><span class='small'>"+new Date(row.requested_at).toLocaleDateString("fr-FR")+" · "+escapeHTML(row.method||"")+"</span></span><strong>"+Number(row.amount_fcfa||0).toLocaleString("fr-FR")+" FCFA</strong></div>"
+ ).join(""):"<p class='small'>Aucune demande de retrait.</p>";
+ if(accountResult.data){
+  $("payoutMethod").value=accountResult.data.payout_method||"airtel_money";
+  $("payoutPhone").value=accountResult.data.payout_phone||"";
+  $("payoutName").value=accountResult.data.payout_name||"";
+ }
+}
+async function requestCreatorWithdrawal(){
+ const amount=Number($("withdrawAmount").value),status=$("withdrawMessage");
+ if(!Number.isInteger(amount)||amount<5000||amount>10000000){status.textContent="Le retrait minimum est de 5 000 FCFA.";return}
+ if(!normalizeCongoPhoneClient($("payoutPhone").value)){status.textContent="Enregistre d'abord un numéro Mobile Money valide.";return}
+ if(!confirm("Demander le retrait de "+amount.toLocaleString("fr-FR")+" FCFA vers ton compte enregistré ?"))return;
+ const button=$("requestWithdrawal");button.disabled=true;status.textContent="Demande en cours...";
+ try{
+  const {data,error}=await db.functions.invoke("request-mbotepay-payout",{body:{amount_fcfa:amount}});
+  if(error||!data?.ok)throw new Error(data?.error||error?.message||"Impossible d'envoyer la demande.");
+  status.textContent=data.message||"Demande de retrait transmise."; $("withdrawAmount").value="";
+  await loadCreatorEarnings();
+ }catch(error){status.textContent=error.message||"Erreur pendant la demande de retrait."}
+ finally{button.disabled=false}
+}
+let mbotePayContext=null;
+function openMbotePay(creatorId,paymentType,planType,price){
+ closeOtherSheets("mbotePayModal");
+ if(!currentUser){guestToAuth();return}
+ if(paymentType!=="coin_purchase"&&(!creatorId||creatorId===currentUser.id))return message("Tu ne peux pas payer ton propre compte.");
+ mbotePayContext={creatorId,paymentType,planType};
+ $("mbotePayTitle").textContent=paymentType==="tip"?"Envoyer un cadeau":paymentType==="coin_purchase"?"Acheter des pièces AFRO LIVE":"S'abonner au créateur";
+ $("mbotePayDescription").textContent=paymentType==="coin_purchase"?"Recharge ton portefeuille de pièces avec Mobile Money.":"Valide le paiement sur ton téléphone pour continuer.";
+ $("mbotePayTipField").classList.toggle("hidden",paymentType!=="tip");
+ $("mbotePayPlanInfo").textContent=paymentType==="tip"?"Le montant sera choisi ci-dessous.":paymentType==="coin_purchase"?(Number(planType).toLocaleString("fr-FR")+" pièces · "+Number(planType).toLocaleString("fr-FR")+" FCFA"):( "Accès : "+(planType==="daily"?"1 jour":planType==="weekly"?"7 jours":"30 jours")+" · "+Number(price||0).toLocaleString("fr-FR")+" FCFA");
+ $("mbotePayAmount").value="";$("mbotePayPhone").value="";$("mbotePayStatus").textContent="";
+ $("mbotePayStatus").className="small";$("mbotePaySubmit").disabled=false;$("mbotePaySubmit").textContent="Continuer vers le paiement";
+ $("mbotePayModal").classList.remove("hidden");
+}
+function closeMbotePay(){$("mbotePayModal").classList.add("hidden");mbotePayContext=null}
+
+/* Fermeture fiable des panneaux par toucher sur le fond. */
+document.addEventListener("click",event=>{
+ const overlay=event.target;
+ if(!overlay || !["createSheet","moreSheet","composer","giftPicker","mbotePayModal"].includes(overlay.id))return;
+ if(overlay.classList.contains("hidden"))return;
+ if(overlay.id==="createSheet")closeSheet();
+ else if(overlay.id==="moreSheet")closeMoreSheet();
+ else if(overlay.id==="composer")closeComposer();
+ else if(overlay.id==="giftPicker")closeGiftPicker();
+ else if(overlay.id==="mbotePayModal")closeMbotePay();
+});
+
+async function submitMbotePay(){
+ if(!mbotePayContext)return;
+ const phone=normalizeCongoPhoneClient($("mbotePayPhone").value);
+ if(!phone){$("mbotePayStatus").textContent="Entre un numéro du Congo avec 9 chiffres.";return}
+ const isCoinPurchase=mbotePayContext.paymentType==="coin_purchase";
+ const body=isCoinPurchase
+  ?{bundle_id:String(mbotePayContext.planType),operator:$("mbotePayOperator").value,phone}
+  :{creator_id:mbotePayContext.creatorId,payment_type:mbotePayContext.paymentType,plan_type:mbotePayContext.planType,operator:$("mbotePayOperator").value,phone};
+ if(mbotePayContext.paymentType==="tip"){
+  const amount=Number($("mbotePayAmount").value);
+  if(!Number.isInteger(amount)||amount<100||amount>1000000){$("mbotePayStatus").textContent="Le cadeau doit être entre 100 et 1 000 000 FCFA.";return}
+  body.amount_fcfa=amount;
+ }
+ const button=$("mbotePaySubmit"),status=$("mbotePayStatus");button.disabled=true;status.textContent="Connexion à MbotePay...";
+ try{
+  const functionName=isCoinPurchase?"create-mbotepay-coin-purchase":"create-mbotepay-payin";
+  const {data,error}=await db.functions.invoke(functionName,{body});
+  if(error||!data?.ok)throw new Error(data?.error||error?.message||"Le paiement n'a pas pu être lancé.");
+  status.className="small payment-status-ok";
+  status.textContent=data.message||"Valide la demande sur ton téléphone.";
+  button.textContent="Demande envoyée";button.disabled=true;
+ }catch(error){status.className="small payment-status-error";status.textContent=error.message||"Erreur de paiement.";button.disabled=false}
+}
+
+const AFRO_GIFT_TEST_MODE=true;
+const AFRO_GIFTS=[
+ {code:"rose",name:"Petite rose",art:"🌹",coins:5},
+ {code:"heart",name:"Cœur orange",art:"🧡",coins:10},
+ {code:"kiss",name:"Bisou",art:"💋",coins:15},
+ {code:"flower",name:"Fleur tropicale",art:"🌺",coins:20},
+ {code:"drum",name:"Tambour",art:"🥁",coins:25},
+ {code:"shell",name:"Coquillage",art:"🐚",coins:30},
+ {code:"calebasse",name:"Calebasse",art:"🏺",coins:35},
+ {code:"bracelet",name:"Bracelet",art:"📿",coins:40},
+ {code:"fire",name:"Flamme",art:"🔥",coins:50},
+ {code:"mask",name:"Masque africain",art:"🎭",coins:60},
+ {code:"crown",name:"Couronne",art:"👑",coins:75},
+ {code:"flag",name:"Drapeau du Congo",art:"🇨🇬",coins:100},
+ {code:"dancer",name:"Danseur",art:"💃🏿",coins:120},
+ {code:"lion",name:"Lion",art:"🦁",coins:150},
+ {code:"giraffe",name:"Girafe",art:"🦒",coins:180},
+ {code:"zebra",name:"Zèbre",art:"🦓",coins:200},
+ {code:"elephant",name:"Éléphant",art:"🐘",coins:250},
+ {code:"panther",name:"Panthère",art:"🐆",coins:300},
+ {code:"rhino",name:"Rhinocéros",art:"🦏",coins:350},
+ {code:"gorilla",name:"Gorille",art:"🦍",coins:400},
+ {code:"baobab",name:"Baobab",art:"🌳",coins:450},
+ {code:"kora",name:"Kora",art:"🪕",coins:500},
+ {code:"safari",name:"Safari",art:"🦓🦒",coins:600},
+ {code:"sun",name:"Soleil africain",art:"☀️",coins:700},
+ {code:"moon",name:"Lune du Congo",art:"🌙",coins:800},
+ {code:"star",name:"Étoile",art:"🌟",coins:900},
+ {code:"diamond",name:"Diamant",art:"💎",coins:1000},
+ {code:"rainbow",name:"Arc-en-ciel",art:"🌈",coins:1200},
+ {code:"eagle",name:"Aigle",art:"🦅",coins:1500},
+ {code:"buffalo",name:"Buffle",art:"🐃",coins:1800},
+ {code:"hippo",name:"Hippopotame",art:"🦛",coins:2000},
+ {code:"croc",name:"Crocodile",art:"🐊",coins:2500},
+ {code:"flamingo",name:"Flamant rose",art:"🦩",coins:3000},
+ {code:"peacock",name:"Paon",art:"🦚",coins:3500},
+ {code:"tiger",name:"Tigre",art:"🐅",coins:4000},
+ {code:"horse",name:"Cheval",art:"🐎",coins:4500},
+ {code:"rocket",name:"Fusée",art:"🚀",coins:5000},
+ {code:"castle",name:"Palais royal",art:"🏰",coins:6000},
+ {code:"trophy",name:"Trophée",art:"🏆",coins:7000},
+ {code:"comet",name:"Comète",art:"☄️",coins:8000},
+ {code:"africa_star",name:"Étoile d’Afrique",art:"🌍✨",coins:10000},
+ {code:"gold_lion",name:"Lion doré",art:"🦁✨",coins:15000},
+ {code:"royal_mask",name:"Masque royal",art:"🎭✨",coins:20000},
+ {code:"king",name:"Roi d’Afrique",art:"🤴🏿",coins:25000},
+ {code:"queen",name:"Reine d’Afrique",art:"👸🏿",coins:30000},
+ {code:"grand_drum",name:"Grand tambour",art:"🥁✨",coins:40000},
+ {code:"gold_elephant",name:"Éléphant doré",art:"🐘✨",coins:50000},
+ {code:"diamond_crown",name:"Couronne diamant",art:"💎👑",coins:75000},
+ {code:"africa_legend",name:"Légende africaine",art:"🌍👑",coins:100000},
+
+ {code:"didi_b",name:"Didi B",art:"🎤🇨🇮",coins:20000,category:"Artistes"},
+ {code:"himra",name:"Himra",art:"🎙️🇨🇮",coins:20000,category:"Artistes"},
+ {code:"cristiano",name:"Cristiano Ronaldo",art:"⚽🐐",coins:10000,category:"Sport"},
+ {code:"messi",name:"Lionel Messi",art:"⚽🏆",coins:10000,category:"Sport"},
+ {code:"lamine_yamal",name:"Lamine Yamal",art:"⚽⭐",coins:10000,category:"Sport"},
+ {code:"yann_diomande",name:"Yann Diomandé",art:"⚽🦁",coins:10000,category:"Sport"},
+ {code:"neymar",name:"Neymar",art:"⚽✨",coins:10000,category:"Sport"},
+ {code:"african_legend_mandela",name:"Nelson Mandela · Afrique du Sud",art:"🕊️🇿🇦",coins:50000,category:"Légendes africaines",tribute:"Hommage à son combat pour la liberté et la réconciliation."},
+ {code:"african_legend_lumumba",name:"Patrice Lumumba · RDC",art:"✊🏿🇨🇩",coins:50000,category:"Légendes africaines",tribute:"Hommage à son engagement pour l'indépendance congolaise."},
+ {code:"african_legend_sankara",name:"Thomas Sankara · Burkina Faso",art:"🌍🇧🇫",coins:50000,category:"Légendes africaines",tribute:"Hommage à son idéal panafricain et à son discours d'émancipation."},
+ {code:"african_legend_cabral",name:"Amílcar Cabral · Guinée-Bissau / Cap-Vert",art:"📚🇬🇼",coins:50000,category:"Légendes africaines",tribute:"Hommage à sa pensée et à son rôle dans les indépendances."},
+ {code:"african_legend_nkrumah",name:"Kwame Nkrumah · Ghana",art:"⭐🇬🇭",coins:50000,category:"Légendes africaines",tribute:"Hommage à son engagement pour l'unité africaine."},
+ {code:"african_legend_nyerere",name:"Julius Nyerere · Tanzanie",art:"📖🇹🇿",coins:50000,category:"Légendes africaines",tribute:"Hommage à son rôle dans la construction de la Tanzanie moderne."},
+ {code:"african_legend_matsoua",name:"André Matsoua · Congo",art:"🇨🇬🕊️",coins:50000,category:"Légendes africaines",tribute:"Hommage à cette figure historique de la dignité et des droits des Congolais."},
+ {code:"african_legend_kenyatta",name:"Jomo Kenyatta · Kenya",art:"🦁🇰🇪",coins:50000,category:"Légendes africaines",tribute:"Hommage à son rôle dans l'indépendance du Kenya."},
+ {code:"african_legend_mukhtar",name:"Omar al-Mukhtar · Libye",art:"🏜️🇱🇾",coins:50000,category:"Légendes africaines",tribute:"Hommage à sa résistance contre la colonisation italienne."},
+ {code:"african_legend_malcolm",name:"Miriam Makeba · Afrique du Sud",art:"🎶🇿🇦",coins:50000,category:"Légendes africaines",tribute:"Hommage à sa voix et à son engagement contre l'apartheid."},
+];
+
+/* Catalogue hommage : une figure historique pour chacun des 54 pays africains */
+const AFRICAN_LEGENDS_CATALOG=[["dz","Algérie","Émir Abdelkader","🛡️"],["ao","Angola","Agostinho Neto","📜"],["bj","Bénin","Béhanzin","👑"],["bw","Botswana","Seretse Khama","🦁"],["bf","Burkina Faso","Thomas Sankara","✊🏿"],["bi","Burundi","Louis Rwagasore","🕊️"],["cv","Cap-Vert","Amílcar Cabral","📚"],["cm","Cameroun","Ruben Um Nyobè","✊🏿"],["cf","République centrafricaine","Barthélemy Boganda","🕊️"],["td","Tchad","François Tombalbaye","📜"],["km","Comores","Saïd Mohamed Cheikh","🌴"],["cg","Congo-Brazzaville","André Matsoua","🕊️"],["ci","Côte d’Ivoire","Félix Houphouët-Boigny","🌟"],["dj","Djibouti","Mahmoud Harbi","✊🏿"],["cd","RDC","Patrice Lumumba","✊🏿"],["eg","Égypte","Saad Zaghloul","🏛️"],["gq","Guinée équatoriale","Acacio Mañé","🕊️"],["er","Érythrée","Hamid Idris Awate","🛡️"],["sz","Eswatini","Sobhuza II","👑"],["et","Éthiopie","Ménélik II","👑"],["ga","Gabon","Léon Mba","🌿"],["gm","Gambie","Dawda Jawara","🦁"],["gh","Ghana","Kwame Nkrumah","⭐"],["gn","Guinée","Ahmed Sékou Touré","✊🏿"],["gw","Guinée-Bissau","Francisco Mendes","📜"],["ke","Kenya","Jomo Kenyatta","🦁"],["ls","Lesotho","Moshoeshoe I","👑"],["lr","Liberia","Edward Wilmot Blyden","📚"],["ly","Libye","Omar al-Mukhtar","🏜️"],["mg","Madagascar","Ranavalona I","👑"],["mw","Malawi","John Chilembwe","🕊️"],["ml","Mali","Soundiata Keïta","🦁"],["mr","Mauritanie","Moktar Ould Daddah","📜"],["mu","Maurice","Seewoosagur Ramgoolam","🌺"],["ma","Maroc","Mohammed V","👑"],["mz","Mozambique","Samora Machel","✊🏿"],["na","Namibie","Sam Nujoma","🕊️"],["ne","Niger","Boubou Hama","📚"],["ng","Nigeria","Nnamdi Azikiwe","🦅"],["rw","Rwanda","Grégoire Kayibanda","🌿"],["st","São Tomé-et-Príncipe","Manuel Pinto da Costa","🌴"],["sn","Sénégal","Léopold Sédar Senghor","📚"],["sc","Seychelles","James Mancham","🌊"],["sl","Sierra Leone","Bai Bureh","🛡️"],["so","Somalie","Hawo Tako","🕊️"],["za","Afrique du Sud","Nelson Mandela","🕊️"],["ss","Soudan du Sud","John Garang","🕊️"],["sd","Soudan","Muhammad Ahmad al-Mahdi","🏜️"],["tz","Tanzanie","Julius Nyerere","📖"],["tg","Togo","Sylvanus Olympio","🕊️"],["tn","Tunisie","Habib Bourguiba","🏛️"],["ug","Ouganda","Apollo Milton Obote","📜"],["zm","Zambie","Kenneth Kaunda","🕊️"],["zw","Zimbabwe","Joshua Nkomo","✊🏿"]];
+AFRO_GIFTS.push(...AFRICAN_LEGENDS_CATALOG.map(([code,country,person,art])=>({
+ code:"legend_"+code,name:person+" · "+country,art:art+" 🌍",coins:50000,category:"Légendes africaines",
+ tribute:"Cadeau hommage à une figure historique de "+country+"."
+})));
+let giftPickerCreatorId=null,selectedAfroGift="rose";
+async function refreshAfroCoinBalance(){
+ if(AFRO_GIFT_TEST_MODE){$("giftCoinBalance").textContent="🧪 ESSAI GRATUIT";$("giftCoinBalance").dataset.balance="0";return}
+ if(!currentUser)return;
+ const {data,error}=await db.from("coin_wallets").select("balance").eq("user_id",currentUser.id).maybeSingle();
+ const balance=error?0:Number(data?.balance||0);
+ $("giftCoinBalance").textContent="🪙 "+balance.toLocaleString("fr-FR")+" pièces";
+ $("giftCoinBalance").dataset.balance=String(balance);
+}
+function renderAfroGiftGrid(){
+ const grid=$("giftGrid");grid.innerHTML="";
+ AFRO_GIFTS.forEach(gift=>{
+  const card=document.createElement("button");card.type="button";
+  card.className="gift-card"+(gift.code===selectedAfroGift?" selected":"");
+  card.innerHTML='<span class="gift-art">'+gift.art+'</span><span class="gift-name">'+gift.name+'</span><span class="gift-price">'+gift.coins.toLocaleString("fr-FR")+' FCFA · gratuit</span>';
+  card.addEventListener("click",()=>{selectedAfroGift=gift.code;renderAfroGiftGrid()});
+  grid.appendChild(card);
+ });
+ const selected=AFRO_GIFTS.find(g=>g.code===selectedAfroGift)||AFRO_GIFTS[0];
+ $("giftSelectedLabel").textContent=selected.art+" "+selected.name;
+ $("giftSelectedPrice").textContent=selected.coins.toLocaleString("fr-FR")+" FCFA · GRATUIT";
+}
+function openGiftPicker(creatorId){
+ closeOtherSheets("giftPicker");
+ if(!currentUser){guestToAuth();return}
+ if(!creatorId||creatorId===currentUser.id)return message("Tu ne peux pas t'envoyer un cadeau.");
+ if(AFRO_GIFT_TEST_MODE&&(!liveRoom||liveMode!=="spectator"))return message("Les cadeaux gratuits d'essai sont disponibles uniquement pendant un direct.");
+ giftPickerCreatorId=creatorId;selectedAfroGift="rose";
+ $("giftPickerStatus").textContent="";
+ renderAfroGiftGrid();
+ $("giftPicker").classList.remove("hidden");
+ refreshAfroCoinBalance();
+}
+function closeGiftPicker(){$("giftPicker").classList.add("hidden");giftPickerCreatorId=null}
+function openCoinPurchase(coins){
+ closeGiftPicker();
+ openMbotePay(null,"coin_purchase",coins,null);
+}
+async function sendSelectedAfroGift(){
+ if(!giftPickerCreatorId||!currentUser)return;
+ const gift=AFRO_GIFTS.find(g=>g.code===selectedAfroGift);if(!gift)return;
+ const button=$("giftSendButton"),status=$("giftPickerStatus");
+ button.disabled=true;status.textContent="Envoi du cadeau gratuit...";
+ try{
+  if(!AFRO_GIFT_TEST_MODE){
+   const {data,error}=await db.rpc("send_afro_gift",{p_creator_id:giftPickerCreatorId,p_gift_code:gift.code});
+   if(error)throw error;
+   if(!data?.ok)throw new Error(data?.error==="insufficient_coins"?"Solde de pièces insuffisant.":"Le cadeau n'a pas pu être envoyé.");
+   $("giftCoinBalance").textContent="🪙 "+Number(data.balance||0).toLocaleString("fr-FR")+" pièces";
+  }
+  status.textContent="🎉 Cadeau de test envoyé gratuitement ! Aucun paiement ni revenu réel.";
+  const packet=new TextEncoder().encode(JSON.stringify({type:"afro_gift",code:gift.code,name:(currentProfile?.display_name||currentProfile?.username||"Spectateur").slice(0,35)}));
+  if(liveRoom&&liveMode==="spectator"){
+   try{await liveRoom.localParticipant.publishData(packet,{reliable:true})}catch(e){console.warn("Gift animation could not be broadcast",e)}
+   showLiveGift($("lvStage"),gift.code,currentProfile?.display_name||currentProfile?.username||"Spectateur");
+   playAfroGiftSound(gift.code);
+  }
+ }catch(error){status.textContent=error.message||"Erreur pendant l'envoi du cadeau."}
+ finally{button.disabled=false}
+}
+function playAfroGiftSound(code="gift"){
+ try{
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;if(!AudioCtx)return;
+  const ctx=new AudioCtx();if(ctx.state==="suspended")ctx.resume().catch(()=>{});const now=ctx.currentTime;
+  const drum=["drum","grand_drum","tam_tam"].includes(code),animal=["lion","gold_lion","panther","tiger","gorilla","elephant","gold_elephant"].includes(code),royal=["crown","diamond_crown","king","queen","royal_mask","africa_legend"].includes(code),instrument=["kora","didi_b","himra"].includes(code);
+  if(drum){[0,.17,.34,.58].forEach((delay,i)=>{const o=ctx.createOscillator(),g=ctx.createGain(),f=ctx.createBiquadFilter();o.type=i===2?"triangle":"sine";o.frequency.setValueAtTime([118,82,145,68][i],now+delay);o.frequency.exponentialRampToValueAtTime(42,now+delay+.2);f.type="lowpass";f.frequency.value=520;g.gain.setValueAtTime(.0001,now+delay);g.gain.exponentialRampToValueAtTime(i===2?.18:.24,now+delay+.012);g.gain.exponentialRampToValueAtTime(.0001,now+delay+.24);o.connect(f);f.connect(g);g.connect(ctx.destination);o.start(now+delay);o.stop(now+delay+.25)})}
+  else{const notes=animal?[196,147,110]:royal?[523,659,784,1046]:instrument?[392,494,587,784]:[440,554,659];notes.forEach((freq,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type=instrument?"triangle":"sine";o.frequency.setValueAtTime(freq,now+i*.105);g.gain.setValueAtTime(.0001,now+i*.105);g.gain.exponentialRampToValueAtTime(instrument?.075:.055,now+i*.105+.025);g.gain.exponentialRampToValueAtTime(.0001,now+i*.105+.32);o.connect(g);g.connect(ctx.destination);o.start(now+i*.105);o.stop(now+i*.105+.34)})}
+  setTimeout(()=>ctx.close().catch(()=>{}),1500);
+ }catch(e){console.warn("Son du cadeau indisponible",e)}
+}
+function showLiveHeart(stage){
+ if(!stage)return;
+ let counter=stage.querySelector(".live-heart-counter");
+ if(!counter){counter=document.createElement("div");counter.className="live-heart-counter";counter.textContent="❤️ 0";stage.appendChild(counter)}
+ const total=Number(stage.dataset.afroTaps||0)+1;stage.dataset.afroTaps=String(total);counter.textContent="❤️ "+total.toLocaleString("fr-FR");
+ const heart=document.createElement("div");heart.className="live-floating-heart";heart.textContent=["❤️","💖","💕","💗"][Math.floor(Math.random()*4)];
+ heart.style.setProperty("--heart-x",(58+Math.random()*30)+"%");heart.style.setProperty("--heart-drift",(Math.random()*50-25)+"px");
+ stage.appendChild(heart);setTimeout(()=>heart.remove(),1450);
+}
+function showLiveGift(stage,code,sender){
+ if(!stage)return;
+ const gift=AFRO_GIFTS.find(g=>g.code===code);if(!gift)return;
+ const pop=document.createElement("div");pop.className="live-gift-pop gift-"+String(code).replace(/[^a-z0-9_-]/gi,"");
+ const art=document.createElement("div");art.className="art";art.textContent=gift.art;
+ const caption=document.createElement("div");caption.className="caption";caption.textContent=sender+" envoie "+gift.name;
+ pop.append(art,caption);stage.appendChild(pop);setTimeout(()=>pop.remove(),2800);
+}
+
+
+document.addEventListener("click",event=>{
+ const pack=event.target.closest("[data-coins]");
+ if(pack&&$("giftPicker")&&!$("giftPicker").classList.contains("hidden"))openCoinPurchase(Number(pack.dataset.coins));
+});
+
+let csFacing="user",csStream=null,csMode="photo",csRecorder=null,csChunks=[],csRecTick=null,csRecStart=0,csDiscard=false;
+
+function openCreateScreen(){
+ if(!currentUser)return guestToAuth();
+ if(currentProfile?.role!=="creator"){showPage("application");return}
+ closeOtherSheets("createScreen");
+ $("createScreen").classList.remove("hidden");
+ csTab("camera");
+}
+function closeCreateScreen(){
+ csDiscard=true;
+ csStopRecording();
+ csStopStream();
+ $("createScreen").classList.add("hidden");
+}
+function csSoon(name){message(name+" : bientôt disponible.")}
+function csOpen(mode){closeCreateScreen();openComposer(mode)}
+function csFromGallery(){csOpen("post")}
+function csGoLive(){closeCreateScreen();setViewMode("creator");creatorPage("live")}
+function csTab(name){
+ const map={camera:"csPageCamera",creer:"csPageCreer",live:"csPageLive"};
+ document.querySelectorAll("#createScreen .cs-page").forEach(p=>p.classList.add("hidden"));
+ $(map[name]).classList.remove("hidden");
+ document.querySelectorAll("#createScreen .cs-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.cs===name));
+ if(name==="camera")csStartStream();
+ else{csStopRecording();csStopStream()}
+}
+async function csStartStream(){
+ csStopStream();
+ if(!navigator.mediaDevices?.getUserMedia)return message("La caméra n'est pas disponible dans ce navigateur.");
+ const video=$("csVideo");
+ try{
+  try{
+   csStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:csFacing,width:{ideal:1080},height:{ideal:1920}},audio:true});
+  }catch{
+   csStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:csFacing},audio:false});
+  }
+  video.srcObject=csStream;
+  video.style.transform=csFacing==="user"?"scaleX(-1)":"none";
+  await video.play().catch(()=>{});
+ }catch(e){
+  message("Caméra indisponible. Autorise l'accès à la caméra dans les réglages.");
+ }
+}
+function csStopStream(){
+ if(csStream){csStream.getTracks().forEach(t=>t.stop());csStream=null}
+ const video=$("csVideo");if(video)video.srcObject=null;
+}
+function csFlip(){csFacing=csFacing==="user"?"environment":"user";csStartStream()}
+function csSetMode(mode){
+ if(csRecorder)return;
+ csMode=mode;
+ document.querySelectorAll("#createScreen .cs-modes button").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
+ $("csShutter").classList.toggle("video",mode!=="photo");
+}
+function csShoot(){
+ if(csMode==="photo")return csTakePhoto();
+ if(csRecorder)return csStopRecording();
+ csStartRecording(Number(csMode));
+}
+function csTakePhoto(){
+ const v=$("csVideo");
+ if(!v.videoWidth)return message("Caméra pas encore prête.");
+ const c=document.createElement("canvas");c.width=v.videoWidth;c.height=v.videoHeight;
+ const ctx=c.getContext("2d");
+ if(csFacing==="user"){ctx.translate(c.width,0);ctx.scale(-1,1)}
+ ctx.drawImage(v,0,0,c.width,c.height);
+ c.toBlob(blob=>{if(blob)csSendToComposer(blob,"photo-"+Date.now()+".jpg")},"image/jpeg",0.92);
+}
+function csStartRecording(maxSeconds){
+ if(!csStream)return message("Caméra indisponible.");
+ if(!window.MediaRecorder)return message("L'enregistrement vidéo n'est pas supporté sur ce téléphone.");
+ const types=["video/mp4","video/webm;codecs=vp8,opus","video/webm"];
+ const type=types.find(t=>MediaRecorder.isTypeSupported(t))||"";
+ csChunks=[];csDiscard=false;
+ try{csRecorder=new MediaRecorder(csStream,type?{mimeType:type}:undefined)}
+ catch(e){return message("Enregistrement vidéo non supporté sur ce téléphone.")}
+ csRecorder.ondataavailable=e=>{if(e.data&&e.data.size)csChunks.push(e.data)};
+ csRecorder.onstop=()=>{
+  const realType=csRecorder?.mimeType||type||"video/mp4";
+  const blob=new Blob(csChunks,{type:realType.split(";")[0]});
+  csRecorder=null;csHideRec();
+  if(!csDiscard&&blob.size){
+   const ext=realType.includes("mp4")?".mp4":".webm";
+   csSendToComposer(blob,"video-"+Date.now()+ext);
+  }
+  csDiscard=false;
+ };
+ csRecorder.start();csRecStart=Date.now();
+ $("csShutter").classList.add("rec");$("csRec").classList.add("on");
+ csRecTick=setInterval(()=>{
+  const sec=Math.floor((Date.now()-csRecStart)/1000);
+  $("csRecTime").textContent=Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0");
+  if(sec>=maxSeconds)csStopRecording();
+ },250);
+}
+function csStopRecording(){if(csRecorder&&csRecorder.state!=="inactive")csRecorder.stop();csHideRec()}
+function csHideRec(){
+ clearInterval(csRecTick);csRecTick=null;
+ $("csRec").classList.remove("on");$("csRecTime").textContent="0:00";
+ $("csShutter").classList.remove("rec");
+}
+function csSendToComposer(blob,name){
+ const file=new File([blob],name,{type:blob.type||"application/octet-stream"});
+ csDiscard=true;closeCreateScreen();openComposer("post");
+ const dt=new DataTransfer();dt.items.add(file);
+ $("composerFile").files=dt.files;previewComposer(file);
+}
+
+/* MENUS ET COMPOSITION */
+function openSheet(){closeOtherSheets("createSheet");$("createSheet").classList.remove("hidden")}
+function closeSheet(){$("createSheet").classList.add("hidden")}
+function openComposer(mode){
+ closeOtherSheets("composer");
+ composerMode=mode;
+ $("composerTitle").textContent=mode==="status"?"Nouveau statut":"Nouvelle publication";
+ $("composerHint").textContent=mode==="status"?"Visible pendant 24 h, comme sur WhatsApp.":"Photo ou vidéo publiée sur ton profil.";
+ $("composerFile").value="";$("composerCaption").value="";
+ $("composerPreview").innerHTML="";
+ $("composerSubmit").textContent=mode==="status"?"Publier le statut":"Publier";
+ $("composer").classList.remove("hidden");
+}
+function closeComposer(){$("composer").classList.add("hidden")}
+function previewComposer(file){
+ const box=$("composerPreview");box.innerHTML="";
+ const info=fileInfo(file);if(!info)return;
+ const url=URL.createObjectURL(file);
+ box.innerHTML=info.kind==="video"?`<video src="${url}" controls playsinline></video>`:`<img src="${url}" alt="">`;
+}
+async function publishFromComposer(){
+ if(currentProfile?.role!=="creator")return message("Réservé aux créateurs.");
+ const file=$("composerFile").files[0];
+ const isStatus=composerMode==="status";
+ const caption=$("composerCaption").value.trim().slice(0,isStatus?200:500);
+ if(!file)return message("Choisis une photo ou une vidéo.");
+ if(file.size>200*1024*1024)return message("Fichier trop lourd (200 Mo max).");
+ const info=fileInfo(file);
+ if(!info)return message("Format non accepté.");
+ const btn=$("composerSubmit");btn.disabled=true;
+ message("Envoi en cours... ne ferme pas la page.");
+ try{
+  const prefix=isStatus?"status-":"";
+  const path=`${currentUser.id}/${prefix}${crypto.randomUUID()}.${info.ext}`;
+  const {error:se}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type});
+  if(se)return message("Envoi impossible : "+se.message);
+  const table=isStatus?"statuses":"posts";
+  const {error}=await db.from(table).insert({creator_id:currentUser.id,kind:info.kind,media_path:path,caption:caption||null});
+  if(error)return message((isStatus?"Statut":"Publication")+" refusé : "+error.message);
+  closeComposer();
+  if(isStatus){
+   message("Statut publié pour 24 h.",true);
+   await loadStatuses();
+   loadMyStatuses();
+  }else{
+   message("Publication en ligne.",true);
+   loadCreatorPosts();
+  }
+ }finally{btn.disabled=false}
+}
+
+/* PUBLICATIONS DU CRÉATEUR */
+async function loadCreatorPosts(){
+ const grid=$("creatorPostGrid");
+ const {data,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id").eq("creator_id",currentUser.id).order("created_at",{ascending:false});
+ if(error){grid.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
+ feedSources.creator=(data||[]).map(p=>({...p,username:currentProfile.username}));
+ if(!data.length){grid.innerHTML="<p class='empty' style='grid-column:1/-1'>Tu n'as pas encore publié de contenu.</p>";return}
+ grid.innerHTML=feedSources.creator.map((p,i)=>
+  `<button class="tile" onclick="openFeedFrom('creator',${i})">${thumbHTML(p)}${p.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play" aria-hidden="true"></i></span>':""}</button>`
+ ).join("");
+}
+
+/* STATUTS DU CRÉATEUR */
+async function loadMyStatuses(){
+ const box=$("myStatusList");
+ const {data,error}=await db.from("statuses").select("id,kind,media_path,caption,created_at").eq("creator_id",currentUser.id).gt("expires_at",new Date().toISOString()).order("created_at",{ascending:false});
+ if(error){box.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
+ if(!data.length){box.innerHTML="<p class='empty'>Aucun statut actif.</p>";return}
+ box.innerHTML=data.map(s=>`
+  <div class="row-item">
+   <div class="row-thumb">${thumbHTML(s)}</div>
+   <div class="row-text">${escapeHTML(s.caption||"Sans légende")}<br><span class="small">Publié le ${new Date(s.created_at).toLocaleString("fr-FR")}</span></div>
+   <button class="danger" onclick="deleteStatus('${s.id}','${s.media_path}')">Supprimer</button>
+  </div>`).join("");
+}
+async function deleteStatus(id,path){
+ if(!confirm("Supprimer ce statut ?"))return;
+ const {error}=await db.from("statuses").delete().eq("id",id).eq("creator_id",currentUser.id);
+ if(error)return message("Suppression impossible : "+error.message);
+ try{await db.storage.from("creator-media").remove([path])}catch{}
+ message("Statut supprimé.",true);
+ await loadStatuses();
+ loadMyStatuses();
+}
+
+/* PHOTO DE PROFIL */
+async function uploadAvatar(file){
+ if(!file)return;
+ if(!file.type.startsWith("image/"))return message("Choisis une image.");
+ const ext=((file.name.split(".").pop()||"jpg").replace(/[^a-z0-9]/gi,"")||"jpg").toLowerCase();
+ const path=`${currentUser.id}/avatar-${Date.now()}.${ext}`;
+ const {error:se}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type});
+ if(se)return message("Photo non envoyée : "+se.message);
+ const url=mediaUrl(path);
+ const {error}=await db.from("profiles").update({avatar_url:url}).eq("id",currentUser.id);
+ if(error)return message("Photo enregistrée mais non liée au profil : "+error.message);
+ currentProfile.avatar_url=url;
+ message("Photo de profil mise à jour.",true);
+ loadCreator();
+}
+
+/* ABONNÉS (noms visibles uniquement par le créateur) */
+async function loadCreatorFollowers(){
+ const box=$("subscriberList");
+ const {data,error}=await db.from("follows").select("spectator_id,created_at").eq("creator_id",currentUser.id).order("created_at",{ascending:false});
+ if(error){box.innerHTML=`<div class="notice">Liste indisponible : ${escapeHTML(error.message)}</div>`;return}
+ if(!data.length){box.innerHTML="<p class='empty'>Aucun abonné pour le moment.</p>";return}
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name").in("id",data.map(r=>r.spectator_id));
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ box.innerHTML=data.map(r=>{
+  const p=map[r.spectator_id]||{};
+  return `<div class="item">${escapeHTML(p.display_name||p.username||"Abonné")} <span class="small">· depuis le ${new Date(r.created_at).toLocaleDateString("fr-FR")}</span></div>`;
+ }).join("");
+}
+
+/* ADMIN */
+async function loadAdminApplications(){
+ if(!currentUser||currentProfile?.role!=="admin")return message("Accès administrateur nécessaire.");
+ const box=$("adminApplications");
+ box.innerHTML="<p>Chargement des candidatures...</p>";
+ const {data:applications,error}=await db.from("creator_applications")
+  .select("id,user_id,channel_name,bio,category,country,social_link,status,admin_note,created_at")
+  .order("created_at",{ascending:false});
+ if(error){box.innerHTML='<div class="notice">Erreur de chargement : '+escapeHTML(error.message)+'</div>';return}
+ $("pendingCount").textContent=applications.filter(a=>a.status==="pending").length;
+ $("reviewedCount").textContent=applications.filter(a=>a.status!=="pending").length;
+ if(!applications.length){box.innerHTML="<div class='card'><p>Aucune candidature reçue pour le moment.</p></div>";return}
+ const ids=[...new Set(applications.map(a=>a.user_id))];
+ const {data:profiles,error:pe}=await db.from("profiles").select("id,username,display_name,bio,role").in("id",ids);
+ if(pe){box.innerHTML='<div class="notice">Impossible de charger les profils : '+escapeHTML(pe.message)+'</div>';return}
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ box.innerHTML=applications.map(a=>{
+  const p=map[a.user_id]||{};
+  const date=new Date(a.created_at).toLocaleString("fr-FR");
+  const label=a.status==="pending"?"En attente":a.status==="approved"?"Acceptée":"Refusée";
+  const color=a.status==="pending"?"#ffd2ad":a.status==="approved"?"#9ce5ae":"#ffaaaa";
+  const social=safeHttpUrl(a.social_link);
+  return `<div class="card">
+   <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3>${escapeHTML(a.channel_name)}</h3><span class="tag" style="color:${color}">${label}</span></div>
+   <p><strong>Candidat :</strong> ${escapeHTML(p.display_name||"Nom non renseigné")}</p>
+   <p><strong>Identifiant :</strong> @${escapeHTML(p.username||"inconnu")}</p>
+   <p><strong>Rôle actuel :</strong> ${escapeHTML(p.role||"inconnu")}</p>
+   <p><strong>Catégorie :</strong> ${escapeHTML(a.category)}</p>
+   <p><strong>Pays :</strong> ${escapeHTML(a.country)}</p>
+   <p><strong>Présentation :</strong><br>${escapeHTML(a.bio)}</p>
+   ${social?`<p><strong>Réseau social :</strong> <a href="${escapeHTML(social)}" target="_blank" rel="noopener noreferrer" style="color:#ff9b55">Ouvrir le lien</a></p>`:""}
+   <p class="small">Demande envoyée le ${escapeHTML(date)}</p>
+   ${a.admin_note?`<div class="notice">Note administrative : ${escapeHTML(a.admin_note)}</div>`:""}
+   ${a.status==="pending"?`
+    <label for="adminNote_${a.id}">Note ou motif (facultatif)</label>
+    <textarea id="adminNote_${a.id}" rows="2" maxlength="500" placeholder="Écris une note pour le candidat..."></textarea>
+    <div class="admin-actions">
+     <button onclick="reviewApplication('${a.id}','${a.user_id}','approved')">Accepter et activer</button>
+     <button class="danger" onclick="reviewApplication('${a.id}','${a.user_id}','rejected')">Refuser</button>
+    </div>`:""}
+  </div>`;
+ }).join("");
+}
+async function reviewApplication(applicationId,userId,decision){
+ if(!currentUser||currentProfile?.role!=="admin")return message("Action réservée à l'administrateur.");
+ if(!["approved","rejected"].includes(decision))return;
+ const note=$("adminNote_"+applicationId)?.value.trim()||"";
+ const label=decision==="approved"?"accepter cette candidature et activer le compte créateur":"refuser cette candidature";
+ if(!confirm("Confirmer : "+label+" ?"))return;
+ message("Traitement de la candidature...");
+ if(decision==="approved"){
+  const {data:app,error:ae}=await db.from("creator_applications").select("id,bio,status").eq("id",applicationId).eq("user_id",userId).eq("status","pending").maybeSingle();
+  if(ae||!app){message("Cette candidature n'est plus en attente ou ne peut pas être lue.");await loadAdminApplications();return}
+  const {data:old,error:oe}=await db.from("profiles").select("id,bio,role").eq("id",userId).maybeSingle();
+  if(oe||!old){message("Impossible de vérifier le profil du candidat.");return}
+  const {data:updated,error:pe}=await db.from("profiles").update({role:"creator",bio:app.bio}).eq("id",userId).select("id").maybeSingle();
+  if(pe||!updated){message("Activation impossible : "+(pe?.message||"profil non modifié"));return}
+  const {error:ue}=await db.from("creator_applications").update({status:"approved",admin_note:note||null,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq("id",applicationId).eq("status","pending");
+  if(ue){
+   await db.from("profiles").update({role:old.role,bio:old.bio}).eq("id",userId);
+   message("La validation a échoué. Le profil a été remis dans son état précédent : "+ue.message);
+   return;
+  }
+  message("Candidature acceptée. Le compte est maintenant créateur.",true);
+ }else{
+  const {data:updated,error}=await db.from("creator_applications").update({status:"rejected",admin_note:note||null,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq("id",applicationId).eq("user_id",userId).eq("status","pending").select("id").maybeSingle();
+  if(error||!updated){message("Impossible de refuser cette candidature : "+(error?.message||"demande déjà traitée"));return}
+  message("Candidature refusée.",true);
+ }
+ await loadAdminApplications();
+}
+
+/* ÉVÉNEMENTS */
+$("signup").addEventListener("click",signUp);
+$("login").addEventListener("click",signIn);
+$("logout").addEventListener("click",signOut);
+$("logoutProfile").addEventListener("click",signOut);
+$("savePrice").addEventListener("click",savePrice);
+$("savePayoutAccount").addEventListener("click",savePayoutAccount);
+$("requestWithdrawal").addEventListener("click",requestCreatorWithdrawal);
+$("creatorApplicationForm").addEventListener("submit",submitCreatorApplication);
+$("openCreateSheet").addEventListener("click",openSheet);
+$("composerFile").addEventListener("change",e=>previewComposer(e.target.files[0]));
+$("composerSubmit").addEventListener("click",publishFromComposer);
+$("moreDelete").addEventListener("click",deleteFromViewer);
+$("avatarInput").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";uploadAvatar(f)});
+$("startLiveButton").addEventListener("click",startCreatorLive);
+$("openMyProfile").addEventListener("click",()=>{if(currentUser)openProfile(currentUser.id)});
+$("refreshAdmin").addEventListener("click",loadAdminApplications);
+$("viewerClose").addEventListener("click",closeViewer);
+$("svClose").addEventListener("click",closeStatusViewer);
+$("svPrev").addEventListener("click",prevStatus);
+$("svNext").addEventListener("click",nextStatus);
+$("bellBtn").addEventListener("click",()=>showPage("notifs"));
+$("notifsList").addEventListener("click",e=>{
+ const b=e.target.closest(".notif");if(!b)return;
+ if(b.dataset.notifKind==="live")showPage("lives");
+ else openProfile(b.dataset.notifCreator);
+});
+document.querySelectorAll(".vtab").forEach(b=>b.addEventListener("click",()=>{
+ homeFilter=b.dataset.filter;
+ document.querySelectorAll(".vtab").forEach(x=>x.classList.toggle("active",x===b));
+ loadHomeFeed();
+}));
+
+/* Délégation : clics dans le fil d'accueil */
+$("homeFeed").addEventListener("click",e=>{
+ const btn=e.target.closest("[data-action]");
+ if(btn){
+  const action=btn.dataset.action;
+  if(action==="profile"){openProfile(btn.dataset.creator);return}
+  if(action==="follow"){toggleFollow(btn.dataset.creator);return}
+  if(action==="notify"){toggleNotify(btn.dataset.creator);return}
+  if(action==="like"){toggleLike(btn);return}
+  if(action==="share"){sharePostToNetwork(btn,false);return}
+  if(action==="repost"){sharePostToNetwork(btn,true);return}
+  if(action==="sound"){
+   homeMuted=!homeMuted;
+   document.querySelectorAll("#homeFeed video").forEach(v=>v.muted=homeMuted);
+   document.querySelectorAll('[data-action="sound"]').forEach(b=>b.innerHTML=`<i class="ti ${homeMuted?"ti-volume-off":"ti-volume"}" aria-hidden="true"></i><span class="vcount">Son</span>`);
+   return;
+  }
+ }
+ const v=e.target.closest(".vitem")?.querySelector("video");
+ if(v&&e.target.tagName==="VIDEO"){v.paused?v.play().catch(()=>{}):v.pause()}
+});
+
+/* SESSION */
+subscribeToLiveChanges();
+db.auth.getSession().then(({data})=>{
+ if(data.session)loadAccount();
+ else if(pendingDeepLink)openDeepLink();
+});
+db.auth.onAuthStateChange((event,session)=>{
+ if(session&&!currentUser)setTimeout(loadAccount,0);
+ if(!session&&currentUser){
+  stopAllPreviews();
+  if(liveRoom){const r=liveRoom;liveRoom=null;r.disconnect().catch(()=>{})}
+  currentLiveSessionId=null;liveMode=null;
+  resetSession();
+ }
+});
+</script>
+</body>
+</html>/* Écran de création caméra façon TikTok */
+.cs{position:fixed;inset:0;z-index:100010;background:#000;color:#fff;display:flex;flex-direction:column;overflow:hidden}
+.cs.hidden{display:none!important}
+.cs-page{flex:1;position:relative;min-height:0;display:flex;flex-direction:column;background:#000}
+.cs-page.hidden{display:none!important}
+.cs-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+.cs-top{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;justify-content:space-between;align-items:center;padding:max(14px,env(safe-area-inset-top)) 14px 0}
+.cs-icon{background:rgba(0,0,0,.3);width:42px;height:42px;border-radius:50%;padding:0;color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center}
+.cs-sound{background:rgba(0,0,0,.35);color:#fff;border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600;display:flex;gap:6px;align-items:center}
+.cs-side{position:absolute;right:10px;top:calc(max(14px,env(safe-area-inset-top)) + 70px);z-index:3;display:flex;flex-direction:column;gap:18px;align-items:flex-end}
+.cs-side button{background:none;color:#fff;padding:0;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;text-shadow:0 1px 4px #000}
+.cs-side i{font-size:28px;filter:drop-shadow(0 1px 3px #000)}
+.cs-rec{position:absolute;top:max(70px,calc(env(safe-area-inset-top) + 70px));left:0;right:0;z-index:4;display:none;justify-content:center;gap:6px;color:#fe2c55;font-weight:700;font-size:15px;text-shadow:0 1px 4px #000}
+.cs-rec.on{display:flex}
+.cs-modes{position:absolute;left:0;right:0;bottom:150px;z-index:3;display:flex;justify-content:center;gap:18px}
+.cs-modes button{background:none;color:rgba(255,255,255,.75);font-size:14px;font-weight:700;padding:6px 12px;border-radius:999px;text-shadow:0 1px 4px #000}
+.cs-modes button.active{background:#fff;color:#000;text-shadow:none}
+.cs-row{position:absolute;left:0;right:0;bottom:50px;z-index:3;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 30px}
+.cs-thumb{justify-self:start;width:46px;height:46px;border-radius:10px;border:2px solid #fff;background:rgba(0,0,0,.4);padding:0;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center}
+.cs-shutter{width:76px;height:76px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;padding:0;transition:all .2s}
+.cs-shutter.video{background:#fe2c55;box-shadow:0 0 0 3px #fff}
+.cs-shutter.rec{border-radius:16px;width:44px;height:44px;margin:16px}
+.cs-tabs{display:flex;justify-content:center;gap:28px;padding:12px 0 calc(14px + env(safe-area-inset-bottom));background:#000;border-top:1px solid #1a1a1c}
+.cs-tabs button{background:none;color:#888;font-size:14px;font-weight:700;padding:4px 2px;border-radius:0}
+.cs-tabs button.active{color:#fff;box-shadow:inset 0 -2px 0 #fff}
+.cs-scroll{flex:1;overflow-y:auto;padding:max(16px,env(safe-area-inset-top)) 16px 16px}
+.cs-head{text-align:center;font-weight:800;font-size:18px;letter-spacing:.5px;margin-bottom:20px}
+.cs-grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:20px}
+.cs-grid5 button{background:none;color:#fff;padding:0;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;border-radius:0}
+.cs-grid5 i{width:52px;height:52px;border-radius:14px;background:#1c1c20;display:flex;align-items:center;justify-content:center;font-size:24px}
+.cs-new{width:100%;background:linear-gradient(90deg,#fff3ec,#e9fbff);color:#000;padding:24px;border-radius:14px;font-size:16px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+.cs-card-btn{width:100%;background:#1c1c20;color:#fff;padding:16px;border-radius:12px;font-size:15px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:10px;text-align:left}
+.cs-live-card{background:#161618;border-radius:16px;padding:18px;text-align:center}
+.cs-live-card p{color:#ccc}
+.cs-live-btn{width:100%;margin-top:10px;background:#fe2c55;padding:14px;border-radius:12px;font-size:16px;font-weight:700}
+</style>
+</head>
+<body>
+<header><div class="logo">AFRO <span>LIVE</span></div><button id="logout" class="soft hidden">Déconnexion</button></header>
+<main>
+
+<section id="auth">
+ <h1>Bienvenue sur <span style="color:var(--orange)">AFRO LIVE</span></h1>
+ <p>La plateforme qui rapproche les créateurs et leur public grâce aux vidéos et aux directs.</p>
+ <div class="card"><h2>Créer un compte</h2>
+  <label for="signupName">Nom affiché</label><input id="signupName" placeholder="Ton nom">
+  <label for="signupUsername">Nom d'utilisateur</label><input id="signupUsername" placeholder="Exemple : vanouch123">
+  <label for="signupEmail">Adresse e-mail</label><input id="signupEmail" type="email" placeholder="ton@email.com">
+  <label for="signupPassword">Mot de passe</label><input id="signupPassword" type="password" placeholder="Au moins 6 caractères">
+  <label style="display:flex;gap:10px;align-items:center;margin:4px 0 12px;color:#ddd"><input id="signupAge" type="checkbox"> J'ai 18 ans ou plus</label>
+  <button id="signup" style="width:100%">Créer mon compte</button></div>
+ <div class="card"><h2>J'ai déjà un compte</h2>
+  <label for="loginEmail">E-mail</label><input id="loginEmail" type="email" placeholder="Ton e-mail">
+  <label for="loginPassword">Mot de passe</label><input id="loginPassword" type="password" placeholder="Ton mot de passe">
+  <button id="login" style="width:100%">Se connecter</button></div>
+ <div id="authMessage" class="notice hidden"></div>
+</section>
+
+<section id="app" class="hidden">
+ <div id="status"></div>
+ <nav id="navigation" class="pills"></nav>
+
+ <section id="spectator">
+  <section id="discoverPage" class="homefeed hidden">
+   <div class="vtop">
+    <button class="vtab active" data-filter="pour-toi">Pour toi</button>
+    <button class="vtab" data-filter="follows">Suivis</button>
+   </div>
+   <button class="vbell" id="bellBtn" aria-label="Notifications"><i class="ti ti-bell" aria-hidden="true"></i><span class="vdot" id="bellDot" hidden></span></button>
+   <div id="homeFeed" class="vfeed"></div>
+  </section>
+
+  <div id="creatorsPage" class="hidden">
+   <h2>Créateurs</h2>
+   <div id="creators" class="grid"></div>
+  </div>
+
+  <div id="livesPage" class="hidden">
+   <div id="liveList" class="vfeed"></div>
+  </div>
+
+  <div id="notifsPage" class="hidden">
+   <h2>Notifications</h2>
+   <p>Tu reçois une alerte quand un créateur que tu suis publie ou lance un direct, si tu as activé sa cloche.</p>
+   <div id="notifsList"></div>
+  </div>
+
+  <div id="subscriptionsPage" class="hidden">
+   <h2>Mes abonnements</h2>
+   <p>Les abonnements durent 30 jours. Le renouvellement est manuel.</p>
+   <div id="mySubscriptions"></div>
+  </div>
+
+  <div id="followsPage" class="hidden">
+   <h2>Mes suivis</h2>
+   <p>Le badge rouge apparaît quand l'un d'eux est en direct.</p>
+   <div id="followsList"></div>
+  </div>
+
+  <div id="profilePage" class="hidden">
+   <h2>Mon profil</h2>
+   <div class="card">
+    <p id="myProfile"></p>
+    <div class="card-actions">
+     <button id="openMyProfile">Voir mon profil public</button>
+     <button class="soft" onclick="installApp()"><i class="ti ti-download" aria-hidden="true"></i> Ajouter à l'écran d'accueil</button>
+     <button class="soft" onclick="showPage('subscriptions')">Mes abonnements</button>
+     <button class="soft" onclick="showPage('application')">Devenir créateur</button>
+     <button class="soft hidden" id="backCreatorBtn" onclick="setViewMode('creator')">Espace créateur</button>
+     <button class="danger" id="logoutProfile">Déconnexion</button>
+    </div>
+   </div>
+  </div>
+
+  <div id="applicationPage" class="hidden">
+   <h2>Devenir créateur AFRO LIVE</h2>
+   <p>Présente ta chaîne et explique au public le contenu que tu souhaites partager.</p>
+   <div id="applicationStatus" class="notice">Tu peux envoyer une demande pour devenir créateur.</div>
+   <form id="creatorApplicationForm" class="card">
+    <h3>Informations de ta chaîne</h3>
+    <label for="channelName">Nom de ta chaîne</label><input id="channelName" maxlength="60" required placeholder="Exemple : Vanouch TV">
+    <label for="creatorBio">Présentation de ta chaîne</label><textarea id="creatorBio" maxlength="1000" rows="5" required placeholder="Présente-toi et explique les contenus que tu veux partager..."></textarea>
+    <label for="creatorCategory">Catégorie de contenu</label>
+    <select id="creatorCategory" required>
+     <option value="">Choisir une catégorie</option><option>Musique</option><option>Humour</option><option>Sport</option><option>Culture</option><option>Éducation</option><option>Lifestyle</option><option>Cuisine</option><option>Discussion</option><option>Autre</option>
+    </select>
+    <label for="creatorCountry">Pays</label><input id="creatorCountry" value="Congo-Brazzaville" required>
+    <label for="creatorSocial">Lien vers ton réseau social (facultatif)</label><input id="creatorSocial" type="url" placeholder="https://...">
+    <button id="submitApplication" type="submit" style="width:100%">Envoyer ma demande</button>
+   </form>
+   <div class="card"><h3>Comment ça marche ?</h3>
+    <p>1. Tu remplis le formulaire.</p><p>2. AFRO LIVE reçoit ta demande.</p><p>3. Un administrateur examine ta candidature.</p><p>4. Si elle est acceptée, ton espace créateur devient accessible.</p>
+    <p class="small">L'envoi d'une demande ne garantit pas son acceptation.</p></div>
+  </div>
+ </section>
+
+ <section id="creator" class="hidden">
+  <div class="c-top">
+   <strong id="creatorTitle"></strong>
+   <button class="icon" id="openCreateSheet" aria-label="Créer"><i class="ti ti-plus" aria-hidden="true"></i></button>
+  </div>
+  <div id="creatorHeader"></div>
+  <div class="c-tabs">
+   <button data-tab="posts" onclick="creatorPage('posts')" aria-label="Publications"><i class="ti ti-layout-grid" aria-hidden="true"></i></button>
+   <button data-tab="statuts" onclick="creatorPage('statuts')" aria-label="Statuts"><i class="ti ti-circle-dashed" aria-hidden="true"></i></button>
+   <button data-tab="live" onclick="creatorPage('live')" aria-label="Directs"><i class="ti ti-broadcast" aria-hidden="true"></i></button>
+   <button data-tab="subscribers" onclick="creatorPage('subscribers')" aria-label="Abonnés"><i class="ti ti-users" aria-hidden="true"></i></button>
+   <button data-tab="earnings" onclick="creatorPage('earnings')" aria-label="Tarif et revenus"><i class="ti ti-coin" aria-hidden="true"></i></button>
+  </div>
+
+  <div id="creatorPosts">
+   <p class="small" style="margin:0 0 8px">Tape une publication pour l'ouvrir. Le bouton ⋯ permet de la supprimer.</p>
+   <div id="creatorPostGrid" class="tiles"></div>
+  </div>
+
+  <div id="creatorStatuts" class="hidden">
+   <button style="width:100%" onclick="openComposer('status')">Publier un statut</button>
+   <p class="small" style="margin-top:8px">Visible 24 h, comme sur WhatsApp.</p>
+   <h3>Mes statuts actifs</h3>
+   <div id="myStatusList"></div>
+  </div>
+
+  <div id="creatorLive" class="hidden">
+   <div class="card" id="createLiveCard">
+    <h3>Démarrer un direct</h3>
+    <label for="liveTitle">Titre du direct</label>
+    <input id="liveTitle" maxlength="100" placeholder="Exemple : Discussion avec ma communauté">
+    <label for="liveDescription">Description (facultatif)</label>
+    <textarea id="liveDescription" maxlength="500" rows="3" placeholder="Présente ton direct..."></textarea>
+    <label for="liveAccessMode">Accès à ce direct</label>
+    <select id="liveAccessMode"><option value="free">Gratuit · tout le monde peut regarder</option><option value="paid">Payant · abonnement requis</option></select>
+    <p class="small">Tu peux changer ce choix pendant le direct. Le mode gratuit reste sélectionné par défaut.</p>
+    <button id="startLiveButton" style="width:100%">Lancer le direct</button>
+   </div>
+   <div id="creatorLiveStatus" class="notice">Tu n'es pas actuellement en direct.</div>
+   <div id="creatorLivePreview" class="card hidden">
+    <h3>Ton direct est en cours <span class="dot-inline"></span></h3>
+    <div class="notice" id="creatorLiveAccessStatus">Accès gratuit : tout le monde peut regarder.</div>
+    <div id="creatorLiveStage" class="live-stage"><video id="localLiveVideo" class="live-video" autoplay playsinline muted></video></div>
+    <p id="liveParticipantCount">En attente de spectateurs...</p>
+    <button class="danger" onclick="stopCreatorLive()" style="width:100%">Terminer le direct</button>
+   </div>
+  </div>
+
+  <div id="creatorSubscribers" class="hidden">
+   <p class="small">Cette liste est privée : seul toi peux la voir.</p>
+   <div id="subscriberList"></div>
+  </div>
+
+  <div id="creatorEarnings" class="hidden">
+   <div class="card">
+    <h3>Mes tarifs d'abonnement</h3>
+    <p class="small">Tu fixes le prix pour 1 jour, 7 jours et 30 jours. Les directs restent gratuits à regarder.</p>
+    <label for="creatorDailyPrice">1 jour · FCFA</label>
+    <input id="creatorDailyPrice" type="number" min="100" max="1000000" inputmode="numeric" placeholder="Exemple : 500">
+    <label for="creatorWeeklyPrice">7 jours · FCFA</label>
+    <input id="creatorWeeklyPrice" type="number" min="100" max="1000000" inputmode="numeric" placeholder="Exemple : 1500">
+    <label for="creatorMonthlyPrice">30 jours · FCFA</label>
+    <input id="creatorMonthlyPrice" type="number" min="100" max="1000000" inputmode="numeric" placeholder="Exemple : 3000">
+    <label class="checkline"><input id="acceptSubscriptions" type="checkbox"> J'accepte les abonnements</label>
+    <button id="savePrice" style="width:100%">Enregistrer mes tarifs</button>
+   </div>
+   <div class="card">
+    <h3>Mon compte de retrait</h3>
+    <label for="payoutMethod">Opérateur au Congo-Brazzaville</label>
+    <select id="payoutMethod"><option value="airtel_money">Airtel Money</option><option value="mtn_momo">MTN Mobile Money</option></select>
+    <label for="payoutPhone">Numéro Mobile Money (9 chiffres)</label>
+    <input id="payoutPhone" type="tel" inputmode="numeric" maxlength="12" placeholder="Exemple : 06XXXXXXX">
+    <label for="payoutName">Nom du titulaire (facultatif)</label>
+    <input id="payoutName" type="text" maxlength="100" placeholder="Nom du titulaire">
+    <button id="savePayoutAccount" class="soft" style="width:100%">Enregistrer mon compte</button>
+   </div>
+   <div class="card">
+    <h3>Mes revenus</h3>
+    <div class="earnings-balance"><span>Solde disponible</span><strong id="creatorAvailableBalance">0 FCFA</strong></div>
+    <p class="small">Solde basé sur les paiements confirmés. Retrait minimum : 5 000 FCFA.</p>
+    <label for="withdrawAmount">Montant à retirer · FCFA</label>
+    <input id="withdrawAmount" type="number" min="5000" max="10000000" step="1" inputmode="numeric" placeholder="5000">
+    <button id="requestWithdrawal" style="width:100%">Demander un retrait</button>
+    <p id="withdrawMessage" class="small" aria-live="polite"></p>
+    <h4>Derniers mouvements</h4><div id="creatorLedgerList"><p class="small">Chargement...</p></div>
+    <h4>Demandes de retrait</h4><div id="creatorWithdrawalsList"><p class="small">Chargement...</p></div>
+   </div>
+  </div>
+ </section>
+
+ <section id="admin" class="hidden">
+  <h2>Administration AFRO LIVE</h2>
+  <p>Gestion des candidatures pour devenir créateur.</p>
+  <div class="grid">
+   <div class="card"><p class="small">Candidatures en attente</p><h1 id="pendingCount" style="color:var(--orange)">0</h1></div>
+   <div class="card"><p class="small">Candidatures examinées</p><h1 id="reviewedCount" style="color:var(--orange)">0</h1></div>
+  </div>
+  <div class="admin-actions"><button id="refreshAdmin">Actualiser les demandes</button></div>
+  <div id="adminApplications"><p>Chargement des candidatures...</p></div>
+ </section>
+
+ <section id="publicProfile" class="hidden"></section>
+</section>
+<div id="giftPicker" class="gift-back hidden" role="dialog" aria-modal="true" aria-labelledby="giftPickerTitle">
+ <div class="gift-sheet">
+  <div class="sheet-grab"></div>
+  <div class="gift-head"><h3 id="giftPickerTitle">🎁 Cadeaux africains</h3><span class="gift-balance" id="giftCoinBalance">🧪 ESSAI GRATUIT</span><button type="button" class="soft gift-close" onclick="closeGiftPicker()" aria-label="Fermer les cadeaux">×</button></div>
+  <p class="small">Choisis un symbole pour soutenir le créateur pendant son direct.</p>
+  <div class="gift-test-note">🧪 ESSAI GRATUIT : aucun paiement, aucune pièce débitée et aucun revenu réel ne sont enregistrés pendant ce test. Les montants affichés servent seulement à préparer les futurs cadeaux.</div>
+  <div id="giftGrid" class="gift-grid"></div>
+  <div class="gift-selected"><span id="giftSelectedLabel">🌹 Petite rose</span><b id="giftSelectedPrice">10 FCFA · gratuit</b></div>
+  <button id="giftSendButton" class="gift-send" type="button" onclick="sendSelectedAfroGift()">Envoyer le cadeau</button>
+  <div id="giftPickerStatus" class="gift-status" aria-live="polite"></div>
+  <div class="divider" style="height:1px;background:var(--line);margin:12px 0"></div>
+  <h3 style="margin:6px 0">Recharge de pièces</h3>
+  <p class="small">Désactivée pendant l’essai gratuit. Aucun achat n’est nécessaire pour tester les animations.</p>
+  <div class="gift-packs hidden" id="giftCoinPacks">
+   <button class="gift-pack" type="button" data-coins="1000"><b>🪙 1 000 pièces</b><small>1 000 FCFA</small></button>
+   <button class="gift-pack" type="button" data-coins="2500"><b>🪙 2 500 pièces</b><small>2 500 FCFA</small></button>
+   <button class="gift-pack" type="button" data-coins="5000"><b>🪙 5 000 pièces</b><small>5 000 FCFA</small></button>
+   <button class="gift-pack" type="button" data-coins="10000"><b>🪙 10 000 pièces</b><small>10 000 FCFA</small></button>
+  </div>
+  <button type="button" class="soft" style="width:100%;margin-top:10px" onclick="closeGiftPicker()">Fermer</button>
+ </div>
+</div>
+<div id="mbotePayModal" class="payment-back hidden" role="dialog" aria-modal="true" aria-labelledby="mbotePayTitle">
+ <div class="payment-sheet">
+  <button type="button" class="payment-close" onclick="closeMbotePay()" aria-label="Fermer">×</button>
+  <h3 id="mbotePayTitle">Paiement Mobile Money</h3>
+  <p id="mbotePayDescription" class="small"></p>
+  <div id="mbotePayPlanInfo" class="notice"></div>
+  <div id="mbotePayTipField" class="hidden"><label for="mbotePayAmount">Montant du cadeau · FCFA</label><input id="mbotePayAmount" type="number" min="100" max="1000000" step="1" inputmode="numeric" placeholder="1000"></div>
+  <label for="mbotePayOperator">Opérateur</label>
+  <select id="mbotePayOperator"><option value="airtel_money">Airtel Money</option><option value="mtn_momo">MTN Mobile Money</option></select>
+  <label for="mbotePayPhone">Numéro Mobile Money au Congo (9 chiffres)</label>
+  <input id="mbotePayPhone" type="tel" inputmode="numeric" maxlength="12" placeholder="Exemple : 06XXXXXXX">
+  <p id="mbotePayStatus" class="small" aria-live="polite"></p>
+  <button id="mbotePaySubmit" type="button" style="width:100%" onclick="submitMbotePay()">Continuer vers le paiement</button>
+  <p class="small">Valide la demande sur ton téléphone. Ne partage jamais ton code secret Mobile Money.</p>
+ </div>
+</div>
+
+<input id="avatarInput" type="file" accept="image/*" class="hidden">
+</main>
+<footer>
+ <b>AFRO LIVE</b> · Gagne de l'argent chaque jour en faisant ton live<br>
+ Réservé aux 18 ans et plus
+</footer>
+
+<!-- Visionneuse de direct (plein écran) -->
+<div id="liveViewer" class="lv hidden">
+ <div id="lvStage" class="lv-stage"></div>
+ <div id="lvStatus" class="lv-status"></div>
+ <button id="lvClose" class="lv-close" aria-label="Fermer le direct"><i class="ti ti-x" aria-hidden="true"></i></button>
+</div>
+
+<!-- Écran de création façon TikTok -->
+<div id="createScreen" class="cs hidden">
+ <div class="cs-page" id="csPageCamera">
+  <video id="csVideo" class="cs-video" autoplay playsinline muted></video>
+  <div class="cs-top">
+   <button class="cs-icon" type="button" onclick="closeCreateScreen()" aria-label="Fermer"><i class="ti ti-x"></i></button>
+   <button class="cs-sound" type="button" onclick="csSoon('Ajout de son')"><i class="ti ti-music"></i> Ajouter un son</button>
+   <span style="width:42px"></span>
+  </div>
+  <div class="cs-side">
+   <button type="button" onclick="csFlip()"><span>Retourner</span><i class="ti ti-refresh"></i></button>
+   <button type="button" onclick="csSoon('Flash')"><span>Flash</span><i class="ti ti-bolt-off"></i></button>
+   <button type="button" onclick="csSoon('Minuterie')"><span>Minuterie</span><i class="ti ti-clock"></i></button>
+   <button type="button" onclick="csSoon('Disposition')"><span>Disposition</span><i class="ti ti-layout-grid"></i></button>
+   <button type="button" onclick="csSoon('Retouche')"><span>Retouche</span><i class="ti ti-sparkles"></i></button>
+   <button type="button" onclick="csSoon('Téléprompteur')"><span>Téléprompteur</span><i class="ti ti-blockquote"></i></button>
+   <button type="button" onclick="csSoon('Format')"><span>Format</span><i class="ti ti-arrows-diagonal-minimize-2"></i></button>
+  </div>
+  <div class="cs-rec" id="csRec"><i class="ti ti-circle-filled"></i> <span id="csRecTime">0:00</span></div>
+  <div class="cs-modes">
+   <button type="button" data-mode="60" onclick="csSetMode('60')">60 s</button>
+   <button type="button" data-mode="15" onclick="csSetMode('15')">15 s</button>
+   <button type="button" data-mode="photo" class="active" onclick="csSetMode('photo')">PHOTO</button>
+  </div>
+  <div class="cs-row">
+   <button class="cs-thumb" type="button" onclick="csFromGallery()" aria-label="Galerie"><i class="ti ti-photo"></i></button>
+   <button id="csShutter" class="cs-shutter" type="button" onclick="csShoot()" aria-label="Capturer"></button>
+   <span></span>
+  </div>
+ </div>
+ <div class="cs-page hidden" id="csPageCreer">
+  <div class="cs-scroll">
+   <div class="cs-head">CRÉER</div>
+   <div class="cs-grid5">
+    <button type="button" onclick="csSoon('Éditeur de photos')"><i class="ti ti-photo-edit"></i>Éditeur de photos</button>
+    <button type="button" onclick="csSoon('AutoCut')"><i class="ti ti-movie"></i>AutoCut</button>
+    <button type="button" onclick="csSoon('Légendes')"><i class="ti ti-captions"></i>Légendes</button>
+    <button type="button" onclick="csSoon('AI Self')"><i class="ti ti-robot"></i>AI Self</button>
+    <button type="button" onclick="csSoon('Détourage')"><i class="ti ti-cut"></i>Détourage</button>
+   </div>
+   <button class="cs-new" type="button" onclick="csTab('camera')"><i class="ti ti-plus"></i> Nouvelle vidéo</button>
+   <button class="cs-card-btn" type="button" onclick="csOpen('post')"><i class="ti ti-photo"></i> Publication depuis la galerie</button>
+   <button class="cs-card-btn" type="button" onclick="csOpen('status')"><i class="ti ti-circle-dashed"></i> Publier un statut</button>
+  </div>
+ </div>
+ <div class="cs-page hidden" id="csPageLive">
+  <div class="cs-scroll">
+   <div class="cs-head">LIVE</div>
+   <div class="cs-live-card">
+    <p>Lance un direct et discute avec ta communauté.</p>
+    <button class="cs-live-btn" type="button" onclick="csGoLive()">Passer en LIVE</button>
+   </div>
+  </div>
+ </div>
+ <div class="cs-tabs">
+  <button type="button" data-cs="camera" class="active" onclick="csTab('camera')">CAMÉRA</button>
+  <button type="button" data-cs="creer" onclick="csTab('creer')">CRÉER</button>
   <button type="button" data-cs="live" onclick="csTab('live')">LIVE</button>
  </div>
 </div>
