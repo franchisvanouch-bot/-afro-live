@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "AFRO LIVE Prototype",
+    "slug": "afro-live-native-prototype",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "afroliveprototype",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.afrolive.prototype",
+      "deploymentTarget": "16.0",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "AFRO LIVE utilise votre bibliothèque pour sélectionner une vidéo à monter.",
+        "NSPhotoLibraryAddUsageDescription": "AFRO LIVE peut enregistrer votre vidéo exportée dans votre bibliothèque."
+      }
+    },
+    "android": {
+      "package": "com.afrolive.prototype"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24
+          },
+          "ios": {
+            "deploymentTarget": "16.0",
+            "useFrameworks": "dynamic"
+          }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "AFRO LIVE a besoin d'accéder à vos vidéos pour les monter.",
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "newArchEnabled": true
+  }
+}
