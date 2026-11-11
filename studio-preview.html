@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0c">
+<title>Studio AFRO LIVE</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b0b0c;color:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#0b0b0c}
+body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.top{height:58px;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid #29292e}
+.top a{color:#fff;text-decoration:none;font-size:24px}
+.top strong{font-size:16px}
+#setup{max-width:520px;margin:32px auto;padding:20px}
+#setup h1{font-size:25px;margin:0 0 8px}
+#setup p{color:#aaa;line-height:1.5;font-size:14px}
+label{display:block;font-size:13px;color:#ccc;margin:16px 0 6px}
+input{display:block;width:100%;padding:14px;border:1px solid #38383e;border-radius:10px;background:#19191d;color:#fff;font:inherit}
+button{width:100%;padding:14px;border:0;border-radius:10px;background:#ff6a00;color:white;font-weight:700;font-size:15px;margin-top:18px}
+.note{border:1px solid #57402e;background:#211910;color:#ffd2ad;padding:12px;border-radius:10px;font-size:12px;line-height:1.5;margin-top:16px}
+#editorHost{display:none;width:100%;height:calc(100dvh - 58px);min-height:500px}
+rendley-video-editor{display:block;width:100%;height:100%;min-height:500px}
+#error{color:#ff9a9a;font-size:13px;white-space:pre-wrap}
+@media(min-width:800px){#editorHost{height:calc(100vh - 58px)}}
+</style>
+</head>
+<body>
+<header class="top"><a href="index.html" aria-label="Retour">‹</a><strong>AFRO LIVE · Studio</strong></header>
+<section id="setup">
+<h1>Studio de montage</h1>
+<p>Connecte une licence Rendley pour lancer le véritable éditeur vidéo. Les identifiants sont utilisés uniquement dans cette page et ne sont pas enregistrés.</p>
+<label for="licenseName">Nom de licence Rendley</label>
+<input id="licenseName" autocomplete="off" autocapitalize="off" spellcheck="false">
+<label for="licenseKey">Clé de licence Rendley</label>
+<input id="licenseKey" type="password" autocomplete="off">
+<button id="launch" type="button">Ouvrir le studio</button>
+<p id="error" role="status"></p>
+<div class="note">Cette page est un essai isolé. Une licence Rendley est obligatoire. La version gratuite est destinée à l'évaluation ; vérifie les conditions de domaine et de production avant toute mise en service. Les médias ne sont pas encore reliés à la publication AFRO LIVE.</div>
+</section>
+<main id="editorHost"></main>
+<script type="module">
+const launch=document.getElementById("launch");
+launch.addEventListener("click",async()=>{
+ const name=document.getElementById("licenseName").value.trim();
+ const key=document.getElementById("licenseKey").value.trim();
+ const error=document.getElementById("error");
+ if(!name||!key){error.textContent="Entre le nom et la clé de ta licence Rendley.";return}
+ launch.disabled=true;launch.textContent="Chargement du studio…";error.textContent="";
+ try{
+  const {defineCustomElements}=await import("https://cdn.rendleysdk.com/sdk/video-editor/1.0.0/loader/index.js");
+  await defineCustomElements();
+  const editor=document.createElement("rendley-video-editor");
+  editor.setAttribute("licensename",name);
+  editor.setAttribute("licensekey",key);
+  editor.setAttribute("theme","dark");
+  editor.innerHTML='<script type="application/json">{"theme":{"variant":"dark"},"composition":{"width":1080,"height":1920,"backgroundColor":"#000000"},"aspectRatios":[{"label":"AFRO LIVE · Vertical","width":1080,"height":1920},{"label":"Carré","width":1080,"height":1080},{"label":"Paysage","width":1920,"height":1080}],"modules":{"stock":{"isVisible":false}}}</scr'+'ipt>';
+  const host=document.getElementById("editorHost");
+  host.replaceChildren(editor);host.style.display="block";
+  document.getElementById("setup").style.display="none";
+ }catch(e){
+  error.textContent="Impossible de charger le studio : "+(e?.message||String(e));
+  launch.disabled=false;launch.textContent="Réessayer";
+ }
+});
+</script>
+</body>
+</html>
