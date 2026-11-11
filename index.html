@@ -428,6 +428,8 @@ header{background:#000;border-bottom:0}
 .cs-side{position:absolute;right:10px;top:calc(max(14px,env(safe-area-inset-top)) + 70px);z-index:3;display:flex;flex-direction:column;gap:18px;align-items:flex-end}
 .cs-side button{background:none;color:#fff;padding:0;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;text-shadow:0 1px 4px #000}
 .cs-side i{font-size:28px;filter:drop-shadow(0 1px 3px #000)}
+.cs-top-actions{display:flex;align-items:center;gap:7px}.cs-studio-link{background:rgba(0,0,0,.38);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:9px 12px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px}
+.cs-filter-strip{position:absolute;left:0;right:0;bottom:245px;z-index:4;display:flex;justify-content:center;gap:8px;padding:0 10px;overflow-x:auto;scrollbar-width:none}.cs-filter-strip::-webkit-scrollbar{display:none}.cs-filter-strip button{flex:0 0 auto;background:rgba(0,0,0,.38);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:999px;padding:8px 11px;font-size:11px;font-weight:700;white-space:nowrap}.cs-filter-strip button.active{background:#fff;color:#111;border-color:#fff}
 .cs-rec{position:absolute;top:max(70px,calc(env(safe-area-inset-top) + 70px));left:0;right:0;z-index:4;display:none;justify-content:center;gap:6px;color:#fe2c55;font-weight:700;font-size:15px;text-shadow:0 1px 4px #000}
 .cs-rec.on{display:flex}
 .cs-modes{position:absolute;left:0;right:0;bottom:150px;z-index:3;display:flex;justify-content:center;gap:18px}
@@ -1017,6 +1019,154 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 #liveViewer #lvStage video.live-video{object-fit:cover!important}
 @media(orientation:landscape){#liveViewer .live-tools{padding-right:70px}#liveViewer .live-chat-messages{max-height:40dvh}}
 
+
+/* CORRECTION CAMÉRA MOBILE — commandes aérées, filtres séparés */
+#createScreen .cs-page#csPageCamera{overflow:hidden!important;isolation:isolate}
+#createScreen .cs-side{
+  top:calc(env(safe-area-inset-top) + 68px)!important;
+  right:10px!important;gap:7px!important;align-items:center!important;
+  max-height:calc(100dvh - 390px - env(safe-area-inset-bottom))!important;
+  overflow-y:auto!important;overscroll-behavior:contain!important;
+  scrollbar-width:none!important;padding:3px!important;
+}
+#createScreen .cs-side::-webkit-scrollbar{display:none!important}
+#createScreen .cs-side button{
+  width:38px!important;height:38px!important;min-width:38px!important;
+  padding:0!important;display:flex!important;align-items:center!important;
+  justify-content:center!important;gap:0!important;border-radius:50%!important;
+  background:rgba(12,12,14,.58)!important;
+  border:1px solid rgba(255,255,255,.2)!important;
+  backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;
+  box-shadow:0 3px 12px #0005!important;
+}
+#createScreen .cs-side button span{display:none!important}
+#createScreen .cs-side button i{font-size:21px!important;filter:none!important}
+#createScreen .cs-filter-strip{
+  bottom:226px!important;left:0!important;right:0!important;
+  z-index:6!important;display:flex!important;justify-content:flex-start!important;
+  gap:9px!important;padding:8px 16px!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  scroll-snap-type:x mandatory!important;-webkit-overflow-scrolling:touch!important;
+  scrollbar-width:none!important;
+}
+#createScreen .cs-filter-strip::-webkit-scrollbar{display:none!important}
+#createScreen .cs-filter-strip button{
+  flex:0 0 auto!important;min-height:38px!important;
+  padding:8px 15px!important;border-radius:999px!important;
+  font-size:12px!important;line-height:1!important;
+  scroll-snap-align:center!important;white-space:nowrap!important;
+}
+#createScreen .cs-modes{
+  bottom:144px!important;z-index:5!important;gap:9px!important;
+  padding:0 8px!important;justify-content:center!important;
+}
+#createScreen .cs-modes button{
+  min-height:34px!important;padding:7px 10px!important;
+  font-size:12px!important;white-space:nowrap!important;
+}
+#createScreen .cs-row{bottom:42px!important;z-index:5!important}
+#createScreen .cs-top{z-index:8!important}
+#createScreen .cs-top-actions{gap:6px!important}
+#createScreen .cs-sound,#createScreen .cs-studio-link{
+  min-height:36px!important;padding:8px 11px!important;font-size:12px!important;
+  white-space:nowrap!important;
+}
+@media(max-height:700px){
+ #createScreen .cs-side{top:calc(env(safe-area-inset-top) + 62px)!important;gap:5px!important;max-height:calc(100dvh - 350px - env(safe-area-inset-bottom))!important}
+ #createScreen .cs-side button{width:34px!important;height:34px!important;min-width:34px!important}
+ #createScreen .cs-side button i{font-size:19px!important}
+ #createScreen .cs-filter-strip{bottom:210px!important}
+ #createScreen .cs-modes{bottom:132px!important}
+ #createScreen .cs-row{bottom:34px!important}
+}
+
+/* AFRO LIVE — carrousel de filtres circulaires façon caméra sociale */
+#createScreen #csPageCamera{overflow:hidden!important}
+#createScreen .cs-filter-strip{
+ position:absolute!important;left:0!important;right:0!important;bottom:238px!important;
+ z-index:7!important;display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;
+ gap:13px!important;padding:8px 18px 5px!important;margin:0!important;
+ overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important;
+ -webkit-overflow-scrolling:touch!important;scroll-snap-type:x mandatory!important;
+ touch-action:pan-x!important;background:linear-gradient(180deg,transparent,rgba(0,0,0,.14))!important
+}
+#createScreen .cs-filter-strip::-webkit-scrollbar{display:none!important}
+#createScreen .cs-filter-strip .cs-lens{
+ flex:0 0 58px!important;width:58px!important;min-width:58px!important;
+ display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;
+ gap:5px!important;padding:0!important;border:0!important;border-radius:0!important;
+ background:transparent!important;color:#fff!important;white-space:nowrap!important;
+ scroll-snap-align:center!important;text-shadow:0 1px 3px #000!important
+}
+#createScreen .cs-lens-preview{
+ width:52px!important;height:52px!important;border-radius:50%!important;display:flex!important;
+ align-items:center!important;justify-content:center!important;position:relative!important;overflow:hidden!important;
+ border:2px solid rgba(255,255,255,.78)!important;box-shadow:0 2px 9px rgba(0,0,0,.42)!important;
+ color:#fff!important;font-size:22px!important;transition:transform .18s,border-color .18s,box-shadow .18s!important
+}
+#createScreen .cs-lens-preview:after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(145deg,rgba(255,255,255,.38),transparent 48%,rgba(0,0,0,.2));pointer-events:none}
+#createScreen .cs-lens-preview i{position:relative;z-index:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+#createScreen .cs-lens-name{font-size:10px!important;line-height:12px!important;font-weight:700!important;max-width:60px!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#createScreen .cs-lens.active .cs-lens-preview{border:3px solid #fff!important;transform:scale(1.09)!important;box-shadow:0 0 0 2px rgba(255,255,255,.35),0 3px 12px #0008!important}
+#createScreen .lens-normal{background:linear-gradient(135deg,#9c795c,#e6c5a5 48%,#51423b)!important}
+#createScreen .lens-glow{background:radial-gradient(circle at 35% 28%,#fff8bd,#f5ad64 42%,#9d4b5d)!important}
+#createScreen .lens-beauty{background:radial-gradient(circle at 35% 28%,#ffe8ee,#e6a8bf 48%,#95627d)!important}
+#createScreen .lens-warm{background:linear-gradient(135deg,#f8d17c,#e87939 55%,#8c3d35)!important}
+#createScreen .lens-mono{background:linear-gradient(135deg,#fff,#888 48%,#171717)!important}
+#createScreen .lens-vivid{background:conic-gradient(#ff405e,#ffc247,#50d5a2,#4a8dff,#b56cff,#ff405e)!important}
+#createScreen .lens-cool{background:linear-gradient(135deg,#e2fbff,#6bb5d5 52%,#304b87)!important}
+#createScreen .lens-vintage{background:linear-gradient(135deg,#d8b987,#98704c 52%,#42382d)!important}
+#createScreen .lens-sunset{background:linear-gradient(135deg,#ffdf76,#fa754c 52%,#713c78)!important}
+#createScreen .lens-dream{background:linear-gradient(135deg,#d9c8ff,#8a78bc 52%,#34416d)!important}
+@media(max-height:740px){
+ #createScreen .cs-filter-strip{bottom:220px!important;gap:10px!important}
+ #createScreen .cs-filter-strip .cs-lens{flex-basis:53px!important;width:53px!important;min-width:53px!important}
+ #createScreen .cs-lens-preview{width:47px!important;height:47px!important}
+}
+
+
+/* Lentilles AR : rangée basse superposée à la caméra */
+#createScreen .cs-beauty-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;display:none;pointer-events:none;object-fit:cover;background:#000}.cs-lens-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}.cs-beauty-panel{position:absolute;left:12px;right:62px;top:calc(env(safe-area-inset-top) + 112px);z-index:7;max-height:42dvh;overflow:auto;padding:13px;border:1px solid #ffffff38;border-radius:16px;background:rgba(12,12,16,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 8px 28px #0008}.cs-beauty-panel[hidden]{display:none!important}.cs-beauty-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:13px;font-weight:800}.cs-beauty-control{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin:9px 0}.cs-beauty-control label{font-size:12px;color:#fff}.cs-beauty-control output{font-size:11px;color:#ffb37d}.cs-beauty-control input{grid-column:1/-1;width:100%;accent-color:#ff6a00;padding:0}.cs-beauty-auto{background:#ffffff20;border:1px solid #ffffff40;color:#fff;border-radius:999px;padding:5px 10px;font-size:11px}
+#createScreen .cs-side{z-index:5}
+#createScreen .cs-filter-strip{
+ position:absolute!important;left:0!important;right:0!important;bottom:130px!important;z-index:8!important;
+ display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;
+ gap:12px!important;padding:8px 18px 6px!important;overflow-x:auto!important;overflow-y:hidden!important;
+ scroll-snap-type:x mandatory!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;
+ touch-action:pan-x!important;background:linear-gradient(180deg,transparent,rgba(0,0,0,.32))!important
+}
+#createScreen .cs-filter-strip::-webkit-scrollbar{display:none!important}
+#createScreen .cs-filter-strip .cs-lens{flex:0 0 58px!important;width:58px!important;min-width:58px!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:5px!important;padding:0!important;background:transparent!important;border:0!important;color:#fff!important;scroll-snap-align:center!important}
+#createScreen .cs-lens-preview{width:52px!important;height:52px!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;border:2px solid rgba(255,255,255,.78)!important;background:rgba(22,22,28,.82)!important;font-size:26px!important;box-shadow:0 2px 9px #0008!important}
+#createScreen .cs-lens-name{font-size:10px!important;line-height:12px!important;font-weight:700!important;text-shadow:0 1px 4px #000!important}
+#createScreen .cs-lens.active .cs-lens-preview{border:3px solid #fff!important;transform:scale(1.1)!important;box-shadow:0 0 0 2px #ffffff55,0 3px 12px #0009!important}
+#createScreen .lens-none{background:linear-gradient(135deg,#777,#222)!important}
+#createScreen .lens-dog{background:linear-gradient(135deg,#e9b27b,#8e5635)!important}
+#createScreen .lens-glasses{background:linear-gradient(135deg,#7b8794,#222)!important}
+#createScreen .lens-crown{background:linear-gradient(135deg,#ffe58a,#9d6715)!important}
+#createScreen .lens-hearts{background:linear-gradient(135deg,#ffb3d2,#a42f6d)!important}
+#createScreen .lens-alien{background:linear-gradient(135deg,#b5ffb8,#227e64)!important}
+#createScreen .lens-moustache{background:linear-gradient(135deg,#c5a58c,#49352b)!important}
+#createScreen .lens-stars{background:linear-gradient(135deg,#b8a6ff,#34315e)!important}
+@media(max-height:740px){#createScreen .cs-filter-strip{bottom:118px!important;gap:9px!important}#createScreen .cs-filter-strip .cs-lens{flex-basis:52px!important;width:52px!important;min-width:52px!important}#createScreen .cs-lens-preview{width:46px!important;height:46px!important}}
+
+
+/* Éditeur post-capture façon filtres Snapchat */
+.cs-snap-editor{position:fixed;inset:0;z-index:100050;background:#050505;color:#fff;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.cs-snap-editor.hidden{display:none}
+.cs-snap-head{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;gap:12px;flex:0 0 auto}
+.cs-snap-head button{background:transparent;color:#fff;padding:8px 10px;font-size:15px}
+.cs-snap-head button:last-child{background:#fff;color:#111;border-radius:22px;font-weight:700;padding:9px 17px}
+.cs-snap-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px 0}
+.cs-snap-stage img,.cs-snap-stage video{display:block;max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain}
+.cs-snap-label{text-align:center;font-size:13px;font-weight:600;padding:5px 0 10px}
+.cs-snap-filters{display:flex;gap:13px;overflow-x:auto;overscroll-behavior-x:contain;padding:8px 16px 10px;scrollbar-width:none;touch-action:pan-x}
+.cs-snap-filters::-webkit-scrollbar{display:none}
+.cs-snap-filter{flex:0 0 66px;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;color:#fff;padding:0;font-size:11px}
+.cs-snap-swatch{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#444,#111);border:2px solid rgba(255,255,255,.3);font-size:20px}
+.cs-snap-filter.active .cs-snap-swatch{border:3px solid #fff;box-shadow:0 0 0 2px #111}
+.cs-snap-hint{color:#aaa;text-align:center;font-size:11px;padding:0 12px 12px;margin:0}
+
 </style>
 </head>
 <body>
@@ -1292,10 +1442,10 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 <div id="createScreen" class="cs hidden">
  <div class="cs-page" id="csPageCamera">
   <video id="csVideo" class="cs-video" autoplay playsinline muted></video>
+  <canvas id="csBeautyCanvas" class="cs-beauty-canvas" aria-hidden="true"></canvas>
   <div class="cs-top">
    <button class="cs-icon" type="button" onclick="closeCreateScreen()" aria-label="Fermer"><i class="ti ti-x"></i></button>
-   <button class="cs-sound" type="button" onclick="csMusicOpen()"><i class="ti ti-music"></i> Ajouter un son</button>
-   <span style="width:42px"></span>
+   <div class="cs-top-actions"><button class="cs-sound" type="button" onclick="csMusicOpen()"><i class="ti ti-music"></i> Musique</button><button class="cs-studio-link" type="button" onclick="csTab('creer')"><i class="ti ti-edit"></i> Studio</button></div>
   </div>
   <div class="cs-side">
    <button type="button" onclick="csFlip()"><span>Retourner</span><i class="ti ti-refresh"></i></button>
@@ -1303,8 +1453,34 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
    <button type="button" onclick="csCycleTimer()"><span id="csTimerLabel">Minuterie · off</span><i class="ti ti-clock"></i></button>
    <button type="button" onclick="csToggleGrid()"><span>Grille</span><i class="ti ti-layout-grid"></i></button>
    <button type="button" onclick="csCycleFilter()"><span id="csFilterLabel">Retouche · Normal</span><i class="ti ti-sparkles"></i></button>
+   <button type="button" onclick="csBeautyTogglePanel()" aria-label="Réglages beauté"><span>Beauté</span><i class="ti ti-face-id"></i></button>
    <button type="button" onclick="csTogglePrompter()"><span>Téléprompteur</span><i class="ti ti-blockquote"></i></button>
    <button type="button" onclick="csCycleFit()"><span id="csFitLabel">Cadrage · rempli</span><i class="ti ti-arrows-diagonal-minimize-2"></i></button>
+  </div>
+  <canvas id="csLensCanvas" class="cs-lens-canvas" aria-hidden="true"></canvas>
+  <div id="csBeautyPanel" class="cs-beauty-panel" hidden>
+   <div class="cs-beauty-head"><span>Retouche intelligente</span><button id="csBeautyAuto" class="cs-beauty-auto" type="button" onclick="csBeautySetAuto()">Auto · activé</button></div>
+   <div class="cs-beauty-control"><label for="csBeautySmooth">Peau douce</label><output id="csBeautySmoothValue">38%</output><input id="csBeautySmooth" type="range" min="0" max="100" value="38" oninput="csBeautySet('smooth',this.value)"></div>
+   <div class="cs-beauty-control"><label for="csBeautyEven">Imperfections</label><output id="csBeautyEvenValue">18%</output><input id="csBeautyEven" type="range" min="0" max="100" value="18" oninput="csBeautySet('even',this.value)"></div>
+   <div class="cs-beauty-control"><label for="csBeautyTexture">Texture naturelle</label><output id="csBeautyTextureValue">62%</output><input id="csBeautyTexture" type="range" min="0" max="100" value="62" oninput="csBeautySet('texture',this.value)"></div>
+   <div class="cs-beauty-control"><label for="csBeautyLight">Lumière du visage</label><output id="csBeautyLightValue">0%</output><input id="csBeautyLight" type="range" min="0" max="100" value="0" oninput="csBeautySet('faceLight',this.value)"></div>
+   <div class="cs-beauty-control"><label for="csBeautyEyes">Éclat des yeux</label><output id="csBeautyEyesValue">12%</output><input id="csBeautyEyes" type="range" min="0" max="100" value="12" oninput="csBeautySet('eyeLight',this.value)"></div>
+   <div class="cs-beauty-control"><label for="csBeautyBlur">Flou arrière-plan</label><output id="csBeautyBlurValue">0%</output><input id="csBeautyBlur" type="range" min="0" max="100" value="0" oninput="csBeautySet('backgroundBlur',this.value)"></div>
+  </div>
+  <div class="cs-filter-strip" id="csFilterStrip" aria-label="Lentilles animées" role="group">
+   <button type="button" class="cs-lens active" data-filter="0" onclick="csSetFilter(0)" aria-label="Sans effet"><span class="cs-lens-preview lens-none"><i class="ti ti-camera"></i></span><span class="cs-lens-name">Normal</span></button>
+   <button type="button" class="cs-lens" data-filter="1" onclick="csSetFilter(1)" aria-label="Oreilles de chiot"><span class="cs-lens-preview lens-dog">🐶</span><span class="cs-lens-name">Chiot</span></button>
+   <button type="button" class="cs-lens" data-filter="2" onclick="csSetFilter(2)" aria-label="Lunettes animées"><span class="cs-lens-preview lens-glasses">🕶️</span><span class="cs-lens-name">Lunettes</span></button>
+   <button type="button" class="cs-lens" data-filter="3" onclick="csSetFilter(3)" aria-label="Couronne animée"><span class="cs-lens-preview lens-crown">👑</span><span class="cs-lens-name">Couronne</span></button>
+   <button type="button" class="cs-lens" data-filter="4" onclick="csSetFilter(4)" aria-label="Cœurs flottants"><span class="cs-lens-preview lens-hearts">💖</span><span class="cs-lens-name">Amour</span></button>
+   <button type="button" class="cs-lens" data-filter="5" onclick="csSetFilter(5)" aria-label="Effet extraterrestre"><span class="cs-lens-preview lens-alien">👽</span><span class="cs-lens-name">Alien</span></button>
+   <button type="button" class="cs-lens" data-filter="6" onclick="csSetFilter(6)" aria-label="Moustache animée"><span class="cs-lens-preview lens-moustache">🥸</span><span class="cs-lens-name">Moustache</span></button>
+   <button type="button" class="cs-lens" data-filter="7" onclick="csSetFilter(7)" aria-label="Étoiles animées"><span class="cs-lens-preview lens-stars">✨</span><span class="cs-lens-name">Étoiles</span></button>
+   <button type="button" class="cs-lens" data-filter="8" onclick="csSetFilter(8)" aria-label="Portrait doux"><span class="cs-lens-preview">🌸</span><span class="cs-lens-name">Portrait doux</span></button>
+   <button type="button" class="cs-lens" data-filter="9" onclick="csSetFilter(9)" aria-label="Lumière studio"><span class="cs-lens-preview">💡</span><span class="cs-lens-name">Studio</span></button>
+   <button type="button" class="cs-lens" data-filter="10" onclick="csSetFilter(10)" aria-label="Lumière dorée"><span class="cs-lens-preview">☀️</span><span class="cs-lens-name">Doré</span></button>
+   <button type="button" class="cs-lens" data-filter="11" onclick="csSetFilter(11)" aria-label="Couleurs cinéma"><span class="cs-lens-preview">🎬</span><span class="cs-lens-name">Cinéma</span></button>
+   <button type="button" class="cs-lens" data-filter="12" onclick="csSetFilter(12)" aria-label="Mode nuit"><span class="cs-lens-preview">🌙</span><span class="cs-lens-name">Nuit</span></button>
   </div>
   <div id="csGrid" class="cs-grid-ov hidden"></div>
   <div id="csPrompter" class="cs-prompter hidden"><div id="csPrompterText"></div></div>
@@ -1402,6 +1578,18 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
  </div>
 </div>
 
+
+<!-- Éditeur de filtres après capture -->
+<div id="csSnapEditor" class="cs-snap-editor hidden">
+ <div class="cs-snap-head"><button type="button" onclick="csSnapCancel()" aria-label="Retour">‹</button><span>Modifier le Snap</span><button type="button" onclick="csSnapContinue()">Continuer</button></div>
+ <div class="cs-snap-stage" id="csSnapStage"><img id="csSnapImage" alt="Aperçu du Snap" hidden><video id="csSnapVideo" playsinline controls hidden></video></div>
+ <div class="cs-snap-label" id="csSnapFilterLabel">Original</div>
+ <div class="cs-snap-filters" id="csSnapFilters" aria-label="Filtres classiques">
+ <button type="button" class="cs-snap-filter active" data-snap-filter="0" onclick="csSnapSelectFilter(0)"><span class="cs-snap-swatch" style="filter:none"><i class="ti ti-photo"></i></span><span>Original</span></button><button type="button" class="cs-snap-filter" data-snap-filter="1" onclick="csSnapSelectFilter(1)"><span class="cs-snap-swatch" style="filter:brightness(1.18) contrast(1.06) saturate(1.12)"><i class="ti ti-photo"></i></span><span>Clair</span></button><button type="button" class="cs-snap-filter" data-snap-filter="2" onclick="csSnapSelectFilter(2)"><span class="cs-snap-swatch" style="filter:sepia(.22) saturate(1.28) contrast(1.04)"><i class="ti ti-photo"></i></span><span>Chaud</span></button><button type="button" class="cs-snap-filter" data-snap-filter="3" onclick="csSnapSelectFilter(3)"><span class="cs-snap-swatch" style="filter:saturate(.92) hue-rotate(12deg) brightness(1.04)"><i class="ti ti-photo"></i></span><span>Froid</span></button><button type="button" class="cs-snap-filter" data-snap-filter="4" onclick="csSnapSelectFilter(4)"><span class="cs-snap-swatch" style="filter:sepia(.35) contrast(1.12) saturate(.82)"><i class="ti ti-photo"></i></span><span>Vintage</span></button><button type="button" class="cs-snap-filter" data-snap-filter="5" onclick="csSnapSelectFilter(5)"><span class="cs-snap-swatch" style="filter:grayscale(1) contrast(1.12)"><i class="ti ti-photo"></i></span><span>Noir & blanc</span></button><button type="button" class="cs-snap-filter" data-snap-filter="6" onclick="csSnapSelectFilter(6)"><span class="cs-snap-swatch" style="filter:contrast(1.2) saturate(.82) brightness(.94)"><i class="ti ti-photo"></i></span><span>Cinéma</span></button><button type="button" class="cs-snap-filter" data-snap-filter="7" onclick="csSnapSelectFilter(7)"><span class="cs-snap-swatch" style="filter:sepia(.12) hue-rotate(305deg) saturate(1.3)"><i class="ti ti-photo"></i></span><span>Rose</span></button><button type="button" class="cs-snap-filter" data-snap-filter="8" onclick="csSnapSelectFilter(8)"><span class="cs-snap-swatch" style="filter:brightness(1.08) saturate(.86) contrast(.94)"><i class="ti ti-photo"></i></span><span>Doux</span></button><button type="button" class="cs-snap-filter" data-snap-filter="9" onclick="csSnapSelectFilter(9)"><span class="cs-snap-swatch" style="filter:saturate(1.55) contrast(1.08)"><i class="ti ti-photo"></i></span><span>Vif</span></button>
+ </div>
+ <p class="cs-snap-hint">Glisse à gauche ou à droite pour changer de filtre</p>
+</div>
+
 <!-- Composition -->
 <div id="composer" class="sheet-back hidden">
  <div class="sheet">
@@ -1453,6 +1641,7 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
  <div class="sv-caption" id="svCaption" hidden></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.js" crossorigin="anonymous"></script>
 <script>
 const SUPABASE_URL="https://imhlbguhcafbxjszmjag.supabase.co";
 const SUPABASE_KEY="sb_publishable_FGSth0t3t-gbyqNeV4Nj-g_69kDOar7";
@@ -1662,7 +1851,7 @@ async function loadSpectatorData(){
  await loadMyFollows();
  await refreshLiveIds();
  await loadStatuses();
- if(pendingDeepLink){await openDeepLink()}else{showPage("discover")}
+ if(pendingDeepLink){await openDeepLink()}else{showPage("discover");openCreateScreen()}
  refreshUnread();
  clearInterval(bellTimer);
  bellTimer=setInterval(refreshUnread,60000);
@@ -3541,11 +3730,45 @@ document.addEventListener("click",event=>{
 });
 
 let csFacing="user",csStream=null,csMode="photo",csRecorder=null,csChunks=[],csRecTick=null,csRecStart=0,csDiscard=false;
-const CS_MUSIC_TRACKS={afrobeat:{bpm:104,notes:[220,261.63,329.63,293.66],pattern:[0,2,1,3,0,2,1,2]},amapiano:{bpm:112,notes:[174.61,220,261.63,293.66],pattern:[0,0,2,1,0,3,2,1]},afrotrap:{bpm:140,notes:[110,130.81,146.83,164.81],pattern:[0,0,2,0,1,0,3,0]},rumba:{bpm:96,notes:[196,246.94,293.66,349.23],pattern:[0,2,1,3,2,1,0,3]},hiphop:{bpm:88,notes:[130.81,155.56,196,233.08],pattern:[0,0,1,0,2,0,1,3]}};let csMusicTrack="afrobeat",csMusicOn=false,csMusicApplied=false,csMusicCtx=null,csMusicMaster=null,csMusicTimer=null,csMusicStep=0,csMicSource=null,csMusicRecordOut=null;function csMusicOpen(){$("csMusicModal").classList.remove("hidden");csMusicRefresh()}function csMusicClose(){$("csMusicModal").classList.add("hidden")}function csMusicRefresh(){document.querySelectorAll(".csm-track").forEach(b=>b.classList.toggle("active",b.dataset.track===csMusicTrack));$("csMusicPreview").textContent=csMusicOn?"Ⅱ Arrêter l’aperçu":"▶ Écouter l’aperçu";$("csMusicStatus").textContent=csMusicApplied?"Son sélectionné pour la vidéo.":"Style sélectionné : "+csMusicTrack}async function csMusicInit(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error("Audio non pris en charge");if(!csMusicCtx){csMusicCtx=new AC();csMusicMaster=csMusicCtx.createGain();csMusicMaster.gain.value=Number($("csMusicVolume").value)/100;csMusicMaster.connect(csMusicCtx.destination)}await csMusicCtx.resume()}function csMusicTone(freq,time,duration,gain,type){const o=csMusicCtx.createOscillator(),g=csMusicCtx.createGain();o.type=type;o.frequency.setValueAtTime(freq,time);g.gain.setValueAtTime(.0001,time);g.gain.exponentialRampToValueAtTime(Math.max(.0002,gain),time+.012);g.gain.exponentialRampToValueAtTime(.0001,time+duration);o.connect(g);g.connect(csMusicMaster);o.start(time);o.stop(time+duration+.03)}function csMusicBeat(){if(!csMusicOn||!csMusicCtx)return;const t=csMusicCtx.currentTime+.015,tr=CS_MUSIC_TRACKS[csMusicTrack],st=csMusicStep%8,beat=60/tr.bpm/2;csMusicTone(tr.notes[tr.pattern[st]],t,.22,.10,"triangle");if(st%2===0)csMusicTone(tr.notes[(tr.pattern[st]+2)%4]/2,t,.20,.16,"sine");if(st===0||st===4)csMusicTone(58,t,.12,.24,"sine");if(st===2||st===6)csMusicTone(900,t,.035,.025,"square");if(st%2===1)csMusicTone(6500,t,.025,.012,"triangle");csMusicStep++;csMusicTimer=setTimeout(csMusicBeat,beat*1000)}async function csMusicToggle(){try{await csMusicInit();if(csMusicOn){csMusicStop();return}csMusicOn=true;csMusicStep=0;csMusicBeat();csMusicRefresh()}catch(e){message(e.message||"Aperçu indisponible")}}function csMusicStop(){csMusicOn=false;clearTimeout(csMusicTimer);csMusicTimer=null;csMusicRefresh()}function csMusicSelect(name){if(!CS_MUSIC_TRACKS[name])return;csMusicTrack=name;csMusicApplied=false;if(csMusicOn){csMusicStop();csMusicToggle()}else csMusicRefresh()}function csMusicSetVolume(v){if(csMusicMaster)csMusicMaster.gain.setTargetAtTime(Number(v)/100,csMusicCtx.currentTime,.03)}function csMusicApply(){csMusicApplied=true;csMusicStop();csMusicClose();message("Son sélectionné pour l’enregistrement vidéo.",true)}function csMusicRemove(){csMusicApplied=false;csMusicStop();csMusicClose();message("Musique désactivée pour la prochaine vidéo.")}async function csBuildRecordingStream(){if(!csStream||!csMusicApplied)return csStream;try{await csMusicInit();if(!csMusicRecordOut)csMusicRecordOut=csMusicCtx.createMediaStreamDestination();if(csMicSource){try{csMicSource.disconnect()}catch{}csMicSource=null}const mic=csStream.getAudioTracks()[0];if(mic){csMicSource=csMusicCtx.createMediaStreamSource(new MediaStream([mic]));csMicSource.connect(csMusicRecordOut)}const musicOut=csMusicCtx.createMediaStreamDestination();csMusicMaster.connect(musicOut);return new MediaStream([...csStream.getVideoTracks(),...csMusicRecordOut.stream.getAudioTracks(),...musicOut.stream.getAudioTracks()])}catch(e){console.warn("Mixage audio indisponible",e);message("Mixage indisponible : enregistrement sans musique.");return csStream}}
+const CS_MUSIC_TRACKS={afrobeat:{bpm:104,notes:[220,261.63,329.63,293.66],pattern:[0,2,1,3,0,2,1,2]},amapiano:{bpm:112,notes:[174.61,220,261.63,293.66],pattern:[0,0,2,1,0,3,2,1]},afrotrap:{bpm:140,notes:[110,130.81,146.83,164.81],pattern:[0,0,2,0,1,0,3,0]},rumba:{bpm:96,notes:[196,246.94,293.66,349.23],pattern:[0,2,1,3,2,1,0,3]},hiphop:{bpm:88,notes:[130.81,155.56,196,233.08],pattern:[0,0,1,0,2,0,1,3]}};let csMusicTrack="afrobeat",csMusicOn=false,csMusicApplied=false,csMusicCtx=null,csMusicMaster=null,csMusicTimer=null,csMusicStep=0,csMicSource=null,csMusicRecordOut=null;function csMusicOpen(){$("csMusicModal").classList.remove("hidden");csMusicRefresh()}function csMusicClose(){$("csMusicModal").classList.add("hidden")}function csMusicRefresh(){document.querySelectorAll(".csm-track").forEach(b=>b.classList.toggle("active",b.dataset.track===csMusicTrack));$("csMusicPreview").textContent=csMusicOn?"Ⅱ Arrêter l’aperçu":"▶ Écouter l’aperçu";$("csMusicStatus").textContent=csMusicApplied?"Son sélectionné pour la vidéo.":"Style sélectionné : "+csMusicTrack}async function csMusicInit(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error("Audio non pris en charge");if(!csMusicCtx){csMusicCtx=new AC();csMusicMaster=csMusicCtx.createGain();csMusicMaster.gain.value=Number($("csMusicVolume").value)/100;csMusicMaster.connect(csMusicCtx.destination)}await csMusicCtx.resume()}function csMusicTone(freq,time,duration,gain,type){const o=csMusicCtx.createOscillator(),g=csMusicCtx.createGain();o.type=type;o.frequency.setValueAtTime(freq,time);g.gain.setValueAtTime(.0001,time);g.gain.exponentialRampToValueAtTime(Math.max(.0002,gain),time+.012);g.gain.exponentialRampToValueAtTime(.0001,time+duration);o.connect(g);g.connect(csMusicMaster);o.start(time);o.stop(time+duration+.03)}function csMusicBeat(){if(!csMusicOn||!csMusicCtx)return;const t=csMusicCtx.currentTime+.015,tr=CS_MUSIC_TRACKS[csMusicTrack],st=csMusicStep%8,beat=60/tr.bpm/2;csMusicTone(tr.notes[tr.pattern[st]],t,.22,.10,"triangle");if(st%2===0)csMusicTone(tr.notes[(tr.pattern[st]+2)%4]/2,t,.20,.16,"sine");if(st===0||st===4)csMusicTone(58,t,.12,.24,"sine");if(st===2||st===6)csMusicTone(900,t,.035,.025,"square");if(st%2===1)csMusicTone(6500,t,.025,.012,"triangle");csMusicStep++;csMusicTimer=setTimeout(csMusicBeat,beat*1000)}async function csMusicToggle(){try{await csMusicInit();if(csMusicOn){csMusicStop();return}csMusicOn=true;csMusicStep=0;csMusicBeat();csMusicRefresh()}catch(e){message(e.message||"Aperçu indisponible")}}function csMusicStop(){csMusicOn=false;clearTimeout(csMusicTimer);csMusicTimer=null;csMusicRefresh()}function csMusicSelect(name){if(!CS_MUSIC_TRACKS[name])return;csMusicTrack=name;csMusicApplied=false;if(csMusicOn){csMusicStop();csMusicToggle()}else csMusicRefresh()}function csMusicSetVolume(v){if(csMusicMaster)csMusicMaster.gain.setTargetAtTime(Number(v)/100,csMusicCtx.currentTime,.03)}function csMusicApply(){csMusicApplied=true;csMusicStop();csMusicClose();message("Son sélectionné pour l’enregistrement vidéo.",true)}function csMusicRemove(){csMusicApplied=false;csMusicStop();csMusicClose();message("Musique désactivée pour la prochaine vidéo.")}let csRecordCanvas=null,csRecordFrame=0;
+async function csBuildRecordingStream(){
+ if(!csStream)return null;
+ const video=$("csVideo");
+ if(!video.videoWidth||!video.videoHeight)return csStream;
+ try{
+  csRecordCanvas=document.createElement("canvas");
+  csRecordCanvas.width=video.videoWidth;csRecordCanvas.height=video.videoHeight;
+  const ctx=csRecordCanvas.getContext("2d");
+  const draw=()=>{
+   if(!csRecordCanvas)return;
+   ctx.save();const beauty=window.afroBeautyCanvasActive&&window.afroBeautyCanvasActive();if(!beauty)ctx.filter=CS_FILTERS[csFilterIdx]||"none";
+   if(!beauty&&csFacing==="user"){ctx.translate(csRecordCanvas.width,0);ctx.scale(-1,1)}
+   ctx.drawImage(beauty||video,0,0,csRecordCanvas.width,csRecordCanvas.height);ctx.restore();if(csFilterIdx>0&&csFaceLandmarks)csDrawLensOutput(ctx,csRecordCanvas.width,csRecordCanvas.height,performance.now());
+   csRecordFrame=requestAnimationFrame(draw);
+  };
+  draw();
+  const videoStream=csRecordCanvas.captureStream(30);
+  let audioTracks=csStream.getAudioTracks();
+  if(csMusicApplied){
+   await csMusicInit();
+   if(!csMusicRecordOut)csMusicRecordOut=csMusicCtx.createMediaStreamDestination();
+   if(csMicSource){try{csMicSource.disconnect()}catch{}csMicSource=null}
+   const mic=audioTracks[0];
+   if(mic){csMicSource=csMusicCtx.createMediaStreamSource(new MediaStream([mic]));csMicSource.connect(csMusicRecordOut)}
+   const musicOut=csMusicCtx.createMediaStreamDestination();csMusicMaster.connect(musicOut);
+   audioTracks=[...csMusicRecordOut.stream.getAudioTracks(),...musicOut.stream.getAudioTracks()];
+  }
+  return new MediaStream([...videoStream.getVideoTracks(),...audioTracks]);
+ }catch(e){
+  console.warn("Filtre vidéo indisponible",e);
+  if(csRecordFrame)cancelAnimationFrame(csRecordFrame);csRecordFrame=0;csRecordCanvas=null;
+  message("Filtre vidéo indisponible : enregistrement avec la caméra normale.");
+  return csStream;
+ }
+}
 
 function openCreateScreen(){
  if(!currentUser)return guestToAuth();
- if(currentProfile?.role!=="creator"){showPage("application");return}
  closeOtherSheets("createScreen");
  $("createScreen").classList.remove("hidden");
  csTab("camera");
@@ -3559,7 +3782,7 @@ function closeCreateScreen(){
 function csSoon(name){message(name+" : bientôt disponible.")}
 function csOpen(mode){closeCreateScreen();openGallery(mode)}
 function csFromGallery(){closeCreateScreen();openGallery("post")}
-function csGoLive(){closeCreateScreen();setViewMode("creator");creatorPage("live")}
+function csGoLive(){if(currentProfile?.role!=="creator"){closeCreateScreen();showPage("application");return}closeCreateScreen();setViewMode("creator");creatorPage("live")}
 function csTab(name){
  const map={camera:"csPageCamera",creer:"csPageCreer",live:"csPageLive"};
  document.querySelectorAll("#createScreen .cs-page").forEach(p=>p.classList.add("hidden"));
@@ -3581,13 +3804,19 @@ async function csStartStream(){
   video.srcObject=csStream;
   video.style.transform=csFacing==="user"?"scaleX(-1)":"none";
   await video.play().catch(()=>{});
+  csApplyVideoStyle();
+  csInitFaceTracker();
  }catch(e){
   message("Caméra indisponible. Autorise l'accès à la caméra dans les réglages.");
  }
 }
 function csStopStream(){
  if(csStream){csStream.getTracks().forEach(t=>t.stop());csStream=null}
+ if(csFaceRaf){cancelAnimationFrame(csFaceRaf);csFaceRaf=0}
+ const beauty=$("csBeautyCanvas");if(beauty)beauty.style.display="none";const cameraVideo=$("csVideo");if(cameraVideo)cameraVideo.style.opacity="1";
+ csFaceLandmarks=null;
  const video=$("csVideo");if(video)video.srcObject=null;
+ const canvas=$("csLensCanvas");if(canvas){const ctx=canvas.getContext("2d");ctx.clearRect(0,0,canvas.width,canvas.height)}
 }
 function csFlip(){csFacing=csFacing==="user"?"environment":"user";csStartStream()}
 function csSetMode(mode){
@@ -3606,9 +3835,9 @@ function csTakePhoto(){
  if(!v.videoWidth)return message("Caméra pas encore prête.");
  const c=document.createElement("canvas");c.width=v.videoWidth;c.height=v.videoHeight;
  const ctx=c.getContext("2d");
- if(csFacing==="user"){ctx.translate(c.width,0);ctx.scale(-1,1)}
- try{ctx.filter=CS_FILTERS[csFilterIdx]}catch{}
- ctx.drawImage(v,0,0,c.width,c.height);
+ const beauty=window.afroBeautyCanvasActive&&window.afroBeautyCanvasActive();
+ if(beauty){ctx.drawImage(beauty,0,0,c.width,c.height)}else{if(csFacing==="user"){ctx.translate(c.width,0);ctx.scale(-1,1)}try{ctx.filter=CS_FILTERS[csFilterIdx]}catch{}ctx.drawImage(v,0,0,c.width,c.height)}
+ if(csFilterIdx>0&&csFaceLandmarks)csDrawLensOutput(ctx,c.width,c.height,performance.now());
  c.toBlob(blob=>{if(blob)csSendToComposer(blob,"photo-"+Date.now()+".jpg")},"image/jpeg",0.92);
 }
 
@@ -3641,6 +3870,7 @@ async function csStartRecording(maxSeconds){
 }
 function csStopRecording(){if(csRecorder&&csRecorder.state!=="inactive")csRecorder.stop();csHideRec();clearTimeout(csPressTimer)}
 function csHideRec(){
+ if(csRecordFrame)cancelAnimationFrame(csRecordFrame);csRecordFrame=0;csRecordCanvas=null;
  clearInterval(csRecTick);csRecTick=null;
  $("csRec").classList.remove("on");$("csRecTime").textContent="0:00";
  $("csShutter").classList.remove("rec");
@@ -3649,13 +3879,88 @@ function csHideRec(){
 /* OPTIONS AVANCÉES DE LA CAMÉRA */
 let csTimerSec=0,csGridOn=false,csFlashOn=false,csCountingDown=false,csPrompterOn=false,csFilterIdx=0,csFitIdx=0;
 let csPressTimer=null,csPressStart=0,csHolding=false,csPressWasStop=false;
-const CS_FILTERS=["none","sepia(.6) saturate(1.3)","grayscale(1) contrast(1.1)","saturate(1.6) brightness(1.08)"];
-const CS_FILTER_NAMES=["Normal","Chaud","Noir & blanc","Vif"];
+const CS_FILTER_NAMES=["Normal","Chiot","Lunettes","Couronne","Amour","Alien","Moustache","Étoiles","Portrait doux","Studio","Doré","Cinéma","Nuit"];
+const CS_FILTERS=["none","none","none","none","none","none","none","none","brightness(1.045) contrast(.97) saturate(1.04) blur(.18px)","brightness(1.12) contrast(1.045) saturate(1.08)","sepia(.12) saturate(1.13) brightness(1.055)","contrast(1.13) saturate(.88) brightness(1.025)","brightness(1.22) contrast(1.08) saturate(1.08)"];
 const CS_FITS=["cover","contain"];
-function csApplyVideoStyle(){
- const v=$("csVideo");v.style.filter=CS_FILTERS[csFilterIdx];v.style.objectFit=CS_FITS[csFitIdx];
+let csFaceLandmarker=null,csFaceInitPromise=null,csFaceRaf=0,csFaceLandmarks=null,csFaceLastDetect=0;
+let csBeautySettings={smooth:38,even:18,texture:62,faceLight:0,eyeLight:12,underEye:10,backgroundBlur:0};
+let csBeautyAuto=true;
+window.afroBeautyFrameProvider=()=>({video:$("csVideo"),landmarks:csFaceLandmarks,mirror:csFacing==="user",options:csBeautySettings});
+function csBeautyTogglePanel(){$("csBeautyPanel").hidden=!$("csBeautyPanel").hidden}
+function csBeautySet(key,value){csBeautySettings[key]=Number(value);csBeautyAuto=false;$("csBeautyAuto").textContent="Auto · désactivé";const id=key==="faceLight"?"csBeautyLight":key==="eyeLight"?"csBeautyEyes":key==="backgroundBlur"?"csBeautyBlur":key==="smooth"?"csBeautySmooth":key==="even"?"csBeautyEven":"csBeautyTexture";const out=$(id+"Value");if(out)out.textContent=Number(value)+"%"}
+function csBeautySetAuto(){csBeautyAuto=!csBeautyAuto;if(csBeautyAuto)csBeautySettings={smooth:38,even:18,texture:62,faceLight:0,eyeLight:12,underEye:10,backgroundBlur:0};$("csBeautyAuto").textContent=csBeautyAuto?"Auto · activé":"Auto · désactivé";for(const [key,id] of Object.entries({smooth:"csBeautySmooth",even:"csBeautyEven",texture:"csBeautyTexture",faceLight:"csBeautyLight",eyeLight:"csBeautyEyes",backgroundBlur:"csBeautyBlur"})){const input=$(id);if(input)input.value=csBeautySettings[key];const out=$(id+"Value");if(out)out.textContent=csBeautySettings[key]+"%"}}
+function csApplyVideoStyle(){const v=$("csVideo"),c=$("csLensCanvas"),b=$("csBeautyCanvas");v.style.filter=CS_FILTERS[csFilterIdx]||"none";if(b)b.style.filter=CS_FILTERS[csFilterIdx]||"none";v.style.objectFit=CS_FITS[csFitIdx];if(c)c.style.transform=csFacing==="user"?"scaleX(-1)":"none";}
+function csSetFilter(index){
+ csFilterIdx=(index+CS_FILTER_NAMES.length)%CS_FILTER_NAMES.length;
+ $("csFilterLabel").textContent="Effet · "+CS_FILTER_NAMES[csFilterIdx];
+ document.querySelectorAll("#csFilterStrip [data-filter]").forEach(b=>b.classList.toggle("active",Number(b.dataset.filter)===csFilterIdx));
+ const active=document.querySelector("#csFilterStrip [data-filter=\""+csFilterIdx+"\"]");
+ active?.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
+ csApplyVideoStyle();
+ if(csFilterIdx>0)csInitFaceTracker();
 }
-function csCycleFilter(){csFilterIdx=(csFilterIdx+1)%CS_FILTERS.length;$("csFilterLabel").textContent="Retouche · "+CS_FILTER_NAMES[csFilterIdx];csApplyVideoStyle()}
+function csCycleFilter(){csSetFilter(csFilterIdx+1)}
+async function csInitFaceTracker(){
+ if(csFaceLandmarker){csStartFaceLoop();return true;}
+ if(csFaceInitPromise)return csFaceInitPromise;
+ csFaceInitPromise=(async()=>{
+  try{
+   if(!window.vision)throw new Error("Bibliothèque de suivi du visage indisponible");
+   const files=await vision.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+   csFaceLandmarker=await vision.FaceLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",delegate:"GPU"},runningMode:"VIDEO",numFaces:1});
+   csStartFaceLoop();return true;
+  }catch(e){console.error("Lentilles AFRO LIVE",e);message("Effets visage indisponibles. Vérifie ta connexion puis réessaie.");csFaceInitPromise=null;return false}
+ })();
+ return csFaceInitPromise;
+}
+function csDrawLensOutput(ctx,w,h,now){ctx.save();if(csFacing==="user"){ctx.translate(w,0);ctx.scale(-1,1)}if(csFaceLandmarks)csDrawLens(ctx,w,h,csFaceLandmarks,now);ctx.restore();}
+function csStartFaceLoop(){
+ if(csFaceRaf)cancelAnimationFrame(csFaceRaf);
+ const tick=()=>{
+  const v=$("csVideo"),c=$("csLensCanvas");
+  if(!csStream)return;
+  if(!c||!v||v.readyState<2){csFaceRaf=requestAnimationFrame(tick);return}
+  const w=v.videoWidth||c.clientWidth,h=v.videoHeight||c.clientHeight;
+  if(w&&h&&(c.width!==w||c.height!==h)){c.width=w;c.height=h}
+  const now=performance.now();
+  if(csFaceLandmarker&&now-csFaceLastDetect>45){try{const result=csFaceLandmarker.detectForVideo(v,now);csFaceLandmarks=result.faceLandmarks?.[0]||null}catch(e){csFaceLandmarks=null}csFaceLastDetect=now}
+  const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);
+  if(csFilterIdx>0&&csFaceLandmarks)csDrawLens(ctx,c.width,c.height,csFaceLandmarks,now);
+  if(window.afroBeautyRender)window.afroBeautyRender();
+  csFaceRaf=requestAnimationFrame(tick);
+ };
+ csFaceRaf=requestAnimationFrame(tick);
+}
+function csDrawLens(ctx,w,h,p,now){
+ const pt=i=>({x:p[i].x*w,y:p[i].y*h});
+ const eyeL=pt(33),eyeR=pt(263),nose=pt(1),forehead=pt(10),mouth=pt(13),chin=pt(152);
+ const cx=(eyeL.x+eyeR.x)/2,cy=(eyeL.y+eyeR.y)/2,dist=Math.hypot(eyeR.x-eyeL.x,eyeR.y-eyeL.y),angle=Math.atan2(eyeR.y-eyeL.y,eyeR.x-eyeL.x);
+ const save=()=>{ctx.save();ctx.translate(cx,cy);ctx.rotate(angle)};
+ const restore=()=>ctx.restore();
+ const heart=(x,y,size)=>{ctx.save();ctx.translate(x,y);ctx.scale(size/20,size/20);ctx.beginPath();ctx.moveTo(0,7);ctx.bezierCurveTo(-22,-7,-10,-20,0,-9);ctx.bezierCurveTo(10,-20,22,-7,0,7);ctx.fill();ctx.restore()};
+ ctx.lineJoin="round";ctx.lineCap="round";
+ if(csFilterIdx===1){
+  save();ctx.fillStyle="#a96a42";ctx.strokeStyle="#4b2923";ctx.lineWidth=3;
+  for(const side of [-1,1]){ctx.save();ctx.translate(side*dist*.62,-dist*.42);ctx.rotate(side*-.22);ctx.beginPath();ctx.ellipse(0,-dist*.12,dist*.22,dist*.39,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle="#e9a0a0";ctx.beginPath();ctx.ellipse(0,-dist*.12,dist*.12,dist*.25,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#a96a42";ctx.restore()}
+  ctx.fillStyle="#ef8ca0";ctx.beginPath();ctx.arc(nose.x-cx,nose.y-cy+dist*.12,dist*.095,0,Math.PI*2);ctx.fill();restore();
+ }else if(csFilterIdx===2){
+  save();ctx.strokeStyle="#111";ctx.fillStyle="rgba(20,20,28,.82)";ctx.lineWidth=dist*.09;
+  for(const e of [eyeL,eyeR]){ctx.beginPath();ctx.ellipse(e.x-cx,e.y-cy,dist*.25,dist*.17,0,0,Math.PI*2);ctx.fill();ctx.stroke()}
+  ctx.beginPath();ctx.moveTo(eyeL.x-cx+dist*.23,eyeL.y-cy);ctx.lineTo(eyeR.x-cx-dist*.23,eyeR.y-cy);ctx.stroke();restore();
+ }else if(csFilterIdx===3){
+  save();ctx.translate(0,-dist*.78);const bob=Math.sin(now/230)*dist*.035;ctx.translate(0,bob);ctx.fillStyle="#ffd34e";ctx.strokeStyle="#9b5b12";ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(-dist*.48,dist*.18);ctx.lineTo(-dist*.4,-dist*.2);ctx.lineTo(-dist*.15,dist*.02);ctx.lineTo(0,-dist*.34);ctx.lineTo(dist*.16,dist*.02);ctx.lineTo(dist*.4,-dist*.2);ctx.lineTo(dist*.48,dist*.18);ctx.closePath();ctx.fill();ctx.stroke();restore();
+ }else if(csFilterIdx===4){
+  ctx.fillStyle="#ff5c9a";for(let i=0;i<6;i++){const phase=now/360+i*1.7;const x=cx+Math.cos(phase)*dist*(.72+(i%2)*.2);const y=cy-dist*.55+Math.sin(phase*1.3)*dist*.65;heart(x,y,dist*(.13+(i%3)*.025))}
+ }else if(csFilterIdx===5){
+  save();ctx.fillStyle="rgba(112,255,171,.72)";ctx.strokeStyle="#b4ffda";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,dist*.57,dist*.72,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle="#111";ctx.beginPath();ctx.ellipse(-dist*.2,-dist*.05,dist*.09,dist*.2,0,0,Math.PI*2);ctx.ellipse(dist*.2,-dist*.05,dist*.09,dist*.2,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.ellipse(0,dist*.3,dist*.16,dist*.06,0,0,Math.PI*2);ctx.fill();restore();
+ }else if(csFilterIdx===6){
+  save();ctx.fillStyle="#352019";ctx.beginPath();ctx.moveTo(-dist*.32,dist*.18);ctx.quadraticCurveTo(-dist*.2,dist*.02,0,dist*.17);ctx.quadraticCurveTo(dist*.2,dist*.02,dist*.32,dist*.18);ctx.quadraticCurveTo(dist*.16,dist*.44,0,dist*.28);ctx.quadraticCurveTo(-dist*.16,dist*.44,-dist*.32,dist*.18);ctx.fill();restore();
+ }else if(csFilterIdx===7){
+  ctx.fillStyle="#fff2a8";for(let i=0;i<9;i++){const a=now/500+i*2.4;const x=cx+Math.cos(a)*dist*(.58+(i%3)*.22),y=cy-dist*.45+Math.sin(a*1.4)*dist*.62;const r=dist*(.035+(i%2)*.025);ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.beginPath();ctx.moveTo(0,-r*2);ctx.lineTo(r*.5,0);ctx.lineTo(0,r*2);ctx.lineTo(-r*.5,0);ctx.closePath();ctx.fill();ctx.restore()}
+ }
+}
+
 function csCycleFit(){csFitIdx=(csFitIdx+1)%CS_FITS.length;$("csFitLabel").textContent="Cadrage · "+(csFitIdx===0?"rempli":"entier");csApplyVideoStyle()}
 function csToggleGrid(){csGridOn=!csGridOn;$("csGrid").classList.toggle("hidden",!csGridOn)}
 function csCycleTimer(){const a=[0,3,10];csTimerSec=a[(a.indexOf(csTimerSec)+1)%a.length];$("csTimerLabel").textContent="Minuterie · "+(csTimerSec?csTimerSec+" s":"off")}
@@ -3688,11 +3993,72 @@ function csShutterUp(e){
  if(csHolding){csHolding=false;csStopRecording();return}
  if(!csRecorder)csWithCountdown(()=>csStartRecording(Number(csMode)));
 }
+let csSnapFile=null,csSnapUrl=null,csSnapFilterIndex=0,csSnapStartX=0;
+const CS_SNAP_FILTERS=[["Original","none"],["Clair","brightness(1.18) contrast(1.06) saturate(1.12)"],["Chaud","sepia(.22) saturate(1.28) contrast(1.04)"],["Froid","saturate(.92) hue-rotate(12deg) brightness(1.04)"],["Vintage","sepia(.35) contrast(1.12) saturate(.82)"],["Noir & blanc","grayscale(1) contrast(1.12)"],["Cinéma","contrast(1.2) saturate(.82) brightness(.94)"],["Rose","sepia(.12) hue-rotate(305deg) saturate(1.3)"],["Doux","brightness(1.08) saturate(.86) contrast(.94)"],["Vif","saturate(1.55) contrast(1.08)"]];
 function csSendToComposer(blob,name){
- const file=new File([blob],name,{type:blob.type||"application/octet-stream"});
- csDiscard=true;closeCreateScreen();openComposer("post");
- const dt=new DataTransfer();dt.items.add(file);
- $("composerFile").files=dt.files;previewComposer(file);
+ csSnapFile=new File([blob],name,{type:blob.type||"application/octet-stream"});
+ csSnapFilterIndex=0;csDiscard=true;closeCreateScreen();
+ csOpenSnapEditor();
+}
+function csOpenSnapEditor(){
+ const editor=$("csSnapEditor"),img=$("csSnapImage"),video=$("csSnapVideo");
+ if(csSnapUrl)URL.revokeObjectURL(csSnapUrl);
+ csSnapUrl=URL.createObjectURL(csSnapFile);
+ img.hidden=true;video.hidden=true;img.removeAttribute("src");video.pause();video.removeAttribute("src");
+ if(csSnapFile.type.startsWith("video/")){video.src=csSnapUrl;video.hidden=false;video.load();video.play().catch(()=>{})}
+ else{img.src=csSnapUrl;img.hidden=false}
+ editor.classList.remove("hidden");csSnapApplyFilter();
+}
+function csSnapApplyFilter(){
+ const f=CS_SNAP_FILTERS[csSnapFilterIndex],img=$("csSnapImage"),video=$("csSnapVideo");
+ $("csSnapFilterLabel").textContent=f[0];
+ img.style.filter=f[1];video.style.filter=f[1];
+ document.querySelectorAll("#csSnapFilters [data-snap-filter]").forEach(b=>b.classList.toggle("active",Number(b.dataset.snapFilter)===csSnapFilterIndex));
+ document.querySelector("#csSnapFilters [data-snap-filter=\""+csSnapFilterIndex+"\"]")?.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
+}
+function csSnapSelectFilter(i){csSnapFilterIndex=(i+CS_SNAP_FILTERS.length)%CS_SNAP_FILTERS.length;csSnapApplyFilter()}
+function csSnapSwipeStart(e){csSnapStartX=e.clientX}
+function csSnapSwipeEnd(e){const dx=e.clientX-csSnapStartX;if(Math.abs(dx)>35)csSnapSelectFilter(csSnapFilterIndex+(dx<0?1:-1))}
+function csSnapCancel(){
+ $("csSnapEditor").classList.add("hidden");$("csSnapVideo").pause();
+ if(csSnapUrl)URL.revokeObjectURL(csSnapUrl);csSnapUrl=null;csSnapFile=null;
+}
+async function csSnapContinue(){
+ if(!csSnapFile)return;
+ let finalFile=csSnapFile;
+ const filter=CS_SNAP_FILTERS[csSnapFilterIndex][1];
+ if(filter!=="none"&&csSnapFile.type.startsWith("image/")){
+  try{
+   const img=$("csSnapImage"),canvas=document.createElement("canvas");
+   await img.decode();canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+   const ctx=canvas.getContext("2d");ctx.filter=filter;ctx.drawImage(img,0,0,canvas.width,canvas.height);
+   const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.94));
+   if(!blob)throw new Error("Export photo impossible");
+   finalFile=new File([blob],csSnapFile.name.replace(/\.[^.]+$/,"")+".jpg",{type:"image/jpeg"});
+  }catch(e){return message("Impossible d'appliquer ce filtre à la photo.")}
+ }else if(filter!=="none"&&csSnapFile.type.startsWith("video/")){
+  try{finalFile=await csSnapRenderVideo(filter)}catch(e){return message("Ce téléphone ne permet pas encore d'enregistrer la vidéo avec ce filtre. Tu peux choisir Original.")}
+ }
+ $("csSnapEditor").classList.add("hidden");$("csSnapVideo").pause();
+ if(csSnapUrl)URL.revokeObjectURL(csSnapUrl);csSnapUrl=null;csSnapFile=null;
+ openComposer("post");const dt=new DataTransfer();dt.items.add(finalFile);$("composerFile").files=dt.files;previewComposer(finalFile);
+}
+async function csSnapRenderVideo(filter){
+ const video=$("csSnapVideo");video.pause();video.currentTime=0;
+ if(!video.captureStream||!HTMLCanvasElement.prototype.captureStream||!window.MediaRecorder)throw new Error("Capture vidéo non supportée");
+ await new Promise((resolve,reject)=>{if(video.readyState>=2)return resolve();video.onloadeddata=resolve;video.onerror=reject});
+ const canvas=document.createElement("canvas");canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+ const ctx=canvas.getContext("2d"),stream=canvas.captureStream(30),source=video.captureStream();
+ source.getAudioTracks().forEach(t=>stream.addTrack(t));
+ const mime=["video/mp4","video/webm;codecs=vp8,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t))||"";
+ const recorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined),chunks=[];
+ const done=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onerror=reject;recorder.onstop=()=>resolve(new Blob(chunks,{type:recorder.mimeType||"video/webm"}))});
+ let raf=0;const draw=()=>{if(video.ended||video.paused)return;ctx.filter=filter;ctx.drawImage(video,0,0,canvas.width,canvas.height);raf=requestAnimationFrame(draw)};
+ video.currentTime=0;await video.play();recorder.start(250);draw();
+ await new Promise(resolve=>video.onended=resolve);if(recorder.state!=="inactive")recorder.stop();cancelAnimationFrame(raf);
+ const blob=await done;if(!blob.size)throw new Error("Vidéo vide");
+ const ext=blob.type.includes("mp4")?".mp4":".webm";
+ return new File([blob],csSnapFile.name.replace(/\.[^.]+$/,"")+ext,{type:blob.type});
 }
 
 /* MENUS ET COMPOSITION */
@@ -3933,6 +4299,8 @@ async function reviewApplication(applicationId,userId,decision){
  await loadAdminApplications();
 }
 
+$("csSnapStage").addEventListener("pointerdown",csSnapSwipeStart);
+$("csSnapStage").addEventListener("pointerup",csSnapSwipeEnd);
 /* ÉVÉNEMENTS */
 $("signup").addEventListener("click",signUp);
 $("login").addEventListener("click",signIn);
@@ -4022,6 +4390,22 @@ db.auth.onAuthStateChange((event,session)=>{
   resetSession();
  }
 });
+</script>
+<script type="module">
+import { AfroBeautyEngine } from "./beauty-engine/afro-live.js";
+import { AfroBackgroundBlur } from "./beauty-engine/background.js";
+try {
+ const canvas=document.getElementById("csBeautyCanvas");
+ const engine=new AfroBeautyEngine(canvas);
+ const background=new AfroBackgroundBlur();
+ window.afroBeautyCanvasActive=()=>canvas&&canvas.style.display!=="none"&&canvas.width>0;
+ window.afroBeautyRender=()=>{
+  const frame=window.afroBeautyFrameProvider?.();
+  if(!frame||!frame.video||frame.video.readyState<2)return;
+  try{const source=background.update(frame.video,frame.options.backgroundBlur);const ok=engine.render(frame.video,frame.landmarks,{...frame.options,source,mirror:frame.mirror});if(ok){canvas.style.display="block";frame.video.style.opacity="0";}}
+  catch(error){console.warn("AFRO LIVE beauty engine",error);canvas.style.display="none";frame.video.style.opacity="1";window.afroBeautyRender=null;}
+ };
+} catch(error) { console.warn("AFRO LIVE beauty engine unavailable",error); }
 </script>
 <script src="/social.js"></script>
 </body>
