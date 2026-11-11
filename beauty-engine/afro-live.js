@@ -79,7 +79,8 @@ export class AfroBeautyEngine {
       blushAmount: 0,
     };
 
-    const source = options.source || video;\n    this.renderer.uploadSource(source, width, height);
+    const source = options.source || video;
+    this.renderer.uploadSource(source, width, height);
     this.renderer.uploadMask(facePoints ? this.painter.paint(facePoints) : this.painter.clear());
     this.renderer.render({
       params,
