@@ -44,6 +44,39 @@ function ensureOverlays(){
   wrap.innerHTML='<div class="afro-social-head"><button class="afro-social-close" data-saved-close>‹</button><strong>Publications enregistrées</strong><span></span></div><div id="afroSavedBody" class="afro-dm-list"></div>';
   document.body.appendChild(wrap);
  }
+ if(!el("afroReportsOverlay")){
+  const wrap=document.createElement("section");wrap.id="afroReportsOverlay";wrap.className="afro-social-overlay";wrap.hidden=true;
+  wrap.innerHTML='<div class="afro-social-head"><button class="afro-social-close" data-reports-close>‹</button><strong>Signalements</strong><span></span></div><div id="afroReportsBody" class="afro-dm-list"></div>';
+  document.body.appendChild(wrap);
+ }
+}
+function addAdminModeration(){
+ if(currentProfile?.role!=="admin")return;
+ const host=el("admin");if(!host||el("afroOpenReports"))return;
+ const b=document.createElement("button");b.id="afroOpenReports";b.type="button";b.className="soft";b.style.cssText="width:100%;margin:10px 0";b.innerHTML='<i class="ti ti-shield-check"></i> Modération · Signalements';
+ b.addEventListener("click",openReports);host.prepend(b);
+}
+async function openReports(){
+ if(currentProfile?.role!=="admin")return;
+ ensureOverlays();addStyles();el("afroReportsOverlay").hidden=false;
+ const box=el("afroReportsBody");box.innerHTML='<div class="afro-social-empty">Chargement...</div>';
+ const {data,error}=await db.from("social_reports").select("*").order("created_at",{ascending:false}).limit(100);
+ if(error){box.innerHTML='<div class="afro-social-empty">'+esc(error.message)+'</div>';return;}
+ if(!data?.length){box.innerHTML='<div class="afro-social-empty">Aucun signalement pour le moment.</div>';return;}
+ const ids=[...new Set(data.flatMap(r=>[r.reporter_id,r.reported_user_id].filter(Boolean)))];
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name").in("id",ids);
+ const pm={};(profiles||[]).forEach(p=>pm[p.id]=p);
+ box.innerHTML=data.map(r=>{
+  const reporter=pm[r.reporter_id]?.username||"membre";
+  const target=r.reported_user_id?(pm[r.reported_user_id]?.username||"compte"):r.post_id?"publication":"commentaire";
+  return '<article class="afro-dm-row" style="display:block"><b>'+esc(r.reason)+' · '+esc(r.status)+'</b><p style="margin:5px 0;color:#bbb;font-size:12px">Par @'+esc(reporter)+' · Cible : '+esc(target)+' · '+new Date(r.created_at).toLocaleString("fr-FR")+'</p><p style="margin:5px 0;font-size:13px">'+esc(r.details||"Aucun détail")+'</p><div style="display:flex;gap:8px;margin-top:8px"><button class="soft" data-report-status="reviewed" data-report-id="'+esc(r.id)+'">Marquer examiné</button><button class="danger" data-report-status="actioned" data-report-id="'+esc(r.id)+'">Action prise</button></div></article>';
+ }).join("");
+}
+async function setReportStatus(id,status){
+ if(currentProfile?.role!=="admin")return;
+ const {error}=await db.from("social_reports").update({status}).eq("id",id);
+ if(error){say(error.message);return;}
+ await openReports();say("Signalement mis à jour.",true);
 }
 function addMenuOptions(){
  const sheet=document.querySelector("#menuSheet .sheet");if(!sheet||sheet.querySelector("[data-afro-menu]"))return;
@@ -228,7 +261,7 @@ async function toggleCommentLike(id,btn){
 }
 async function submitEnhancedComment(e){
  e.preventDefault();e.stopImmediatePropagation();if(!signed())return guestToAuth();
- const text=el("cmInput").value.trim();if(!text||!cmPostId||cmBusy)return;
+ const text=el("cmInput").value.trim().slice(0,500);if(!text||!cmPostId||cmBusy)return;
  cmBusy=true;el("cmSend").disabled=true;
  const row={post_id:cmPostId,user_id:currentUser.id,body:text};
  if(S.replyTo)row.parent_id=S.replyTo;
@@ -269,7 +302,7 @@ function patchAccount(){
 function patchView(){
  if(typeof renderView!=="function"||renderView.__afroPatched)return;
  const old=renderView;
- const patched=function(){old();const b=el("navigation")?.querySelector('[data-page="notifs"] span');if(b)b.textContent="Alertes";};
+ const patched=function(){old();addAdminModeration();const b=el("navigation")?.querySelector('[data-page="notifs"] span');if(b)b.textContent="Alertes";};
  patched.__afroPatched=true;renderView=patched;
 }
 function bind(){
@@ -288,7 +321,7 @@ function bind(){
   if(t.matches("[data-dm-new]")){showNewDM();return;}
   if(t.matches("[data-dm-conversation]")){openConversation(t.dataset.dmConversation,t.dataset.dmOther,t.dataset.dmName);return;}
   if(t.matches("[data-dm-start]")){startDM(t.dataset.dmStart,t.dataset.dmName);return;}
-  if(t.matches("[data-saved-close]")){el("afroSavedOverlay").hidden=true;return;}
+  if(t.matches("[data-saved-close]")){el("afroSavedOverlay").hidden=true;return;}\n  if(t.matches("[data-reports-close]")){el("afroReportsOverlay").hidden=true;return;}\n  if(t.matches("[data-report-status]")){setReportStatus(t.dataset.reportId,t.dataset.reportStatus);return;}
   if(t.matches("[data-afro-saved-open]")){const i=Number(t.dataset.afroSavedOpen);if(typeof openFeedFrom==="function")openFeedFrom("afroSaved",i);el("afroSavedOverlay").hidden=true;return;}
   if(t.matches('[data-action="afro-save"]')){e.preventDefault();e.stopImmediatePropagation();toggleSave(t);return;}
   if(t.matches('[data-action="afro-report"]')){e.preventDefault();e.stopImmediatePropagation();reportTarget({post_id:t.dataset.post});return;}
