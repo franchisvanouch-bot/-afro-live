@@ -35,12 +35,19 @@ export class AfroBackgroundBlur {
         if(!vision?.ImageSegmenter||!vision?.FilesetResolver)throw new Error("MediaPipe ImageSegmenter unavailable");
         const files=await vision.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
         const model="https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite";
-        this.segmenter=await vision.ImageSegmenter.createFromOptions(files,{
+        const options={
           baseOptions:{modelAssetPath:model,delegate:"GPU"},
           runningMode:"VIDEO",
           outputCategoryMask:false,
           outputConfidenceMasks:true
-        });
+        };
+        try{
+          this.segmenter=await vision.ImageSegmenter.createFromOptions(files,options);
+        }catch(gpuError){
+          console.warn("AFRO LIVE segmentation GPU unavailable; retrying CPU",gpuError);
+          options.baseOptions.delegate="CPU";
+          this.segmenter=await vision.ImageSegmenter.createFromOptions(files,options);
+        }
         return true;
       }catch(error){
         console.warn("AFRO LIVE background segmentation unavailable",error);
