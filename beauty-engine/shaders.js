@@ -289,7 +289,10 @@ void main() {
     col = mix(col, screenBlend, uGlow * 0.55);
   }
 
-  col = uBright >= 0.0 ? col + uBright * (1.0 - col) * 0.9 : col * (1.0 + uBright);
+  // AFRO LIVE: exposure lift is restricted to the detected skin mask.
+  col = uBright >= 0.0
+    ? col + uBright * (1.0 - col) * 0.9 * skin
+    : col * (1.0 + uBright * skin);
   col *= vec3(1.0 + uWarmth * 0.085, 1.0 + uWarmth * 0.012, 1.0 - uWarmth * 0.085);
 
   if (abs(uVibrance) > 0.001) {
