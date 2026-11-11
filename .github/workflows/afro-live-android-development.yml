@@ -1,0 +1,44 @@
+name: AFRO LIVE Android development build
+
+on:
+  push:
+    branches:
+      - native/prototype-imgly
+    paths:
+      - "native/afro-live-app/**"
+      - ".github/workflows/afro-live-android-development.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    name: Build Android prototype
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: native/afro-live-app
+    steps:
+      - name: Checkout prototype branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Diagnose Expo configuration
+        run: npx expo config --json
+
+      - name: Link existing Expo project
+        run: npx eas-cli@latest init --account franchisvanouch-bot --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android development app
+        run: npx eas-cli@latest build --platform android --profile development --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
