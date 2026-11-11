@@ -3834,6 +3834,7 @@ function csHideRec(){
 let csTimerSec=0,csGridOn=false,csFlashOn=false,csCountingDown=false,csPrompterOn=false,csFilterIdx=0,csFitIdx=0;
 let csPressTimer=null,csPressStart=0,csHolding=false,csPressWasStop=false;
 const CS_FILTER_NAMES=["Normal","Chiot","Lunettes","Couronne","Amour","Alien","Moustache","Étoiles"];
+const CS_FILTERS=CS_FILTER_NAMES.map(()=> "none");
 const CS_FITS=["cover","contain"];
 let csFaceLandmarker=null,csFaceInitPromise=null,csFaceRaf=0,csFaceLandmarks=null,csFaceLastDetect=0;
 function csApplyVideoStyle(){const v=$("csVideo"),c=$("csLensCanvas");v.style.filter="none";v.style.objectFit=CS_FITS[csFitIdx];if(c)c.style.transform=csFacing==="user"?"scaleX(-1)":"none";}
