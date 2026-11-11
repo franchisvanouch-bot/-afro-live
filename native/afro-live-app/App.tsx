@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+
+// Expo injects EXPO_PUBLIC_* values at build time. Leave it empty to keep
+// IMG.LY evaluation mode (watermarked exports) until a trial key is issued.
+declare const process: { env: { EXPO_PUBLIC_IMGLY_LICENSE_KEY?: string } };
 import {
   ActivityIndicator,
   Alert,
@@ -46,7 +50,7 @@ export default function App() {
       const video = selection.assets[0];
       const settings = new EditorSettingsModel({
         // Evaluation mode: no commercial key; IMG.LY adds its watermark.
-        license: undefined,
+        license: process.env.EXPO_PUBLIC_IMGLY_LICENSE_KEY || undefined,
       });
 
       const result = await IMGLYEditor.openEditor(
@@ -131,7 +135,7 @@ export default function App() {
               </>
             )}
           </Pressable>
-          <Text style={styles.trialNote}>MODE D’ÉVALUATION IMG.LY · FILIGRANE ACTIVÉ</Text>
+          <Text style={styles.trialNote}>ESSAI IMG.LY SI CLÉ CONFIGURÉE · SINON FILIGRANE</Text>
         </View>
 
         <View style={styles.statusCard}>
