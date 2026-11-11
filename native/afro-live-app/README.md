@@ -8,13 +8,23 @@ La PWA actuelle à la racine du dépôt n'est pas modifiée par ce prototype.
 - Expo SDK 58 / React Native 0.88 / TypeScript
 - IMG.LY `@imgly/editor-react-native` 1.85.2
 - Expo Image Picker pour sélectionner une vidéo locale
-- Mode d'évaluation IMG.LY sans clé commerciale : le filigrane est attendu sur l'export
+- Mode d'évaluation sans clé : filigrane sur les exports ; clé d'essai facultative via variable d'environnement
 
 ## Prérequis
 
 - Node.js 22.13 ou supérieur
 - Un compte Expo pour les builds cloud EAS
 - iOS 16+ et Android 7+ pour IMG.LY
+
+## Clé d'essai IMG.LY (facultative)
+
+La clé API IA créée dans le tableau de bord n'est pas la licence CE.SDK. Quand IMG.LY fournit une véritable clé de licence d'essai, configure-la localement dans un fichier `.env` (ignoré par Git) :
+
+```bash
+EXPO_PUBLIC_IMGLY_LICENSE_KEY=COLLER_LA_CLE_DE_LICENCE_ICI
+```
+
+Pour EAS, configure la variable `EXPO_PUBLIC_IMGLY_LICENSE_KEY` dans l'environnement de build utilisé. Ne colle jamais la clé dans le code source ni dans une conversation. Si la variable est absente, l'application reste en mode d'évaluation avec filigrane. Les variables `EXPO_PUBLIC_*` sont intégrées à l'application cliente : la clé ne doit pas être considérée comme un secret serveur.
 
 ## Installation locale
 
@@ -44,7 +54,7 @@ Un build natif de développement est nécessaire : Expo Go ne contient pas le mo
 2. Appuyer sur « Choisir une vidéo ».
 3. Sélectionner un fichier vidéo local.
 4. L'éditeur IMG.LY s'ouvre avec le preset vidéo.
-5. Exporter pour vérifier le résultat et le filigrane d'évaluation.
+5. Exporter pour vérifier le résultat ; le filigrane est présent si aucune licence valide n'est configurée.
 
 Le résultat est actuellement exporté localement. L'envoi vers Supabase, la publication dans le fil, la reprise des brouillons et le raccordement des comptes seront développés après validation de ce premier test. Aucune clé Supabase ou clé secrète n'est stockée dans ce dépôt.
 
