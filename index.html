@@ -3698,7 +3698,7 @@ async function csBuildRecordingStream(){
    if(!csRecordCanvas)return;
    ctx.save();ctx.filter=CS_FILTERS[csFilterIdx]||"none";
    if(csFacing==="user"){ctx.translate(csRecordCanvas.width,0);ctx.scale(-1,1)}
-   ctx.drawImage(video,0,0,csRecordCanvas.width,csRecordCanvas.height);ctx.restore();if(csFilterIdx>0&&csFaceLandmarks)csDrawLens(ctx,csRecordCanvas.width,csRecordCanvas.height,csFaceLandmarks,performance.now());
+   ctx.drawImage(video,0,0,csRecordCanvas.width,csRecordCanvas.height);ctx.restore();if(csFilterIdx>0&&csFaceLandmarks)csDrawLensOutput(ctx,csRecordCanvas.width,csRecordCanvas.height,performance.now());
    csRecordFrame=requestAnimationFrame(draw);
   };
   draw();
@@ -3766,7 +3766,10 @@ async function csStartStream(){
 }
 function csStopStream(){
  if(csStream){csStream.getTracks().forEach(t=>t.stop());csStream=null}
+ if(csFaceRaf){cancelAnimationFrame(csFaceRaf);csFaceRaf=0}
+ csFaceLandmarks=null;
  const video=$("csVideo");if(video)video.srcObject=null;
+ const canvas=$("csLensCanvas");if(canvas){const ctx=canvas.getContext("2d");ctx.clearRect(0,0,canvas.width,canvas.height)}
 }
 function csFlip(){csFacing=csFacing==="user"?"environment":"user";csStartStream()}
 function csSetMode(mode){
@@ -3788,7 +3791,7 @@ function csTakePhoto(){
  if(csFacing==="user"){ctx.translate(c.width,0);ctx.scale(-1,1)}
  try{ctx.filter=CS_FILTERS[csFilterIdx]}catch{}
  ctx.drawImage(v,0,0,c.width,c.height);
- if(csFilterIdx>0&&csFaceLandmarks)csDrawLens(ctx,c.width,c.height,csFaceLandmarks,performance.now());
+ if(csFilterIdx>0&&csFaceLandmarks)csDrawLensOutput(ctx,c.width,c.height,performance.now());
  c.toBlob(blob=>{if(blob)csSendToComposer(blob,"photo-"+Date.now()+".jpg")},"image/jpeg",0.92);
 }
 
@@ -3833,7 +3836,7 @@ let csPressTimer=null,csPressStart=0,csHolding=false,csPressWasStop=false;
 const CS_FILTER_NAMES=["Normal","Chiot","Lunettes","Couronne","Amour","Alien","Moustache","Étoiles"];
 const CS_FITS=["cover","contain"];
 let csFaceLandmarker=null,csFaceInitPromise=null,csFaceRaf=0,csFaceLandmarks=null,csFaceLastDetect=0;
-function csApplyVideoStyle(){const v=$("csVideo");v.style.filter="none";v.style.objectFit=CS_FITS[csFitIdx];}
+function csApplyVideoStyle(){const v=$("csVideo"),c=$("csLensCanvas");v.style.filter="none";v.style.objectFit=CS_FITS[csFitIdx];if(c)c.style.transform=csFacing==="user"?"scaleX(-1)":"none";}
 function csSetFilter(index){
  csFilterIdx=(index+CS_FILTER_NAMES.length)%CS_FILTER_NAMES.length;
  $("csFilterLabel").textContent="Effet · "+CS_FILTER_NAMES[csFilterIdx];
@@ -3857,10 +3860,12 @@ async function csInitFaceTracker(){
  })();
  return csFaceInitPromise;
 }
+function csDrawLensOutput(ctx,w,h,now){ctx.save();if(csFacing==="user"){ctx.translate(w,0);ctx.scale(-1,1)}if(csFaceLandmarks)csDrawLens(ctx,w,h,csFaceLandmarks,now);ctx.restore();}
 function csStartFaceLoop(){
  if(csFaceRaf)cancelAnimationFrame(csFaceRaf);
  const tick=()=>{
   const v=$("csVideo"),c=$("csLensCanvas");
+  if(!csStream)return;
   if(!c||!v||v.readyState<2||!csFaceLandmarker){csFaceRaf=requestAnimationFrame(tick);return}
   const w=v.videoWidth||c.clientWidth,h=v.videoHeight||c.clientHeight;
   if(w&&h&&(c.width!==w||c.height!==h)){c.width=w;c.height=h}
