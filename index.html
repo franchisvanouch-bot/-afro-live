@@ -1150,6 +1150,23 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 #createScreen .lens-stars{background:linear-gradient(135deg,#b8a6ff,#34315e)!important}
 @media(max-height:740px){#createScreen .cs-filter-strip{bottom:118px!important;gap:9px!important}#createScreen .cs-filter-strip .cs-lens{flex-basis:52px!important;width:52px!important;min-width:52px!important}#createScreen .cs-lens-preview{width:46px!important;height:46px!important}}
 
+
+/* Éditeur post-capture façon filtres Snapchat */
+.cs-snap-editor{position:fixed;inset:0;z-index:100050;background:#050505;color:#fff;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.cs-snap-editor.hidden{display:none}
+.cs-snap-head{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;gap:12px;flex:0 0 auto}
+.cs-snap-head button{background:transparent;color:#fff;padding:8px 10px;font-size:15px}
+.cs-snap-head button:last-child{background:#fff;color:#111;border-radius:22px;font-weight:700;padding:9px 17px}
+.cs-snap-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px 0}
+.cs-snap-stage img,.cs-snap-stage video{display:block;max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain}
+.cs-snap-label{text-align:center;font-size:13px;font-weight:600;padding:5px 0 10px}
+.cs-snap-filters{display:flex;gap:13px;overflow-x:auto;overscroll-behavior-x:contain;padding:8px 16px 10px;scrollbar-width:none;touch-action:pan-x}
+.cs-snap-filters::-webkit-scrollbar{display:none}
+.cs-snap-filter{flex:0 0 66px;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;color:#fff;padding:0;font-size:11px}
+.cs-snap-swatch{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#444,#111);border:2px solid rgba(255,255,255,.3);font-size:20px}
+.cs-snap-filter.active .cs-snap-swatch{border:3px solid #fff;box-shadow:0 0 0 2px #111}
+.cs-snap-hint{color:#aaa;text-align:center;font-size:11px;padding:0 12px 12px;margin:0}
+
 </style>
 </head>
 <body>
@@ -1543,6 +1560,18 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
   <button class="sheet-opt" type="button" onclick="closeMenuSheet();installApp()"><i class="ti ti-download"></i><span>Ajouter à l'écran d'accueil</span></button>
   <button class="sheet-opt" type="button" style="color:#ff8a8a" onclick="closeMenuSheet();signOut()"><i class="ti ti-logout" style="color:#ff8a8a"></i><span>Déconnexion</span></button>
  </div>
+</div>
+
+
+<!-- Éditeur de filtres après capture -->
+<div id="csSnapEditor" class="cs-snap-editor hidden">
+ <div class="cs-snap-head"><button type="button" onclick="csSnapCancel()" aria-label="Retour">‹</button><span>Modifier le Snap</span><button type="button" onclick="csSnapContinue()">Continuer</button></div>
+ <div class="cs-snap-stage" id="csSnapStage"><img id="csSnapImage" alt="Aperçu du Snap" hidden><video id="csSnapVideo" playsinline controls hidden></video></div>
+ <div class="cs-snap-label" id="csSnapFilterLabel">Original</div>
+ <div class="cs-snap-filters" id="csSnapFilters" aria-label="Filtres classiques">
+ <button type="button" class="cs-snap-filter active" data-snap-filter="0" onclick="csSnapSelectFilter(0)"><span class="cs-snap-swatch" style="filter:none"><i class="ti ti-photo"></i></span><span>Original</span></button><button type="button" class="cs-snap-filter" data-snap-filter="1" onclick="csSnapSelectFilter(1)"><span class="cs-snap-swatch" style="filter:brightness(1.18) contrast(1.06) saturate(1.12)"><i class="ti ti-photo"></i></span><span>Clair</span></button><button type="button" class="cs-snap-filter" data-snap-filter="2" onclick="csSnapSelectFilter(2)"><span class="cs-snap-swatch" style="filter:sepia(.22) saturate(1.28) contrast(1.04)"><i class="ti ti-photo"></i></span><span>Chaud</span></button><button type="button" class="cs-snap-filter" data-snap-filter="3" onclick="csSnapSelectFilter(3)"><span class="cs-snap-swatch" style="filter:saturate(.92) hue-rotate(12deg) brightness(1.04)"><i class="ti ti-photo"></i></span><span>Froid</span></button><button type="button" class="cs-snap-filter" data-snap-filter="4" onclick="csSnapSelectFilter(4)"><span class="cs-snap-swatch" style="filter:sepia(.35) contrast(1.12) saturate(.82)"><i class="ti ti-photo"></i></span><span>Vintage</span></button><button type="button" class="cs-snap-filter" data-snap-filter="5" onclick="csSnapSelectFilter(5)"><span class="cs-snap-swatch" style="filter:grayscale(1) contrast(1.12)"><i class="ti ti-photo"></i></span><span>Noir & blanc</span></button><button type="button" class="cs-snap-filter" data-snap-filter="6" onclick="csSnapSelectFilter(6)"><span class="cs-snap-swatch" style="filter:contrast(1.2) saturate(.82) brightness(.94)"><i class="ti ti-photo"></i></span><span>Cinéma</span></button><button type="button" class="cs-snap-filter" data-snap-filter="7" onclick="csSnapSelectFilter(7)"><span class="cs-snap-swatch" style="filter:sepia(.12) hue-rotate(305deg) saturate(1.3)"><i class="ti ti-photo"></i></span><span>Rose</span></button><button type="button" class="cs-snap-filter" data-snap-filter="8" onclick="csSnapSelectFilter(8)"><span class="cs-snap-swatch" style="filter:brightness(1.08) saturate(.86) contrast(.94)"><i class="ti ti-photo"></i></span><span>Doux</span></button><button type="button" class="cs-snap-filter" data-snap-filter="9" onclick="csSnapSelectFilter(9)"><span class="cs-snap-swatch" style="filter:saturate(1.55) contrast(1.08)"><i class="ti ti-photo"></i></span><span>Vif</span></button>
+ </div>
+ <p class="cs-snap-hint">Glisse à gauche ou à droite pour changer de filtre</p>
 </div>
 
 <!-- Composition -->
@@ -3942,11 +3971,72 @@ function csShutterUp(e){
  if(csHolding){csHolding=false;csStopRecording();return}
  if(!csRecorder)csWithCountdown(()=>csStartRecording(Number(csMode)));
 }
+let csSnapFile=null,csSnapUrl=null,csSnapFilterIndex=0,csSnapStartX=0;
+const CS_SNAP_FILTERS=[["Original","none"],["Clair","brightness(1.18) contrast(1.06) saturate(1.12)"],["Chaud","sepia(.22) saturate(1.28) contrast(1.04)"],["Froid","saturate(.92) hue-rotate(12deg) brightness(1.04)"],["Vintage","sepia(.35) contrast(1.12) saturate(.82)"],["Noir & blanc","grayscale(1) contrast(1.12)"],["Cinéma","contrast(1.2) saturate(.82) brightness(.94)"],["Rose","sepia(.12) hue-rotate(305deg) saturate(1.3)"],["Doux","brightness(1.08) saturate(.86) contrast(.94)"],["Vif","saturate(1.55) contrast(1.08)"]];
 function csSendToComposer(blob,name){
- const file=new File([blob],name,{type:blob.type||"application/octet-stream"});
- csDiscard=true;closeCreateScreen();openComposer("post");
- const dt=new DataTransfer();dt.items.add(file);
- $("composerFile").files=dt.files;previewComposer(file);
+ csSnapFile=new File([blob],name,{type:blob.type||"application/octet-stream"});
+ csSnapFilterIndex=0;csDiscard=true;closeCreateScreen();
+ csOpenSnapEditor();
+}
+function csOpenSnapEditor(){
+ const editor=$("csSnapEditor"),img=$("csSnapImage"),video=$("csSnapVideo");
+ if(csSnapUrl)URL.revokeObjectURL(csSnapUrl);
+ csSnapUrl=URL.createObjectURL(csSnapFile);
+ img.hidden=true;video.hidden=true;img.removeAttribute("src");video.pause();video.removeAttribute("src");
+ if(csSnapFile.type.startsWith("video/")){video.src=csSnapUrl;video.hidden=false;video.load();video.play().catch(()=>{})}
+ else{img.src=csSnapUrl;img.hidden=false}
+ editor.classList.remove("hidden");csSnapApplyFilter();
+}
+function csSnapApplyFilter(){
+ const f=CS_SNAP_FILTERS[csSnapFilterIndex],img=$("csSnapImage"),video=$("csSnapVideo");
+ $("csSnapFilterLabel").textContent=f[0];
+ img.style.filter=f[1];video.style.filter=f[1];
+ document.querySelectorAll("#csSnapFilters [data-snap-filter]").forEach(b=>b.classList.toggle("active",Number(b.dataset.snapFilter)===csSnapFilterIndex));
+ document.querySelector("#csSnapFilters [data-snap-filter=\""+csSnapFilterIndex+"\"]")?.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
+}
+function csSnapSelectFilter(i){csSnapFilterIndex=(i+CS_SNAP_FILTERS.length)%CS_SNAP_FILTERS.length;csSnapApplyFilter()}
+function csSnapSwipeStart(e){csSnapStartX=e.clientX}
+function csSnapSwipeEnd(e){const dx=e.clientX-csSnapStartX;if(Math.abs(dx)>35)csSnapSelectFilter(csSnapFilterIndex+(dx<0?1:-1))}
+function csSnapCancel(){
+ $("csSnapEditor").classList.add("hidden");$("csSnapVideo").pause();
+ if(csSnapUrl)URL.revokeObjectURL(csSnapUrl);csSnapUrl=null;csSnapFile=null;
+}
+async function csSnapContinue(){
+ if(!csSnapFile)return;
+ let finalFile=csSnapFile;
+ const filter=CS_SNAP_FILTERS[csSnapFilterIndex][1];
+ if(filter!=="none"&&csSnapFile.type.startsWith("image/")){
+  try{
+   const img=$("csSnapImage"),canvas=document.createElement("canvas");
+   await img.decode();canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+   const ctx=canvas.getContext("2d");ctx.filter=filter;ctx.drawImage(img,0,0,canvas.width,canvas.height);
+   const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.94));
+   if(!blob)throw new Error("Export photo impossible");
+   finalFile=new File([blob],csSnapFile.name.replace(/\.[^.]+$/,"")+".jpg",{type:"image/jpeg"});
+  }catch(e){return message("Impossible d'appliquer ce filtre à la photo.")}
+ }else if(filter!=="none"&&csSnapFile.type.startsWith("video/")){
+  try{finalFile=await csSnapRenderVideo(filter)}catch(e){return message("Ce téléphone ne permet pas encore d'enregistrer la vidéo avec ce filtre. Tu peux choisir Original.")}
+ }
+ $("csSnapEditor").classList.add("hidden");$("csSnapVideo").pause();
+ if(csSnapUrl)URL.revokeObjectURL(csSnapUrl);csSnapUrl=null;csSnapFile=null;
+ openComposer("post");const dt=new DataTransfer();dt.items.add(finalFile);$("composerFile").files=dt.files;previewComposer(finalFile);
+}
+async function csSnapRenderVideo(filter){
+ const video=$("csSnapVideo");video.pause();video.currentTime=0;
+ if(!video.captureStream||!HTMLCanvasElement.prototype.captureStream||!window.MediaRecorder)throw new Error("Capture vidéo non supportée");
+ await new Promise((resolve,reject)=>{if(video.readyState>=2)return resolve();video.onloadeddata=resolve;video.onerror=reject});
+ const canvas=document.createElement("canvas");canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+ const ctx=canvas.getContext("2d"),stream=canvas.captureStream(30),source=video.captureStream();
+ source.getAudioTracks().forEach(t=>stream.addTrack(t));
+ const mime=["video/mp4","video/webm;codecs=vp8,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t))||"";
+ const recorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined),chunks=[];
+ const done=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onerror=reject;recorder.onstop=()=>resolve(new Blob(chunks,{type:recorder.mimeType||"video/webm"}))});
+ let raf=0;const draw=()=>{if(video.ended||video.paused)return;ctx.filter=filter;ctx.drawImage(video,0,0,canvas.width,canvas.height);raf=requestAnimationFrame(draw)};
+ video.currentTime=0;await video.play();recorder.start(250);draw();
+ await new Promise(resolve=>video.onended=resolve);if(recorder.state!=="inactive")recorder.stop();cancelAnimationFrame(raf);
+ const blob=await done;if(!blob.size)throw new Error("Vidéo vide");
+ const ext=blob.type.includes("mp4")?".mp4":".webm";
+ return new File([blob],csSnapFile.name.replace(/\.[^.]+$/,"")+ext,{type:blob.type});
 }
 
 /* MENUS ET COMPOSITION */
@@ -4187,6 +4277,8 @@ async function reviewApplication(applicationId,userId,decision){
  await loadAdminApplications();
 }
 
+$("csSnapStage").addEventListener("pointerdown",csSnapSwipeStart);
+$("csSnapStage").addEventListener("pointerup",csSnapSwipeEnd);
 /* ÉVÉNEMENTS */
 $("signup").addEventListener("click",signUp);
 $("login").addEventListener("click",signIn);
