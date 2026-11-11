@@ -1079,6 +1079,51 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
  #createScreen .cs-modes{bottom:132px!important}
  #createScreen .cs-row{bottom:34px!important}
 }
+
+/* AFRO LIVE — carrousel de filtres circulaires façon caméra sociale */
+#createScreen #csPageCamera{overflow:hidden!important}
+#createScreen .cs-filter-strip{
+ position:absolute!important;left:0!important;right:0!important;bottom:238px!important;
+ z-index:7!important;display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;
+ gap:13px!important;padding:8px 18px 5px!important;margin:0!important;
+ overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important;
+ -webkit-overflow-scrolling:touch!important;scroll-snap-type:x mandatory!important;
+ touch-action:pan-x!important;background:linear-gradient(180deg,transparent,rgba(0,0,0,.14))!important
+}
+#createScreen .cs-filter-strip::-webkit-scrollbar{display:none!important}
+#createScreen .cs-filter-strip .cs-lens{
+ flex:0 0 58px!important;width:58px!important;min-width:58px!important;
+ display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;
+ gap:5px!important;padding:0!important;border:0!important;border-radius:0!important;
+ background:transparent!important;color:#fff!important;white-space:nowrap!important;
+ scroll-snap-align:center!important;text-shadow:0 1px 3px #000!important
+}
+#createScreen .cs-lens-preview{
+ width:52px!important;height:52px!important;border-radius:50%!important;display:flex!important;
+ align-items:center!important;justify-content:center!important;position:relative!important;overflow:hidden!important;
+ border:2px solid rgba(255,255,255,.78)!important;box-shadow:0 2px 9px rgba(0,0,0,.42)!important;
+ color:#fff!important;font-size:22px!important;transition:transform .18s,border-color .18s,box-shadow .18s!important
+}
+#createScreen .cs-lens-preview:after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(145deg,rgba(255,255,255,.38),transparent 48%,rgba(0,0,0,.2));pointer-events:none}
+#createScreen .cs-lens-preview i{position:relative;z-index:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+#createScreen .cs-lens-name{font-size:10px!important;line-height:12px!important;font-weight:700!important;max-width:60px!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#createScreen .cs-lens.active .cs-lens-preview{border:3px solid #fff!important;transform:scale(1.09)!important;box-shadow:0 0 0 2px rgba(255,255,255,.35),0 3px 12px #0008!important}
+#createScreen .lens-normal{background:linear-gradient(135deg,#9c795c,#e6c5a5 48%,#51423b)!important}
+#createScreen .lens-glow{background:radial-gradient(circle at 35% 28%,#fff8bd,#f5ad64 42%,#9d4b5d)!important}
+#createScreen .lens-beauty{background:radial-gradient(circle at 35% 28%,#ffe8ee,#e6a8bf 48%,#95627d)!important}
+#createScreen .lens-warm{background:linear-gradient(135deg,#f8d17c,#e87939 55%,#8c3d35)!important}
+#createScreen .lens-mono{background:linear-gradient(135deg,#fff,#888 48%,#171717)!important}
+#createScreen .lens-vivid{background:conic-gradient(#ff405e,#ffc247,#50d5a2,#4a8dff,#b56cff,#ff405e)!important}
+#createScreen .lens-cool{background:linear-gradient(135deg,#e2fbff,#6bb5d5 52%,#304b87)!important}
+#createScreen .lens-vintage{background:linear-gradient(135deg,#d8b987,#98704c 52%,#42382d)!important}
+#createScreen .lens-sunset{background:linear-gradient(135deg,#ffdf76,#fa754c 52%,#713c78)!important}
+#createScreen .lens-dream{background:linear-gradient(135deg,#d9c8ff,#8a78bc 52%,#34416d)!important}
+@media(max-height:740px){
+ #createScreen .cs-filter-strip{bottom:220px!important;gap:10px!important}
+ #createScreen .cs-filter-strip .cs-lens{flex-basis:53px!important;width:53px!important;min-width:53px!important}
+ #createScreen .cs-lens-preview{width:47px!important;height:47px!important}
+}
+
 </style>
 </head>
 <body>
@@ -1352,7 +1397,7 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 <div id="csMusicModal" class="csm hidden" role="dialog" aria-modal="true" aria-labelledby="csMusicTitle"><div class="csm-sheet"><div class="csm-head"><div><b id="csMusicTitle">Sons AFRO LIVE</b><small>Instrumentaux originaux créés dans l’application</small></div><button type="button" onclick="csMusicClose()">×</button></div><p class="csm-note">Boucles synthétiques originales, sans chansons commerciales importées. Les droits et conditions d’exploitation doivent être vérifiés avant un usage commercial.</p><div class="csm-list"><button class="csm-track active" data-track="afrobeat" onclick="csMusicSelect('afrobeat')"><span>🥁</span><span><b>Afrobeat solaire</b><small>Groove africain</small></span><i class="ti ti-check"></i></button><button class="csm-track" data-track="amapiano" onclick="csMusicSelect('amapiano')"><span>🎹</span><span><b>Amapiano vibes</b><small>Piano club et basses</small></span><i class="ti ti-check"></i></button><button class="csm-track" data-track="afrotrap" onclick="csMusicSelect('afrotrap')"><span>🎧</span><span><b>Afro-trap moderne</b><small>Beat urbain et 808</small></span><i class="ti ti-check"></i></button><button class="csm-track" data-track="rumba" onclick="csMusicSelect('rumba')"><span>🎸</span><span><b>Rumba congolaise</b><small>Mélodie douce</small></span><i class="ti ti-check"></i></button><button class="csm-track" data-track="hiphop" onclick="csMusicSelect('hiphop')"><span>🎤</span><span><b>Hip-hop / Urban</b><small>Beat moderne</small></span><i class="ti ti-check"></i></button></div><div class="csm-controls"><button id="csMusicPreview" onclick="csMusicToggle()">▶ Écouter l’aperçu</button><label>Volume<input id="csMusicVolume" type="range" min="0" max="100" value="35" oninput="csMusicSetVolume(this.value)"></label></div><p id="csMusicStatus" class="csm-status">Choisis un style puis écoute.</p><button class="csm-apply" onclick="csMusicApply()">Utiliser ce son pour ma vidéo</button><button class="csm-remove" onclick="csMusicRemove()">Enlever la musique</button></div></div>
 <!-- Écran de création façon TikTok -->
 <div id="createScreen" class="cs hidden">
- <div class="cs-page" id="csPageCamera" ontouchstart="csFilterTouchStart(event)" ontouchend="csFilterTouchEnd(event)">
+ <div class="cs-page" id="csPageCamera">
   <video id="csVideo" class="cs-video" autoplay playsinline muted></video>
   <div class="cs-top">
    <button class="cs-icon" type="button" onclick="closeCreateScreen()" aria-label="Fermer"><i class="ti ti-x"></i></button>
@@ -1367,11 +1412,17 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
    <button type="button" onclick="csTogglePrompter()"><span>Téléprompteur</span><i class="ti ti-blockquote"></i></button>
    <button type="button" onclick="csCycleFit()"><span id="csFitLabel">Cadrage · rempli</span><i class="ti ti-arrows-diagonal-minimize-2"></i></button>
   </div>
-  <div class="cs-filter-strip" id="csFilterStrip" aria-label="Filtres caméra">
-   <button type="button" class="active" data-filter="0" onclick="csSetFilter(0)">Normal</button>
-   <button type="button" data-filter="1" onclick="csSetFilter(1)">Chaud</button>
-   <button type="button" data-filter="2" onclick="csSetFilter(2)">Noir & blanc</button>
-   <button type="button" data-filter="3" onclick="csSetFilter(3)">Vif</button>
+  <div class="cs-filter-strip" id="csFilterStrip" aria-label="Filtres caméra" role="group">
+   <button type="button" class="cs-lens active" data-filter="0" onclick="csSetFilter(0)" aria-label="Normal" title="Normal"><span class="cs-lens-preview lens-normal"><i class="ti ti-camera"></i></span><span class="cs-lens-name">Normal</span></button>
+   <button type="button" class="cs-lens" data-filter="1" onclick="csSetFilter(1)" aria-label="Glow" title="Glow"><span class="cs-lens-preview lens-glow"><i class="ti ti-sun"></i></span><span class="cs-lens-name">Glow</span></button>
+   <button type="button" class="cs-lens" data-filter="2" onclick="csSetFilter(2)" aria-label="Beauté" title="Beauté"><span class="cs-lens-preview lens-beauty"><i class="ti ti-sparkles"></i></span><span class="cs-lens-name">Beauté</span></button>
+   <button type="button" class="cs-lens" data-filter="3" onclick="csSetFilter(3)" aria-label="Chaud" title="Chaud"><span class="cs-lens-preview lens-warm"><i class="ti ti-sun-high"></i></span><span class="cs-lens-name">Chaud</span></button>
+   <button type="button" class="cs-lens" data-filter="4" onclick="csSetFilter(4)" aria-label="Noir et blanc" title="N&B"><span class="cs-lens-preview lens-mono"><i class="ti ti-contrast"></i></span><span class="cs-lens-name">N&B</span></button>
+   <button type="button" class="cs-lens" data-filter="5" onclick="csSetFilter(5)" aria-label="Vif" title="Vif"><span class="cs-lens-preview lens-vivid"><i class="ti ti-palette"></i></span><span class="cs-lens-name">Vif</span></button>
+   <button type="button" class="cs-lens" data-filter="6" onclick="csSetFilter(6)" aria-label="Froid" title="Froid"><span class="cs-lens-preview lens-cool"><i class="ti ti-snowflake"></i></span><span class="cs-lens-name">Froid</span></button>
+   <button type="button" class="cs-lens" data-filter="7" onclick="csSetFilter(7)" aria-label="Vintage" title="Vintage"><span class="cs-lens-preview lens-vintage"><i class="ti ti-camera-retro"></i></span><span class="cs-lens-name">Vintage</span></button>
+   <button type="button" class="cs-lens" data-filter="8" onclick="csSetFilter(8)" aria-label="Sunset" title="Sunset"><span class="cs-lens-preview lens-sunset"><i class="ti ti-sunset"></i></span><span class="cs-lens-name">Sunset</span></button>
+   <button type="button" class="cs-lens" data-filter="9" onclick="csSetFilter(9)" aria-label="Dream" title="Dream"><span class="cs-lens-preview lens-dream"><i class="ti ti-moon-stars"></i></span><span class="cs-lens-name">Dream</span></button>
   </div>
   <div id="csGrid" class="cs-grid-ov hidden"></div>
   <div id="csPrompter" class="cs-prompter hidden"><div id="csPrompterText"></div></div>
@@ -3751,17 +3802,14 @@ function csHideRec(){
 /* OPTIONS AVANCÉES DE LA CAMÉRA */
 let csTimerSec=0,csGridOn=false,csFlashOn=false,csCountingDown=false,csPrompterOn=false,csFilterIdx=0,csFitIdx=0;
 let csPressTimer=null,csPressStart=0,csHolding=false,csPressWasStop=false;
-const CS_FILTERS=["none","sepia(.6) saturate(1.3)","grayscale(1) contrast(1.1)","saturate(1.6) brightness(1.08)"];
-const CS_FILTER_NAMES=["Normal","Chaud","Noir & blanc","Vif"];
+const CS_FILTERS=["none","brightness(1.12) contrast(1.04) saturate(1.18)","brightness(1.08) contrast(.94) saturate(.82) sepia(.12)","sepia(.48) saturate(1.42) brightness(1.06)","grayscale(1) contrast(1.12)","saturate(1.85) contrast(1.08)","hue-rotate(13deg) saturate(1.12) brightness(1.04)","sepia(.32) contrast(.92) saturate(.82)","sepia(.3) saturate(1.65) hue-rotate(-8deg) brightness(1.08)","brightness(1.1) saturate(1.22) contrast(.9)"];
+const CS_FILTER_NAMES=["Normal","Glow","Beauté","Chaud","Noir & blanc","Vif","Froid","Vintage","Sunset","Dream"];
 const CS_FITS=["cover","contain"];
 function csApplyVideoStyle(){
  const v=$("csVideo");v.style.filter=CS_FILTERS[csFilterIdx];v.style.objectFit=CS_FITS[csFitIdx];
 }
-function csSetFilter(index){csFilterIdx=(index+CS_FILTERS.length)%CS_FILTERS.length;$("csFilterLabel").textContent="Retouche · "+CS_FILTER_NAMES[csFilterIdx];document.querySelectorAll("#csFilterStrip button").forEach(b=>b.classList.toggle("active",Number(b.dataset.filter)===csFilterIdx));csApplyVideoStyle()}
+function csSetFilter(index){csFilterIdx=(index+CS_FILTERS.length)%CS_FILTERS.length;$("csFilterLabel").textContent="Retouche · "+CS_FILTER_NAMES[csFilterIdx];document.querySelectorAll("#csFilterStrip [data-filter]").forEach(b=>b.classList.toggle("active",Number(b.dataset.filter)===csFilterIdx));const active=document.querySelector("#csFilterStrip [data-filter=\""+csFilterIdx+"\"]");active?.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});csApplyVideoStyle()}
 function csCycleFilter(){csSetFilter(csFilterIdx+1)}
-let csFilterTouchX=null;
-function csFilterTouchStart(e){csFilterTouchX=e.touches?.[0]?.clientX??null}
-function csFilterTouchEnd(e){if(csFilterTouchX===null)return;const x=e.changedTouches?.[0]?.clientX??csFilterTouchX;const dx=x-csFilterTouchX;csFilterTouchX=null;if(Math.abs(dx)>35)csSetFilter(csFilterIdx+(dx<0?1:-1))}
 function csCycleFit(){csFitIdx=(csFitIdx+1)%CS_FITS.length;$("csFitLabel").textContent="Cadrage · "+(csFitIdx===0?"rempli":"entier");csApplyVideoStyle()}
 function csToggleGrid(){csGridOn=!csGridOn;$("csGrid").classList.toggle("hidden",!csGridOn)}
 function csCycleTimer(){const a=[0,3,10];csTimerSec=a[(a.indexOf(csTimerSec)+1)%a.length];$("csTimerLabel").textContent="Minuterie · "+(csTimerSec?csTimerSec+" s":"off")}
