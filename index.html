@@ -1465,6 +1465,7 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
    <div class="cs-beauty-control"><label for="csBeautyTexture">Texture naturelle</label><output id="csBeautyTextureValue">62%</output><input id="csBeautyTexture" type="range" min="0" max="100" value="62" oninput="csBeautySet('texture',this.value)"></div>
    <div class="cs-beauty-control"><label for="csBeautyLight">Lumière du visage</label><output id="csBeautyLightValue">0%</output><input id="csBeautyLight" type="range" min="0" max="100" value="0" oninput="csBeautySet('faceLight',this.value)"></div>
    <div class="cs-beauty-control"><label for="csBeautyEyes">Éclat des yeux</label><output id="csBeautyEyesValue">12%</output><input id="csBeautyEyes" type="range" min="0" max="100" value="12" oninput="csBeautySet('eyeLight',this.value)"></div>
+   <div class="cs-beauty-control"><label for="csBeautyBlur">Flou arrière-plan</label><output id="csBeautyBlurValue">0%</output><input id="csBeautyBlur" type="range" min="0" max="100" value="0" oninput="csBeautySet('backgroundBlur',this.value)"></div>
   </div>
   <div class="cs-filter-strip" id="csFilterStrip" aria-label="Lentilles animées" role="group">
    <button type="button" class="cs-lens active" data-filter="0" onclick="csSetFilter(0)" aria-label="Sans effet"><span class="cs-lens-preview lens-none"><i class="ti ti-camera"></i></span><span class="cs-lens-name">Normal</span></button>
@@ -3882,12 +3883,12 @@ const CS_FILTER_NAMES=["Normal","Chiot","Lunettes","Couronne","Amour","Alien","M
 const CS_FILTERS=["none","none","none","none","none","none","none","none","brightness(1.045) contrast(.97) saturate(1.04) blur(.18px)","brightness(1.12) contrast(1.045) saturate(1.08)","sepia(.12) saturate(1.13) brightness(1.055)","contrast(1.13) saturate(.88) brightness(1.025)","brightness(1.22) contrast(1.08) saturate(1.08)"];
 const CS_FITS=["cover","contain"];
 let csFaceLandmarker=null,csFaceInitPromise=null,csFaceRaf=0,csFaceLandmarks=null,csFaceLastDetect=0;
-let csBeautySettings={smooth:38,even:18,texture:62,faceLight:0,eyeLight:12,underEye:10};
+let csBeautySettings={smooth:38,even:18,texture:62,faceLight:0,eyeLight:12,underEye:10,backgroundBlur:0};
 let csBeautyAuto=true;
 window.afroBeautyFrameProvider=()=>({video:$("csVideo"),landmarks:csFaceLandmarks,mirror:csFacing==="user",options:csBeautySettings});
 function csBeautyTogglePanel(){$("csBeautyPanel").hidden=!$("csBeautyPanel").hidden}
-function csBeautySet(key,value){csBeautySettings[key]=Number(value);csBeautyAuto=false;$("csBeautyAuto").textContent="Auto · désactivé";const id=key==="faceLight"?"csBeautyLight":key==="eyeLight"?"csBeautyEyes":key==="smooth"?"csBeautySmooth":key==="even"?"csBeautyEven":"csBeautyTexture";const out=$(id+"Value");if(out)out.textContent=Number(value)+"%"}
-function csBeautySetAuto(){csBeautyAuto=!csBeautyAuto;if(csBeautyAuto)csBeautySettings={smooth:38,even:18,texture:62,faceLight:0,eyeLight:12,underEye:10};$("csBeautyAuto").textContent=csBeautyAuto?"Auto · activé":"Auto · désactivé";for(const [key,id] of Object.entries({smooth:"csBeautySmooth",even:"csBeautyEven",texture:"csBeautyTexture",faceLight:"csBeautyLight",eyeLight:"csBeautyEyes"})){const input=$(id);if(input)input.value=csBeautySettings[key];const out=$(id+"Value");if(out)out.textContent=csBeautySettings[key]+"%"}}
+function csBeautySet(key,value){csBeautySettings[key]=Number(value);csBeautyAuto=false;$("csBeautyAuto").textContent="Auto · désactivé";const id=key==="faceLight"?"csBeautyLight":key==="eyeLight"?"csBeautyEyes":key==="backgroundBlur"?"csBeautyBlur":key==="smooth"?"csBeautySmooth":key==="even"?"csBeautyEven":"csBeautyTexture";const out=$(id+"Value");if(out)out.textContent=Number(value)+"%"}
+function csBeautySetAuto(){csBeautyAuto=!csBeautyAuto;if(csBeautyAuto)csBeautySettings={smooth:38,even:18,texture:62,faceLight:0,eyeLight:12,underEye:10};$("csBeautyAuto").textContent=csBeautyAuto?"Auto · activé":"Auto · désactivé";for(const [key,id] of Object.entries({smooth:"csBeautySmooth",even:"csBeautyEven",texture:"csBeautyTexture",faceLight:"csBeautyLight",eyeLight:"csBeautyEyes",backgroundBlur:"csBeautyBlur"})){const input=$(id);if(input)input.value=csBeautySettings[key];const out=$(id+"Value");if(out)out.textContent=csBeautySettings[key]+"%"}}
 function csApplyVideoStyle(){const v=$("csVideo"),c=$("csLensCanvas"),b=$("csBeautyCanvas");v.style.filter=CS_FILTERS[csFilterIdx]||"none";if(b)b.style.filter=CS_FILTERS[csFilterIdx]||"none";v.style.objectFit=CS_FITS[csFitIdx];if(c)c.style.transform=csFacing==="user"?"scaleX(-1)":"none";}
 function csSetFilter(index){
  csFilterIdx=(index+CS_FILTER_NAMES.length)%CS_FILTER_NAMES.length;
@@ -4392,14 +4393,16 @@ db.auth.onAuthStateChange((event,session)=>{
 </script>
 <script type="module">
 import { AfroBeautyEngine } from "./beauty-engine/afro-live.js";
+import { AfroBackgroundBlur } from "./beauty-engine/background.js";
 try {
  const canvas=document.getElementById("csBeautyCanvas");
  const engine=new AfroBeautyEngine(canvas);
+ const background=new AfroBackgroundBlur();
  window.afroBeautyCanvasActive=()=>canvas&&canvas.style.display!=="none"&&canvas.width>0;
  window.afroBeautyRender=()=>{
   const frame=window.afroBeautyFrameProvider?.();
   if(!frame||!frame.video||frame.video.readyState<2)return;
-  try{const ok=engine.render(frame.video,frame.landmarks,{...frame.options,mirror:frame.mirror});if(ok){canvas.style.display="block";frame.video.style.opacity="0";}}
+  try{const source=background.update(frame.video,frame.options.backgroundBlur);const ok=engine.render(frame.video,frame.landmarks,{...frame.options,source,mirror:frame.mirror});if(ok){canvas.style.display="block";frame.video.style.opacity="0";}}
   catch(error){console.warn("AFRO LIVE beauty engine",error);canvas.style.display="none";frame.video.style.opacity="1";window.afroBeautyRender=null;}
  };
 } catch(error) { console.warn("AFRO LIVE beauty engine unavailable",error); }
