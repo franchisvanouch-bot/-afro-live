@@ -1465,6 +1465,11 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
    <button type="button" class="cs-lens" data-filter="5" onclick="csSetFilter(5)" aria-label="Effet extraterrestre"><span class="cs-lens-preview lens-alien">👽</span><span class="cs-lens-name">Alien</span></button>
    <button type="button" class="cs-lens" data-filter="6" onclick="csSetFilter(6)" aria-label="Moustache animée"><span class="cs-lens-preview lens-moustache">🥸</span><span class="cs-lens-name">Moustache</span></button>
    <button type="button" class="cs-lens" data-filter="7" onclick="csSetFilter(7)" aria-label="Étoiles animées"><span class="cs-lens-preview lens-stars">✨</span><span class="cs-lens-name">Étoiles</span></button>
+   <button type="button" class="cs-lens" data-filter="8" onclick="csSetFilter(8)" aria-label="Portrait doux"><span class="cs-lens-preview">🌸</span><span class="cs-lens-name">Portrait doux</span></button>
+   <button type="button" class="cs-lens" data-filter="9" onclick="csSetFilter(9)" aria-label="Lumière studio"><span class="cs-lens-preview">💡</span><span class="cs-lens-name">Studio</span></button>
+   <button type="button" class="cs-lens" data-filter="10" onclick="csSetFilter(10)" aria-label="Lumière dorée"><span class="cs-lens-preview">☀️</span><span class="cs-lens-name">Doré</span></button>
+   <button type="button" class="cs-lens" data-filter="11" onclick="csSetFilter(11)" aria-label="Couleurs cinéma"><span class="cs-lens-preview">🎬</span><span class="cs-lens-name">Cinéma</span></button>
+   <button type="button" class="cs-lens" data-filter="12" onclick="csSetFilter(12)" aria-label="Mode nuit"><span class="cs-lens-preview">🌙</span><span class="cs-lens-name">Nuit</span></button>
   </div>
   <div id="csGrid" class="cs-grid-ov hidden"></div>
   <div id="csPrompter" class="cs-prompter hidden"><div id="csPrompterText"></div></div>
@@ -3788,6 +3793,7 @@ async function csStartStream(){
   video.srcObject=csStream;
   video.style.transform=csFacing==="user"?"scaleX(-1)":"none";
   await video.play().catch(()=>{});
+  csApplyVideoStyle();
   if(csFilterIdx>0)csInitFaceTracker();else csStartFaceLoop();
  }catch(e){
   message("Caméra indisponible. Autorise l'accès à la caméra dans les réglages.");
@@ -3862,11 +3868,11 @@ function csHideRec(){
 /* OPTIONS AVANCÉES DE LA CAMÉRA */
 let csTimerSec=0,csGridOn=false,csFlashOn=false,csCountingDown=false,csPrompterOn=false,csFilterIdx=0,csFitIdx=0;
 let csPressTimer=null,csPressStart=0,csHolding=false,csPressWasStop=false;
-const CS_FILTER_NAMES=["Normal","Chiot","Lunettes","Couronne","Amour","Alien","Moustache","Étoiles"];
-const CS_FILTERS=CS_FILTER_NAMES.map(()=> "none");
+const CS_FILTER_NAMES=["Normal","Chiot","Lunettes","Couronne","Amour","Alien","Moustache","Étoiles","Portrait doux","Studio","Doré","Cinéma","Nuit"];
+const CS_FILTERS=["none","none","none","none","none","none","none","none","brightness(1.045) contrast(.97) saturate(1.04) blur(.18px)","brightness(1.12) contrast(1.045) saturate(1.08)","sepia(.12) saturate(1.13) brightness(1.055)","contrast(1.13) saturate(.88) brightness(1.025)","brightness(1.22) contrast(1.08) saturate(1.08)"];
 const CS_FITS=["cover","contain"];
 let csFaceLandmarker=null,csFaceInitPromise=null,csFaceRaf=0,csFaceLandmarks=null,csFaceLastDetect=0;
-function csApplyVideoStyle(){const v=$("csVideo"),c=$("csLensCanvas");v.style.filter="none";v.style.objectFit=CS_FITS[csFitIdx];if(c)c.style.transform=csFacing==="user"?"scaleX(-1)":"none";}
+function csApplyVideoStyle(){const v=$("csVideo"),c=$("csLensCanvas");v.style.filter=CS_FILTERS[csFilterIdx]||"none";v.style.objectFit=CS_FITS[csFitIdx];if(c)c.style.transform=csFacing==="user"?"scaleX(-1)":"none";}
 function csSetFilter(index){
  csFilterIdx=(index+CS_FILTER_NAMES.length)%CS_FILTER_NAMES.length;
  $("csFilterLabel").textContent="Effet · "+CS_FILTER_NAMES[csFilterIdx];
