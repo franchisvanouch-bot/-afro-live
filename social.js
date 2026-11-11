@@ -182,7 +182,6 @@ function patchFeed(){
  if(typeof vitemHTML==="function"&&!vitemHTML.__afroPatched){
   const old=vitemHTML;
   const patched=function(p){
-   if(S.blocked.has(p.creator_id))return "";
    let html=old(p);
    const save='<button class="vbtn" data-action="afro-save" data-post="'+esc(p.id)+'" aria-label="Enregistrer"><i class="ti ti-bookmark"></i><span class="vcount">Enregistrer</span></button>';
    html=html.replace('<button class="vbtn'+(p.liked?' on':'')+'" data-action="like"',save+'<button class="vbtn'+(p.liked?' on':'')+'" data-action="like"');
