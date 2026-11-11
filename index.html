@@ -3804,7 +3804,7 @@ async function csStartStream(){
   video.style.transform=csFacing==="user"?"scaleX(-1)":"none";
   await video.play().catch(()=>{});
   csApplyVideoStyle();
-  if(csFilterIdx>0)csInitFaceTracker();else csStartFaceLoop();
+  csInitFaceTracker();
  }catch(e){
   message("Caméra indisponible. Autorise l'accès à la caméra dans les réglages.");
  }
@@ -3918,15 +3918,13 @@ function csStartFaceLoop(){
  const tick=()=>{
   const v=$("csVideo"),c=$("csLensCanvas");
   if(!csStream)return;
-  if(!c||!v||v.readyState<2||!csFaceLandmarker){csFaceRaf=requestAnimationFrame(tick);return}
+  if(!c||!v||v.readyState<2){csFaceRaf=requestAnimationFrame(tick);return}
   const w=v.videoWidth||c.clientWidth,h=v.videoHeight||c.clientHeight;
   if(w&&h&&(c.width!==w||c.height!==h)){c.width=w;c.height=h}
-  if(csFilterIdx>0){
-   const now=performance.now();
-   if(now-csFaceLastDetect>45){try{const result=csFaceLandmarker.detectForVideo(v,now);csFaceLandmarks=result.faceLandmarks?.[0]||null}catch(e){csFaceLandmarks=null}csFaceLastDetect=now}
-   const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);
-   if(csFaceLandmarks)csDrawLens(ctx,c.width,c.height,csFaceLandmarks,now);
-  }else{c.getContext("2d").clearRect(0,0,c.width,c.height);csFaceLandmarks=null}
+  const now=performance.now();
+  if(csFaceLandmarker&&now-csFaceLastDetect>45){try{const result=csFaceLandmarker.detectForVideo(v,now);csFaceLandmarks=result.faceLandmarks?.[0]||null}catch(e){csFaceLandmarks=null}csFaceLastDetect=now}
+  const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);
+  if(csFilterIdx>0&&csFaceLandmarks)csDrawLens(ctx,c.width,c.height,csFaceLandmarks,now);
   if(window.afroBeautyRender)window.afroBeautyRender();
   csFaceRaf=requestAnimationFrame(tick);
  };
