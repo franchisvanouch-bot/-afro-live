@@ -85,12 +85,12 @@ function addMenuOptions(){
  box.innerHTML='<button class="sheet-opt" type="button" data-afro-open-dm><i class="ti ti-message-circle"></i><span>Messages privés<small>Discuter avec les membres</small></span></button><button class="sheet-opt" type="button" data-afro-open-saved><i class="ti ti-bookmark"></i><span>Publications enregistrées</span></button>';
  anchor?.after(box);
 }
-function openDM(){
+async function openDM(){
  if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}
  ensureOverlays();addStyles();
  el("afroDmOverlay").hidden=false;el("afroDmSearch").hidden=true;el("afroDmTitle").textContent="Messages";
  el("afroDmBody").className="afro-dm-list";el("afroDmBody").innerHTML='<div class="afro-social-empty">Chargement des conversations...</div>';
- renderInbox();
+ await renderInbox();
 }
 function closeDM(){
  if(el("afroDmOverlay"))el("afroDmOverlay").hidden=true;
@@ -287,7 +287,7 @@ function patchProfile(){
   const actions=el("pfActions");
   const pName=el("publicProfile")?.querySelector(".ig-name")?.textContent||"ce membre";
   const mk=(txt,cls,fn)=>{const b=document.createElement("button");b.type="button";b.className=cls||"ig-btn";b.textContent=txt;b.onclick=fn;return b;};
-  actions.append(mk("Message privé","ig-btn ig-btn-primary",async()=>{if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}const {data,error}=await db.rpc("afro_start_conversation",{p_other:id});if(error){say(error.message);return;}openDM();await openConversation(data,id,pName);}));
+  actions.append(mk("Message privé","ig-btn ig-btn-primary",async()=>{if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}const {data,error}=await db.rpc("afro_start_conversation",{p_other:id});if(error){say(error.message);return;}await openDM();await openConversation(data,id,pName);}));
   actions.append(mk("Signaler","ig-btn",()=>reportTarget({reported_user_id:id})));
   actions.append(mk("Bloquer","ig-btn",()=>blockProfile(id,pName)));
  };
@@ -307,6 +307,7 @@ function patchView(){
 }
 function bind(){
  addStyles();ensureOverlays();addMenuOptions();patchFeed();patchProfile();patchAccount();patchView();
+ const admin=el("admin");if(admin&&!admin.__afroObserver){new MutationObserver(()=>setTimeout(addAdminModeration,0)).observe(admin,{childList:true,subtree:true});admin.__afroObserver=true;}
  const nav=el("navigation");
  if(nav&&!nav.__afroObserver){new MutationObserver(()=>{addMenuOptions();}).observe(nav,{childList:true,subtree:true});nav.__afroObserver=true;}
  const cmForm=el("cmForm");
