@@ -17,6 +17,7 @@ export class AfroBackgroundBlur {
     this.output=document.createElement("canvas");
     this.maskSource=document.createElement("canvas");
     this.maskSoft=document.createElement("canvas");
+    this.maskData=null;
     this.foreground=document.createElement("canvas");
     this.outputCtx=this.output.getContext("2d",{alpha:false,desynchronized:true});
     this.maskSourceCtx=this.maskSource.getContext("2d");
@@ -55,7 +56,7 @@ export class AfroBackgroundBlur {
     const size=width+"x"+height;
     if(size===this.lastSize)return;
     this.lastSize=size;
-    for(const canvas of [this.output,this.maskSource,this.maskSoft,this.foreground]){
+    for(const canvas of [this.output,this.maskSoft,this.foreground]){
       canvas.width=width;canvas.height=height;
     }
   }
@@ -69,6 +70,10 @@ export class AfroBackgroundBlur {
     this.mask=new Float32Array(data);
     this.maskWidth=person.width;
     this.maskHeight=person.height;
+    if(this.maskSource.width!==this.maskWidth||this.maskSource.height!==this.maskHeight){
+      this.maskSource.width=this.maskWidth;this.maskSource.height=this.maskHeight;
+    }
+    this.maskData=this.maskSourceCtx.createImageData(this.maskWidth,this.maskHeight);
   }
 
   update(video,blurAmount=0){
@@ -94,21 +99,18 @@ export class AfroBackgroundBlur {
     if(!this.mask||!this.maskWidth||!this.maskHeight)return video;
 
     const mw=this.maskWidth,mh=this.maskHeight;
-    const image=this.maskSourceCtx.createImageData(mw,mh);
+    const image=this.maskData||this.maskSourceCtx.createImageData(mw,mh);
     const data=image.data;
     for(let i=0;i<this.mask.length;i++){
       const alpha=Math.round(clamp(this.mask[i]*100)/100*255);
       const j=i*4;
       data[j]=255;data[j+1]=255;data[j+2]=255;data[j+3]=alpha;
     }
-    const temp=document.createElement("canvas");
-    temp.width=mw;temp.height=mh;
-    const tempCtx=temp.getContext("2d");
-    tempCtx.putImageData(image,0,0);
+    this.maskSourceCtx.putImageData(image,0,0);
     this.maskSoftCtx.clearRect(0,0,this.output.width,this.output.height);
     this.maskSoftCtx.save();
     this.maskSoftCtx.filter="blur("+Math.max(2,this.output.width/360)+"px)";
-    this.maskSoftCtx.drawImage(temp,0,0,this.output.width,this.output.height);
+    this.maskSoftCtx.drawImage(this.maskSource,0,0,this.output.width,this.output.height);
     this.maskSoftCtx.restore();
 
     const ctx=this.outputCtx;
