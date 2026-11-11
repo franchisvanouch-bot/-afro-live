@@ -3900,7 +3900,7 @@ function csSetFilter(index){
 }
 function csCycleFilter(){csSetFilter(csFilterIdx+1)}
 async function csInitFaceTracker(){
- if(csFaceLandmarker)return true;
+ if(csFaceLandmarker){csStartFaceLoop();return true;}
  if(csFaceInitPromise)return csFaceInitPromise;
  csFaceInitPromise=(async()=>{
   try{
