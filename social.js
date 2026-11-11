@@ -254,14 +254,26 @@ function patchProfile(){
   const actions=el("pfActions");
   const pName=el("publicProfile")?.querySelector(".ig-name")?.textContent||"ce membre";
   const mk=(txt,cls,fn)=>{const b=document.createElement("button");b.type="button";b.className=cls||"ig-btn";b.textContent=txt;b.onclick=fn;return b;};
-  actions.append(mk("Message privé","ig-btn ig-btn-primary",async()=>{const {data,error}=await db.rpc("afro_start_conversation",{p_other:id});if(error){say(error.message);return;}openDM();await openConversation(data,id,pName);}));
+  actions.append(mk("Message privé","ig-btn ig-btn-primary",async()=>{if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}const {data,error}=await db.rpc("afro_start_conversation",{p_other:id});if(error){say(error.message);return;}openDM();await openConversation(data,id,pName);}));
   actions.append(mk("Signaler","ig-btn",()=>reportTarget({reported_user_id:id})));
   actions.append(mk("Bloquer","ig-btn",()=>blockProfile(id,pName)));
  };
  patched.__afroPatched=true;openProfile=patched;
 }
+function patchAccount(){
+ if(typeof loadAccount!=="function"||loadAccount.__afroPatched)return;
+ const old=loadAccount;
+ const patched=async function(){await old();if(signed()){await loadBlocked();await refreshSaved();}};
+ patched.__afroPatched=true;loadAccount=patched;
+}
+function patchView(){
+ if(typeof renderView!=="function"||renderView.__afroPatched)return;
+ const old=renderView;
+ const patched=function(){old();const b=el("navigation")?.querySelector('[data-page="notifs"] span');if(b)b.textContent="Alertes";};
+ patched.__afroPatched=true;renderView=patched;
+}
 function bind(){
- addStyles();ensureOverlays();addMenuOptions();patchFeed();patchProfile();
+ addStyles();ensureOverlays();addMenuOptions();patchFeed();patchProfile();patchAccount();patchView();
  const nav=el("navigation");
  if(nav&&!nav.__afroObserver){new MutationObserver(()=>{addMenuOptions();}).observe(nav,{childList:true,subtree:true});nav.__afroObserver=true;}
  const cmForm=el("cmForm");
