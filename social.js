@@ -144,10 +144,7 @@ async function openSaved(){
  if(error){box.innerHTML='<div class="afro-social-empty">'+esc(error.message)+'</div>';return;}
  if(!data?.length){box.innerHTML='<div class="afro-social-empty">Tu n’as encore rien enregistré.</div>';return;}
  const ids=data.map(x=>x.post_id);
- const [{data:posts},{data:profiles}]=await Promise.all([
-  db.from("posts").select("id,creator_id,kind,media_path,caption,created_at").in("id",ids),
-  db.from("profiles").select("id,username,display_name").in("id",[])
- ]);
+ const {data:posts}=await db.from("posts").select("id,creator_id,kind,media_path,caption,created_at").in("id",ids);
  const ownerIds=[...new Set((posts||[]).map(p=>p.creator_id))];
  const prof=ownerIds.length?(await db.from("profiles").select("id,username,display_name").in("id",ownerIds)).data||[]:[];
  const pm={};prof.forEach(p=>pm[p.id]=p);
@@ -231,7 +228,7 @@ async function toggleCommentLike(id,btn){
  await enhancedComments();
 }
 async function submitEnhancedComment(e){
- e.preventDefault();if(!signed())return guestToAuth();
+ e.preventDefault();e.stopImmediatePropagation();if(!signed())return guestToAuth();
  const text=el("cmInput").value.trim();if(!text||!cmPostId||cmBusy)return;
  cmBusy=true;el("cmSend").disabled=true;
  const row={post_id:cmPostId,user_id:currentUser.id,body:text};
