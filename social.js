@@ -547,10 +547,30 @@ setTimeout(start,0);
 if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange((event,session)=>{if(session?.user){setTimeout(start,0);}else{S.saved.clear();S.blocked.clear();closeDM();}});
 window.openAfroMessages=openDM;
 window.openAfroCreatorConversation=async function(creatorId,creatorName){
- if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}
- const {data,error}=await db.rpc("afro_start_conversation",{p_other:creatorId});
- if(error){say("Ouverture de la conversation impossible : "+error.message);return;}
- await openDM();
- await openConversation(data,creatorId,creatorName||"Conversation");
+ const showFailure=(detail)=>{
+  try{
+   ensureOverlays();addStyles();
+   const overlay=el("afroDmOverlay"),body=el("afroDmBody");
+   if(overlay)overlay.hidden=false;
+   if(body){body.className="afro-dm-list";body.innerHTML='<div class="afro-social-empty">Impossible d’ouvrir cette discussion. '+esc(detail||"Réessaie dans un instant.")+'</div>';}
+  }catch(_){}
+ };
+ try{
+  if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}
+  if(!creatorId||creatorId===currentUser?.id){showFailure("Ce profil ne peut pas être contacté.");return;}
+  ensureOverlays();addStyles();
+  const overlay=el("afroDmOverlay"),body=el("afroDmBody");
+  if(!overlay||!body){showFailure("La fenêtre de messagerie n’a pas pu être créée.");return;}
+  overlay.hidden=false;el("afroDmSearch").hidden=true;el("afroDmTitle").textContent=creatorName||"Conversation";
+  body.className="afro-dm-chat";body.innerHTML='<div class="afro-social-empty">Ouverture de la discussion...</div>';
+  const {data,error}=await db.rpc("afro_start_conversation",{p_other:creatorId});
+  if(error)throw error;
+  const conversationId=typeof data==="string"?data:(data?.id||data?.conversation_id||data?.[0]?.id||data?.[0]);
+  if(!conversationId)throw new Error("La conversation n’a pas reçu d’identifiant.");
+  await openConversation(conversationId,creatorId,creatorName||"Conversation");
+ }catch(error){
+  console.error("[AFRO LIVE] ouverture messagerie:",error);
+  showFailure(error?.message||"Erreur inattendue.");
+ }
 };
 })();
