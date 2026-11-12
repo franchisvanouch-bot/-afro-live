@@ -440,7 +440,7 @@ function bind(){
  },true);
  document.addEventListener("submit",e=>{if(e.target?.id==="afroDmForm"){sendDM(e);}},true);
  el("afroDmSearchInput")?.addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchDMUsers,250);});
- el("afroDmFile")?.addEventListener("change",async e=>{const f=e.target.files?.[0];if(!f)return;const type=f.type.startsWith("video/")?"video":f.type.startsWith("image/")?"image":null;if(!type){say("Choisis une photo ou une vidéo.");return;}await uploadDMFile(f,type);e.target.value="";});
+ document.addEventListener("change",async e=>{if(e.target?.id!=="afroDmFile")return;const f=e.target.files?.[0];if(!f)return;const type=f.type.startsWith("video/")?"video":f.type.startsWith("image/")?"image":null;if(!type){say("Choisis une photo ou une vidéo.");return;}await uploadDMFile(f,type);e.target.value="";});
 }
 async function appendDMInboxToMessagesPage(){
  const box=el("notifsList");if(!box||!signed())return;
