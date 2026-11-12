@@ -4149,6 +4149,46 @@ db.auth.onAuthStateChange((event,session)=>{
 #viewer .feed-meta{right:72px;max-width:calc(100% - 105px)}
 @media(max-width:480px){#viewer .feed-engagement{right:8px;bottom:100px;gap:16px}}
 </style>
+<style id="afro-profile-fullscreen-black">
+/* Profil plein écran : noir uniforme, sans en-tête de marque ni séparateurs superflus */
+body.profile-mode{background:#000!important;overflow:hidden!important}
+body.profile-mode>header{display:none!important}
+body.profile-mode main{padding:0!important;margin:0!important;max-width:none!important;width:100%!important}
+body.profile-mode #navigation{display:none!important}
+body.profile-mode #publicProfile{
+ position:fixed!important;inset:0!important;z-index:100030!important;
+ width:100vw!important;height:100vh!important;height:100dvh!important;
+ min-height:100vh!important;margin:0!important;padding:
+ max( env(safe-area-inset-top), 8px ) 0 max(18px,env(safe-area-inset-bottom))!important;
+ overflow-y:auto!important;background:#000!important;color:#fff!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important
+}
+#publicProfile .ig-top,#publicProfile .ig-head,#publicProfile .ig-bio,
+#publicProfile .ig-actions,#publicProfile .ig-pay,#publicProfile .ig-tabs,
+#publicProfile .ig-grid{background:#000!important;border-color:transparent!important;box-shadow:none!important}
+#publicProfile .ig-top{border:0!important}
+#publicProfile .ig-head{border:0!important}
+#publicProfile .ig-bio{border:0!important}
+#publicProfile .ig-actions{border:0!important}
+#publicProfile .ig-tabs{border:0!important;border-top:0!important}
+#publicProfile .ig-tab{border:0!important}
+#publicProfile .ig-grid{border:0!important}
+#publicProfile .ig-actions .ig-subscriptions-entry,
+#publicProfile .ig-actions .ig-follow-entry{
+ background:#ff861c!important;color:#080808!important;
+ border:0!important;box-shadow:none!important;font-weight:800!important
+}
+#publicProfile .ig-actions .ig-subscriptions-entry *,
+#publicProfile .ig-actions .ig-follow-entry *{color:#080808!important}
+#publicProfile .ig-actions .ig-message-entry{
+ background:#242428!important;color:#f5f5f5!important;
+ border:1px solid #39393f!important;box-shadow:none!important
+}
+#publicProfile .ig-actions .ig-message-entry *{color:#f5f5f5!important}
+#publicProfile .ig-actions .ig-follow-entry.is-following{
+ background:#ff861c!important;color:#080808!important
+}
+</style>
 <style id="afro-profile-polish">
 /* Profil AFRO LIVE : en-tête compact, statistiques orange et actions sur une ligne */
 #publicProfile .ig-head{gap:clamp(12px,4vw,22px);padding:18px 16px 7px}
