@@ -289,10 +289,9 @@ function patchProfile(){
   const pName=el("publicProfile")?.querySelector(".ig-name")?.textContent||"ce membre";
   const mk=(txt,cls,fn)=>{const b=document.createElement("button");b.type="button";b.className=cls||"ig-btn";b.textContent=txt;b.onclick=fn;return b;};
   const messageProfile=async()=>{if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}const {data,error}=await db.rpc("afro_start_conversation",{p_other:id});if(error){say(error.message);return;}await openDM();await openConversation(data,id,pName);};
-  actions.append(mk("Message privé","ig-btn ig-btn-primary",messageProfile));
   const top=el("publicProfile")?.querySelector(".ig-top");
   if(top&&!top.querySelector("[data-afro-profile-message]")){
-   const b=document.createElement("button");b.type="button";b.className="ig-icon";b.dataset.afroProfileMessage="1";b.setAttribute("aria-label","Envoyer un message");b.innerHTML='<i class="ti ti-message-circle"></i>';b.addEventListener("click",messageProfile);top.insertBefore(b,top.querySelector("#pfMenu"));
+   const b=document.createElement("button");b.type="button";b.className="ig-icon";b.dataset.afroProfileMessage="1";b.setAttribute("aria-label","Messagerie");b.innerHTML='<i class="ti ti-message-circle"></i>';b.addEventListener("click",messageProfile);top.insertBefore(b,top.querySelector("#pfMenu"));
   }
   actions.append(mk("Signaler","ig-btn",()=>reportTarget({reported_user_id:id})));
   actions.append(mk("Bloquer","ig-btn",()=>blockProfile(id,pName)));
@@ -308,7 +307,7 @@ function patchAccount(){
 function patchView(){
  if(typeof renderView!=="function"||renderView.__afroPatched)return;
  const old=renderView;
- const patched=function(){old();addAdminModeration();const b=el("navigation")?.querySelector('[data-page="notifs"] span');if(b)b.textContent="Alertes";};
+ const patched=function(){old();addAdminModeration();const b=el("navigation")?.querySelector('[data-page="notifs"] span');if(b)b.textContent="Messages";};
  patched.__afroPatched=true;renderView=patched;
 }
 function bind(){
