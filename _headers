@@ -8,7 +8,7 @@
   Cache-Control: no-store, no-cache, must-revalidate
 
 /social.js
-  Cache-Control: public, max-age=86400
+  Cache-Control: no-store, no-cache, must-revalidate
 
 /icon.svg
   Cache-Control: public, max-age=86400
