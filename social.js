@@ -2,7 +2,7 @@
    Written for AFRO LIVE's existing vanilla JS + Supabase schema; no Expo/VYBE runtime copied. */
 (()=>{
 "use strict";
-const S={saved:new Set(),blocked:new Set(),replyTo:null,dmChannel:null,dmConversation:null,dmOther:null,dmOtherLastReadAt:null,dmBadgeChannel:null};
+const S={saved:new Set(),blocked:new Set(),replyTo:null,dmChannel:null,dmConversation:null,dmOther:null,dmOtherLastReadAt:null,dmBadgeChannel:null,dmPendingFile:null,dmPendingType:null};
 const esc=v=>typeof escapeHTML==="function"?escapeHTML(String(v??"")):String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const el=id=>document.getElementById(id);
 const say=(t,ok=false)=>{if(typeof message==="function")message(t,ok);};
@@ -24,7 +24,7 @@ function addStyles(){
  .afro-dm-bubble{max-width:82%;padding:10px 13px;border-radius:16px;background:#242429;align-self:flex-start;overflow-wrap:anywhere;font-size:14px;line-height:1.4}
  .afro-dm-bubble.mine{align-self:flex-end;background:#ff6a00;color:white}.afro-dm-time{display:block;font-size:10px;opacity:.7;margin-top:4px}
  .afro-dm-compose{display:flex;align-items:center;gap:7px;padding:10px 9px;border-top:1px solid #29292e;background:#09090b}.afro-dm-compose input{flex:1;min-width:0}.afro-dm-compose button{flex:0 0 42px}.afro-dm-tool{background:#242429;color:#fff;border-radius:50%;width:40px!important;height:40px!important;padding:0!important}.afro-dm-tool.recording{background:#d22;color:#fff}.afro-dm-media{display:block;max-width:100%;max-height:360px;border-radius:13px;object-fit:contain}.afro-dm-audio{max-width:230px;width:100%}.afro-dm-caption{margin-top:6px}.afro-dm-ticks{color:#b9b9bf;letter-spacing:-3px;margin-left:5px;font-size:12px}.afro-dm-ticks.read{color:#45a7ff}.afro-dm-share{min-width:180px;display:grid;gap:5px}.afro-dm-share i{font-size:24px}.afro-dm-share small{opacity:.75}.afro-dm-record-status{padding:7px 14px;color:#ff9b57;font-size:12px}.afro-dm-bubble{border-radius:20px 20px 20px 5px}.afro-dm-bubble.mine{border-radius:20px 20px 5px 20px}.afro-dm-compose input{flex:1;min-width:0}.afro-dm-compose button{border-radius:50%;width:44px;height:44px;padding:0}
- .afro-social-empty{color:#999;text-align:center;padding:35px 18px;font-size:14px}
+ .afro-dm-attachment-preview{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:#202024;color:#fff;font-size:12px}.afro-dm-attachment-preview[hidden]{display:none}.afro-dm-attachment-preview button{border:0;border-radius:50%;width:28px;height:28px;background:#393940;color:#fff;font-size:19px}#navigation button.afro-has-unread{position:relative}#navigation button.afro-has-unread>i{outline:2px solid #ff8a24;outline-offset:4px;border-radius:50%;color:#ff8a24}#navigation button.afro-has-unread .navdot{display:flex!important;align-items:center;justify-content:center;position:absolute;top:0;right:calc(50% - 20px);min-width:17px;height:17px;padding:0 4px;border:2px solid var(--bg,#09090b);border-radius:20px;background:#ff8a24;color:#171717;font-size:9px;font-weight:800;line-height:1}.afro-social-empty{color:#999;text-align:center;padding:35px 18px;font-size:14px}
  .afro-comment-actions{display:flex;align-items:center;gap:14px;margin-top:7px}.afro-comment-actions button{padding:2px 0;background:none;color:#aaa;font-size:11px;font-weight:500}.afro-comment-actions button.liked{color:#ff526b}
  .afro-comment-reply{margin:8px 0 0 34px;padding-left:10px;border-left:2px solid #38383e}.afro-comment-row{display:flex;gap:9px;padding:10px 0}.afro-comment-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:13px;overflow-wrap:anywhere}.afro-comment-text b{font-size:12px}.afro-comment-text small{color:#888;font-size:10px}
  .afro-replying{display:none;padding:6px 12px;color:#ffb47c;font-size:12px}.afro-replying.on{display:block}
@@ -132,7 +132,7 @@ async function openConversation(conversationId,otherId,name){
  el("afroDmTitle").textContent=name||"Conversation";
  el("afroDmSearch").hidden=true;
  const body=el("afroDmBody");body.className="afro-dm-chat";
- body.innerHTML='<div id="afroDmMessages" class="afro-dm-messages"><div class="afro-social-empty">Chargement...</div></div><form id="afroDmForm" class="afro-dm-compose"><input id="afroDmFile" type="file" accept="image/*,video/*" hidden><button type="button" class="afro-dm-tool" data-dm-photo aria-label="Photo ou vidéo"><i class="ti ti-photo"></i></button><input id="afroDmInput" maxlength="2000" placeholder="Message..." autocomplete="off"><button type="button" class="afro-dm-tool" data-dm-record aria-label="Note vocale"><i class="ti ti-microphone"></i></button><button type="submit" aria-label="Envoyer"><i class="ti ti-send"></i></button></form><div id="afroDmRecordStatus" class="afro-dm-record-status" hidden></div>';
+ body.innerHTML='<div id="afroDmMessages" class="afro-dm-messages"><div class="afro-social-empty">Chargement...</div></div><div id="afroDmAttachmentPreview" class="afro-dm-attachment-preview" hidden></div><form id="afroDmForm" class="afro-dm-compose"><input id="afroDmFile" type="file" accept="image/*,video/*" hidden><button type="button" class="afro-dm-tool" data-dm-photo aria-label="Photo ou vidéo"><i class="ti ti-photo"></i></button><input id="afroDmInput" maxlength="2000" placeholder="Message..." autocomplete="off"><button type="button" class="afro-dm-tool" data-dm-record aria-label="Note vocale"><i class="ti ti-microphone"></i></button><button type="submit" aria-label="Envoyer"><i class="ti ti-send"></i></button></form><div id="afroDmRecordStatus" class="afro-dm-record-status" hidden></div>';
  await loadDMMessages();
  await db.rpc("afro_mark_conversation_read",{p_conversation:conversationId});
  S.dmChannel=db.channel("afro-dm-"+conversationId).on("postgres_changes",{event:"INSERT",schema:"public",table:"direct_messages",filter:"conversation_id=eq."+conversationId},async payload=>{
@@ -164,38 +164,62 @@ async function loadDMMessages(){
  box.innerHTML=(data||[]).map(renderDMMessage).join("")||'<div class="afro-social-empty">Démarre la conversation.</div>';
  box.scrollTop=box.scrollHeight;
 }
-async function uploadDMFile(file,type){
- if(!file||!S.dmConversation)return;
- const ext=(file.name.split(".").pop()||({image:"jpg",video:"mp4",audio:"webm"}[type])).replace(/[^a-z0-9]/gi,"").slice(0,8);
+async function uploadDMFile(file,type,caption=""){
+ if(!file||!S.dmConversation||!signed())return false;
+ const status=el("afroDmRecordStatus");if(status){status.hidden=false;status.textContent="Envoi en cours…";}
+ const ext=(file.type.split("/")[1]||file.name.split(".").pop()||"bin").split(";")[0].replace(/[^a-z0-9]/gi,"").slice(0,8)||"bin";
  const path=currentUser.id+"/dm/"+S.dmConversation+"/"+Date.now()+"."+ext;
- const {error}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type||"application/octet-stream",upsert:false});
- if(error){say("Envoi du fichier impossible : "+error.message);return;}
- const {error:insertError}=await db.from("direct_messages").insert({conversation_id:S.dmConversation,sender_id:currentUser.id,message_type:type,media_path:path,media_mime:file.type||null,body:""});
- if(insertError){say("Fichier envoyé mais message non enregistré : "+insertError.message);return;}
- await loadDMMessages();await refreshDMUnread();
+ try{
+  const {error}=await db.storage.from("creator-media").upload(path,file,{contentType:file.type||"application/octet-stream",upsert:false});
+  if(error)throw error;
+  const {error:insertError}=await db.from("direct_messages").insert({conversation_id:S.dmConversation,sender_id:currentUser.id,message_type:type,media_path:path,media_mime:file.type||null,body:caption||""});
+  if(insertError)throw insertError;
+  if(status){status.textContent="Envoyé";setTimeout(()=>{if(status)status.hidden=true;},1200);}
+  await loadDMMessages();await refreshDMUnread();return true;
+ }catch(error){
+  if(status){status.hidden=false;status.textContent="Échec : "+(error.message||"envoi impossible");}
+  say("Impossible d’envoyer le fichier : "+(error.message||"vérifie ta connexion et réessaie."));
+  return false;
+ }
 }
-let dmRecorder=null,dmChunks=[];
+function showDMPendingFile(file,type){
+ S.dmPendingFile=file;S.dmPendingType=type;
+ const p=el("afroDmAttachmentPreview");if(!p)return;
+ p.hidden=false;
+ p.innerHTML='<span>'+ (type==="image"?"Photo prête à envoyer":"Vidéo prête à envoyer") +' · '+esc(file.name||"fichier")+'</span><button type="button" data-dm-cancel-file aria-label="Retirer">×</button>';
+}
 async function toggleDMRecording(){
  const status=el("afroDmRecordStatus");
  if(dmRecorder?.state==="recording"){dmRecorder.stop();return;}
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){say("Les notes vocales ne sont pas prises en charge sur cet appareil.");return;}
  try{
   const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-  dmChunks=[];dmRecorder=new MediaRecorder(stream);
+  dmChunks=[];const mime=["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>MediaRecorder.isTypeSupported?.(t));
+  dmRecorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
   dmRecorder.ondataavailable=e=>{if(e.data.size)dmChunks.push(e.data);};
+  dmRecorder.onerror=()=>{stream.getTracks().forEach(t=>t.stop());if(status){status.hidden=false;status.textContent="Erreur pendant l’enregistrement";}};
   dmRecorder.onstop=async()=>{
    stream.getTracks().forEach(t=>t.stop());
-   const blob=new Blob(dmChunks,{type:dmRecorder.mimeType||"audio/webm"});
-   await uploadDMFile(new File([blob],"note-vocale.webm",{type:blob.type}),"audio");
+   const blob=new Blob(dmChunks,{type:dmRecorder.mimeType||"audio/mp4"});
+   const ext=blob.type.includes("mp4")?"m4a":"webm";
+   await uploadDMFile(new File([blob],"note-vocale."+ext,{type:blob.type}),"audio");
    if(status)status.hidden=true;
-   const b=document.querySelector("[data-dm-record]");if(b)b.classList.remove("recording");
+   document.querySelector("[data-dm-record]")?.classList.remove("recording");
   };
   dmRecorder.start();if(status){status.textContent="Enregistrement… touche le micro pour terminer";status.hidden=false;}
   document.querySelector("[data-dm-record]")?.classList.add("recording");
  }catch(error){say("Autorise le microphone pour envoyer une note vocale.");}
 }
 async function sendDM(e){
- e.preventDefault();const input=el("afroDmInput"),body=input?.value.trim();if(!body||!S.dmConversation)return;
+ e.preventDefault();if(!S.dmConversation)return;
+ const input=el("afroDmInput"),body=input?.value.trim()||"";
+ if(S.dmPendingFile){
+  const file=S.dmPendingFile,type=S.dmPendingType;
+  const ok=await uploadDMFile(file,type,body);
+  if(ok){S.dmPendingFile=null;S.dmPendingType=null;if(input)input.value="";const p=el("afroDmAttachmentPreview");if(p){p.hidden=true;p.innerHTML="";}}
+  return;
+ }
+ if(!body)return;
  input.disabled=true;
  const {error}=await db.from("direct_messages").insert({conversation_id:S.dmConversation,sender_id:currentUser.id,body,message_type:"text"});
  input.disabled=false;
@@ -214,7 +238,7 @@ async function refreshDMUnread(){
  if(error)return;
  const count=(data||[]).reduce((n,c)=>n+Number(c.unread_count||0),0);
  const nav=document.querySelector('#navigation button[data-page="notifs"] .navdot');
- if(nav){nav.hidden=count===0;nav.textContent=count>99?"99+":String(count);nav.classList.toggle("has-count",count>0);}
+ if(nav){nav.hidden=count===0;nav.textContent=count>99?"99+":String(count);nav.classList.toggle("has-count",count>0);nav.setAttribute("aria-label",count?count+" messages non lus":"Messages");const button=nav.closest("button");if(button)button.classList.toggle("afro-has-unread",count>0);}
  const title=document.querySelector('#navigation button[data-page="notifs"] span');
  if(title)title.textContent=count?"Messages":"Messages";
 }
@@ -429,6 +453,7 @@ function bind(){
   if(t.matches("[data-dm-close]")){if(S.dmConversation){if(S.dmChannel){db.removeChannel(S.dmChannel);S.dmChannel=null;}S.dmConversation=null;S.dmOther=null;el("afroDmTitle").textContent="Messages";el("afroDmBody").className="afro-dm-list";renderInbox();}else closeDM();return;}
   if(t.matches("[data-dm-new]")){showNewDM();return;}
   if(t.matches("[data-dm-photo]")){el("afroDmFile")?.click();return;}
+  if(t.matches("[data-dm-cancel-file]")){S.dmPendingFile=null;S.dmPendingType=null;const p=el("afroDmAttachmentPreview");if(p){p.hidden=true;p.innerHTML="";}return;}
   if(t.matches("[data-dm-record]")){toggleDMRecording();return;}
   if(t.matches("[data-dm-conversation]")){if(t.dataset.dmShareKind){await sendDMShare(t.dataset.dmConversation,t.dataset.dmShareKind,t.dataset.dmShareId);return;}if(el("afroDmOverlay")?.hidden)await openDM();await openConversation(t.dataset.dmConversation,t.dataset.dmOther,t.dataset.dmName);return;}
   if(t.matches("[data-dm-start]")){startDM(t.dataset.dmStart,t.dataset.dmName);return;}
@@ -446,7 +471,7 @@ function bind(){
  },true);
  document.addEventListener("submit",e=>{if(e.target?.id==="afroDmForm"){sendDM(e);}},true);
  el("afroDmSearchInput")?.addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchDMUsers,250);});
- document.addEventListener("change",async e=>{if(e.target?.id!=="afroDmFile")return;const f=e.target.files?.[0];if(!f)return;const type=f.type.startsWith("video/")?"video":f.type.startsWith("image/")?"image":null;if(!type){say("Choisis une photo ou une vidéo.");return;}await uploadDMFile(f,type);e.target.value="";});
+ document.addEventListener("change",e=>{if(e.target?.id!=="afroDmFile")return;const f=e.target.files?.[0];if(!f)return;const type=f.type.startsWith("video/")?"video":f.type.startsWith("image/")?"image":null;if(!type){say("Choisis une photo ou une vidéo.");return;}showDMPendingFile(f,type);e.target.value="";});
 }
 async function appendDMInboxToMessagesPage(){
  const box=el("notifsList");if(!box||!signed())return;
