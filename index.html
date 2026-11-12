@@ -1079,8 +1079,9 @@ body.booting>header{visibility:hidden}
   </div>
 
   <div id="subscriptionsPage" class="hidden">
-   <h2>Mes abonnements</h2>
-   <p>Les abonnements durent 30 jours. Le renouvellement est manuel.</p>
+   <div class="sub-page-head"><button class="pf-icon" type="button" onclick="closeSubscriptionPage()" aria-label="Retour"><i class="ti ti-arrow-left"></i></button><h2 id="subscriptionsPageTitle">Mes abonnements</h2></div>
+   <section id="creatorSubscriptionOptions" class="creator-sub-options hidden"></section>
+   <p id="subscriptionsPageNote">Retrouve ici les créateurs auxquels tu es abonné.</p>
    <div id="mySubscriptions"></div>
   </div>
 
@@ -2505,33 +2506,14 @@ async function openProfile(id){
    mk("ig-btn","Mes abonnements",()=>showPage("subscriptions"))
   );
  }else{
-  actions.append(mk(following?"ig-btn":"ig-btn ig-btn-primary",following?"Abonné":"Suivre",()=>toggleFollow(id)));
-  actions.append(mk("ig-btn","Offrir un cadeau",()=>openGiftPicker(id)));
-  if(liveSessionId)actions.append(mk("ig-btn ig-btn-primary","Voir le direct",()=>joinLive(liveSessionId)));
-  if(settings?.is_accepting_subscriptions&&Number.isInteger(settings.daily_price_fcfa)&&settings.daily_price_fcfa>=100){
-   const dailyPrice=settings.daily_price_fcfa;
-   actions.append(mk("ig-btn ig-btn-primary",
-    `S'abonner · ${dailyPrice.toLocaleString("fr-FR")} FCFA / jour`,
-    ()=>subscribeToCreator(id,"daily",dailyPrice)));
-  }
-  if(following){
-   actions.append(mk("ig-btn ig-btn-icon",`<i class="ti ${myNotify.has(id)?"ti-bell-ringing":"ti-bell"}"></i>`,async()=>{
-    await toggleNotify(id);
-    if(!$("publicProfile").classList.contains("hidden"))openProfile(id);
-   }));
-  }
+  actions.classList.add("ig-public-actions");
+  actions.append(
+   mk("ig-btn ig-subscriptions-entry","Mes abonnements",()=>openCreatorSubscriptions(id,name)),
+   mk(following?"ig-btn ig-follow-entry is-following":"ig-btn ig-follow-entry",following?"Suivi":"Suivre",()=>toggleFollow(id)),
+   mk("ig-btn ig-message-entry","Message",()=>startCreatorMessage(id,name))
+  );
  }
- if(!isMe&&settings?.is_accepting_subscriptions){
-  [["weekly","7 jours",settings.weekly_price_fcfa],["monthly","30 jours",settings.monthly_price_fcfa]].forEach(([plan,label,price])=>{
-   const amount=Number(price);
-   if(!Number.isInteger(amount)||amount<100||amount>1000000)return;
-   const b=document.createElement("button");
-   b.type="button";b.className="ig-plan";
-   b.textContent=`${label} · ${amount.toLocaleString("fr-FR")} FCFA`;
-   b.onclick=()=>subscribeToCreator(id,plan,amount);
-   $("pfPay").appendChild(b);
-  });
- }
+
  if(!isMe){
   actions.append(mk("ig-btn ig-share-profile","Partager le profil",()=>shareCreator(p.username,name)));
  }
@@ -2609,18 +2591,62 @@ async function submitCreatorApplication(event){
 }
 
 /* ABONNEMENTS */
+let selectedSubscriptionCreatorId=null;
+let selectedSubscriptionCreatorName="";
+function openCreatorSubscriptions(creatorId,creatorName){
+ selectedSubscriptionCreatorId=creatorId;
+ selectedSubscriptionCreatorName=creatorName||"Créateur";
+ showPage("subscriptions");
+}
+function closeSubscriptionPage(){
+ selectedSubscriptionCreatorId=null;selectedSubscriptionCreatorName="";
+ showPage("discover");
+}
+async function startCreatorMessage(creatorId,creatorName){
+ if(!currentUser){guestToAuth();return}
+ const {data,error}=await db.rpc("afro_start_conversation",{p_other:creatorId});
+ if(error){message(error.message);return}
+ await openDM();
+ await openConversation(data,creatorId,creatorName||"Conversation");
+}
+async function loadCreatorSubscriptionOptions(){
+ const section=$("creatorSubscriptionOptions");
+ if(!section)return;
+ if(!selectedSubscriptionCreatorId){section.classList.add("hidden");return}
+ section.classList.remove("hidden");
+ section.innerHTML="<p>Chargement des tarifs...</p>";
+ $("subscriptionsPageTitle").textContent="Abonnements";
+ $("subscriptionsPageNote").textContent="Choisis une formule pour "+selectedSubscriptionCreatorName+".";
+ const {data:settings,error}=await db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",selectedSubscriptionCreatorId).maybeSingle();
+ if(error){section.innerHTML="<p class='empty'>Impossible de charger les tarifs : "+escapeHTML(error.message)+"</p>";return}
+ if(!settings?.is_accepting_subscriptions){section.innerHTML="<p class='empty'>Ce créateur ne propose pas encore d'abonnement.</p>";return}
+ const plans=[["daily","1 jour",settings.daily_price_fcfa],["weekly","7 jours",settings.weekly_price_fcfa],["monthly","30 jours",settings.monthly_price_fcfa]];
+ const available=plans.filter(([plan,label,price])=>Number.isInteger(Number(price))&&Number(price)>=100&&Number(price)<=1000000);
+ if(!available.length){section.innerHTML="<p class='empty'>Aucun tarif n'est configuré pour le moment.</p>";return}
+ section.innerHTML=`
+  <div class="creator-sub-intro"><b>${escapeHTML(selectedSubscriptionCreatorName)}</b><span>Choisis la durée de ton accès</span></div>
+  <div class="creator-sub-plans">${available.map(([plan,label,price])=>`<button class="creator-sub-plan" type="button" data-plan="${plan}"><span>${label}</span><b>${Number(price).toLocaleString("fr-FR")} FCFA</b><small>Choisir cette formule</small></button>`).join("")}</div>
+  <div class="creator-sub-methods"><b>Moyens de paiement disponibles</b><div><span><i class="ti ti-device-mobile"></i> Airtel Money</span><span><i class="ti ti-device-mobile"></i> MTN Mobile Money</span></div><small>Paiement Mobile Money au Congo-Brazzaville.</small></div>
+  ${AFRO_SUB_TEST_MODE?'<p class="sub-test-note">Mode essai gratuit activé : aucun paiement réel ne sera demandé pendant les tests.</p>':""}
+ `;
+ section.querySelectorAll("[data-plan]").forEach(button=>button.addEventListener("click",()=>{
+  const plan=button.dataset.plan,entry=available.find(x=>x[0]===plan);
+  if(entry)subscribeToCreator(selectedSubscriptionCreatorId,plan,Number(entry[2]));
+ }));
+}
 async function loadSubscriptions(){
  const box=$("mySubscriptions");
  box.innerHTML="<p>Chargement...</p>";
+ await loadCreatorSubscriptionOptions();
  const {data,error}=await db.from("subscriptions").select("creator_id,plan_type,starts_at,expires_at,status").eq("spectator_id",currentUser.id).order("expires_at",{ascending:false});
  if(error){box.textContent="Impossible de charger les abonnements : "+error.message;return}
- if(!data.length){box.innerHTML="<p class='empty'>Tu n'as encore aucun abonnement.</p>";return}
+ if(!data.length){box.innerHTML=selectedSubscriptionCreatorId?"":"<p class='empty'>Tu n'as encore aucun abonnement.</p>";return}
  const ids=[...new Set(data.map(s=>s.creator_id))];
  const {data:profiles}=await db.from("profiles").select("id,username,display_name").in("id",ids);
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
  const labels={daily:"1 jour",weekly:"7 jours",monthly:"30 jours"};
  const now=Date.now();
- box.innerHTML=data.map(s=>{
+ box.innerHTML=(selectedSubscriptionCreatorId?"<h3 class='my-sub-list-title'>Mes abonnements actifs</h3>":"")+data.map(s=>{
   const p=map[s.creator_id]||{};
   const active=s.status==="active"&&new Date(s.expires_at).getTime()>now;
   const state=active?"Actif jusqu'au "+new Date(s.expires_at).toLocaleDateString("fr-FR"):"Expiré";
@@ -4124,6 +4150,33 @@ db.auth.onAuthStateChange((event,session)=>{
 #viewer .feed-action.on i{color:#ff315b}
 #viewer .feed-meta{right:72px;max-width:calc(100% - 105px)}
 @media(max-width:480px){#viewer .feed-engagement{right:8px;bottom:100px;gap:16px}}
+</style>
+<style id="afro-subscription-page-style">
+#publicProfile .ig-public-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px!important;align-items:stretch}
+#publicProfile .ig-public-actions .ig-btn{min-width:0!important;padding:12px 5px!important;font-size:clamp(11px,3.1vw,14px)!important;white-space:nowrap!important;border-radius:13px!important}
+#publicProfile .ig-public-actions .ig-subscriptions-entry{border:1px solid rgba(255,145,36,.55)!important;color:#ff9b35!important}
+#publicProfile .ig-public-actions .ig-follow-entry{background:linear-gradient(120deg,#ff9b19,#ff6a00)!important;color:#17100a!important;font-weight:800!important}
+#publicProfile .ig-public-actions .ig-follow-entry.is-following{background:#24252a!important;color:#fff!important;border:1px solid #444!important}
+#publicProfile .ig-public-actions .ig-message-entry{background:#202126!important;border:1px solid #45464d!important;color:#fff!important}
+#publicProfile #pfPay{display:none!important}
+#subscriptionsPage{padding:16px!important}
+#subscriptionsPage .sub-page-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+#subscriptionsPage .sub-page-head h2{margin:0;font-size:22px}
+#subscriptionsPage .creator-sub-intro{display:flex;flex-direction:column;gap:5px;margin:12px 0 16px}
+#subscriptionsPage .creator-sub-intro b{font-size:18px}
+#subscriptionsPage .creator-sub-intro span,#subscriptionsPage .creator-sub-methods small{color:#aaa;font-size:13px}
+#subscriptionsPage .creator-sub-plans{display:grid;grid-template-columns:1fr;gap:10px}
+#subscriptionsPage .creator-sub-plan{display:flex;align-items:center;gap:12px;width:100%;padding:16px;border:1px solid rgba(255,145,36,.25);border-radius:14px;background:#17181c;color:#fff;text-align:left}
+#subscriptionsPage .creator-sub-plan span{font-weight:700;flex:1}
+#subscriptionsPage .creator-sub-plan b{color:#ff9b35;font-size:16px}
+#subscriptionsPage .creator-sub-plan small{color:#aaa}
+#subscriptionsPage .creator-sub-methods{margin:18px 0;padding:15px;border:1px solid #303137;border-radius:14px;background:#121317}
+#subscriptionsPage .creator-sub-methods>div{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+#subscriptionsPage .creator-sub-methods span{display:flex;align-items:center;gap:6px;padding:9px 11px;border-radius:10px;background:#24252a}
+#subscriptionsPage .creator-sub-methods i{color:#ff9b35}
+#subscriptionsPage .sub-test-note{padding:11px;border-radius:10px;background:#292117;color:#ffc078;font-size:13px}
+#subscriptionsPage .my-sub-list-title{margin-top:22px}
+@media(max-width:360px){#publicProfile .ig-public-actions{gap:5px!important}#publicProfile .ig-public-actions .ig-btn{font-size:10px!important;padding:10px 2px!important}}
 </style>
 <script src="/social.js?v=20261112-dm-photo-reactions2"></script>
 </body>
