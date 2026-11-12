@@ -2,7 +2,7 @@
    Written for AFRO LIVE's existing vanilla JS + Supabase schema; no Expo/VYBE runtime copied. */
 (()=>{
 "use strict";
-const S={saved:new Set(),blocked:new Set(),replyTo:null,dmChannel:null,dmConversation:null,dmOther:null,dmOtherLastReadAt:null,dmBadgeChannel:null,dmPendingFile:null,dmPendingType:null,dmReplyTo:null,dmMessageMap:{},dmReactions:{}};
+const S={saved:new Set(),blocked:new Set(),replyTo:null,dmChannel:null,dmConversation:null,dmOther:null,dmOtherLastReadAt:null,dmBadgeChannel:null,dmBadgeTimer:null,dmPendingFile:null,dmPendingType:null,dmReplyTo:null,dmMessageMap:{},dmReactions:{}};
 const esc=v=>typeof escapeHTML==="function"?escapeHTML(String(v??"")):String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const el=id=>document.getElementById(id);
 const say=(t,ok=false)=>{if(typeof message==="function")message(t,ok);};
@@ -246,7 +246,7 @@ function ensureDMUnreadDock(){
 async function refreshDMUnread(){
  if(!signed())return;
  const {data,error}=await db.from("afro_my_conversations").select("*").order("last_message_at",{ascending:false}).limit(80);
- if(error)return;
+ if(error){console.error("[AFRO LIVE] compteur messages: lecture de afro_my_conversations impossible",error);return;}
  const rows=data||[],count=rows.reduce((n,c)=>n+Number(c.unread_count||0),0);
  const nav=document.querySelector('#navigation button[data-page="notifs"] .navdot');
  if(nav){nav.hidden=count===0;nav.textContent=count>99?"99+":String(count);nav.classList.toggle("has-count",count>0);nav.setAttribute("aria-label",count?count+" messages non lus":"Messages");const button=nav.closest("button");if(button)button.classList.toggle("afro-has-unread",count>0);}
@@ -267,7 +267,7 @@ function subscribeDMNotifications(){
    await refreshDMUnread();
    if(el("notifsPage")&&!el("notifsPage").classList.contains("hidden"))await appendDMInboxToMessagesPage();
   }
- }).subscribe();
+ }).subscribe((status,error)=>{if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"||status==="CLOSED"){console.error("[AFRO LIVE] temps réel messagerie:",status,error||"");S.dmBadgeChannel=null;}});
 }
 async function openDMSharePicker(kind,id){
  if(!signed())return;
@@ -569,11 +569,12 @@ function wrapFunctions(){
 }
 document.addEventListener("DOMContentLoaded",bind,{once:true});
 if(document.readyState!=="loading")bind();
-const start=()=>{if(!signed())return;wrapFunctions();subscribeDMNotifications();loadBlocked().then(()=>{patchFeed();refreshSaved();refreshDMUnread();});};
+const start=()=>{if(!signed())return;wrapFunctions();subscribeDMNotifications();loadBlocked().then(()=>{patchFeed();refreshSaved();refreshDMUnread();});if(!S.dmBadgeTimer)S.dmBadgeTimer=setInterval(()=>{if(signed())refreshDMUnread();},15000);};
 setTimeout(start,0);
 if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange((event,session)=>{if(session?.user){setTimeout(start,0);}else{S.saved.clear();S.blocked.clear();closeDM();if(el("afroDmUnreadDock"))el("afroDmUnreadDock").hidden=true;}});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&signed()){refreshDMUnread();subscribeDMNotifications();}});
 window.addEventListener("pageshow",()=>{if(signed())refreshDMUnread();});
+window.afroRefreshDMUnread=refreshDMUnread;
 window.openAfroMessages=openDM;
 window.openAfroCreatorConversation=async function(creatorId,creatorName){
  const showFailure=(detail)=>{
