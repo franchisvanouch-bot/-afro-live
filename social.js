@@ -211,6 +211,24 @@ async function refreshDMUnread(){
  const title=document.querySelector('#navigation button[data-page="notifs"] span');
  if(title)title.textContent=count?"Messages":"Messages";
 }
+async function openDMSharePicker(kind,id){
+ if(!signed())return;
+ S.dmShare={kind,id};await openDM();
+ const box=el("afroDmBody");if(!box)return;
+ const note=document.createElement("p");note.className="afro-social-empty";note.textContent="Choisis la conversation où partager "+(kind==="live"?"ce direct":"cette publication")+".";
+ box.prepend(note);
+ box.querySelectorAll("[data-dm-conversation]").forEach(row=>{
+  row.dataset.dmShareKind=kind;row.dataset.dmShareId=id;
+  row.insertAdjacentHTML("beforeend",'<span class="afro-dm-share-action">Partager</span>');
+ });
+}
+async function sendDMShare(conversationId,kind,id){
+ const payload={conversation_id:conversationId,sender_id:currentUser.id,body:"",message_type:kind,shared_post_id:kind==="post"?id:null,shared_live_session_id:kind==="live"?id:null};
+ const {error}=await db.from("direct_messages").insert(payload);
+ if(error){say("Partage impossible : "+error.message);return;}
+ S.dmShare=null;await openConversation(conversationId,null,"Conversation");await refreshDMUnread();
+}
+window.afroShareLiveToDM=id=>openDMSharePicker("live",id);
 async function refreshSaved(){
  if(!signed())return;
  const {data,error}=await db.from("post_saves").select("post_id").eq("user_id",currentUser.id).limit(500);
@@ -276,6 +294,8 @@ function patchFeed(){
   const patched=function(p){
    let html=old(p);
    const save='<button class="vbtn" data-action="afro-save" data-post="'+esc(p.id)+'" aria-label="Enregistrer"><i class="ti ti-bookmark"></i><span class="vcount">Enregistrer</span></button>';
+   const share='<button class="vbtn" data-action="afro-share-dm" data-post="'+esc(p.id)+'" aria-label="Partager en message"><i class="ti ti-send"></i><span class="vcount">Envoyer</span></button>';
+   html=html.replace(save,save+share);
    html=html.replace('<button class="vbtn'+(p.liked?' on':'')+'" data-action="like"',save+'<button class="vbtn'+(p.liked?' on':'')+'" data-action="like"');
    html=html.replace('class="vitem" data-post="','class="vitem" data-creator="'+esc(p.creator_id)+'" data-post="');
    return html;
@@ -403,13 +423,14 @@ function bind(){
   if(t.matches("[data-dm-new]")){showNewDM();return;}
   if(t.matches("[data-dm-photo]")){el("afroDmFile")?.click();return;}
   if(t.matches("[data-dm-record]")){toggleDMRecording();return;}
-  if(t.matches("[data-dm-conversation]")){if(el("afroDmOverlay")?.hidden)await openDM();await openConversation(t.dataset.dmConversation,t.dataset.dmOther,t.dataset.dmName);return;}
+  if(t.matches("[data-dm-conversation]")){if(t.dataset.dmShareKind){await sendDMShare(t.dataset.dmConversation,t.dataset.dmShareKind,t.dataset.dmShareId);return;}if(el("afroDmOverlay")?.hidden)await openDM();await openConversation(t.dataset.dmConversation,t.dataset.dmOther,t.dataset.dmName);return;}
   if(t.matches("[data-dm-start]")){startDM(t.dataset.dmStart,t.dataset.dmName);return;}
   if(t.matches("[data-saved-close]")){el("afroSavedOverlay").hidden=true;return;}
   if(t.matches("[data-reports-close]")){el("afroReportsOverlay").hidden=true;return;}
   if(t.matches("[data-report-status]")){setReportStatus(t.dataset.reportId,t.dataset.reportStatus);return;}
   if(t.matches("[data-afro-saved-open]")){const i=Number(t.dataset.afroSavedOpen);if(typeof openFeedFrom==="function")openFeedFrom("afroSaved",i);el("afroSavedOverlay").hidden=true;return;}
   if(t.matches('[data-action="afro-save"]')){e.preventDefault();e.stopImmediatePropagation();toggleSave(t);return;}
+  if(t.matches('[data-action="afro-share-dm"]')){e.preventDefault();e.stopImmediatePropagation();openDMSharePicker("post",t.dataset.post);return;}
   if(t.matches('[data-action="afro-report"]')){e.preventDefault();e.stopImmediatePropagation();reportTarget({post_id:t.dataset.post});return;}
   if(t.matches("[data-afro-reply]")){setReply(t.dataset.afroReply);return;}
   if(t.matches("[data-afro-comment-like]")){toggleCommentLike(t.dataset.afroCommentLike,t);return;}
