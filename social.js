@@ -19,6 +19,16 @@ function addStyles(){
  .afro-dm-avatar{width:46px;height:46px;border-radius:50%;object-fit:cover;background:#29292e;display:grid;place-items:center;flex:0 0 46px;font-weight:700}
  .afro-dm-copy{min-width:0;flex:1}.afro-dm-copy b{display:block;font-size:14px}.afro-dm-copy small{display:block;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
  .afro-dm-unread{background:#ff6a00;border-radius:99px;padding:3px 7px;font-size:11px}
+ #afroDmUnreadDock{position:fixed;left:10px;right:10px;bottom:calc(62px + env(safe-area-inset-bottom));z-index:58;display:flex;gap:8px;overflow-x:auto;padding:8px 2px;scrollbar-width:none;pointer-events:auto;mask-image:linear-gradient(90deg,#000 0%,#000 94%,transparent)}
+ #afroDmUnreadDock[hidden]{display:none!important}
+ .afro-dock-row{flex:0 0 auto;max-width:210px;min-width:150px;display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid rgba(255,255,255,.13);border-radius:15px;background:rgba(18,18,21,.94);color:#fff;text-align:left;box-shadow:0 5px 18px #0007;backdrop-filter:blur(14px)}
+ .afro-dock-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#303036;flex:0 0 34px}
+ .afro-dock-copy{min-width:0;flex:1}.afro-dock-copy b{display:block;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+ .afro-dock-copy small{display:block;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#aaa;font-size:10px;margin-top:2px}
+ .afro-dock-status{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#25d366;box-shadow:0 0 7px #25d36699}
+ .afro-dock-count{min-width:19px;height:19px;padding:0 5px;border-radius:20px;background:#ff7a18;color:#111;display:grid;place-items:center;font-size:10px;font-weight:900}
+ body:has(#afroDmOverlay:not([hidden])) #afroDmUnreadDock{display:none!important}
+ @media(min-width:700px){#afroDmUnreadDock{left:auto;right:18px;max-width:390px;bottom:calc(70px + env(safe-area-inset-bottom));flex-direction:column;align-items:flex-end}.afro-dock-row{max-width:260px;width:100%}}
  .afro-dm-search{padding:12px;border-bottom:1px solid #29292e}.afro-dm-search input,.afro-dm-compose input{margin:0;background:#202024;color:#fff;border:1px solid #34343a;border-radius:22px;padding:12px 14px}
  .afro-dm-chat{display:flex;flex-direction:column;flex:1;min-height:0}.afro-dm-messages{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
  .afro-dm-bubble{max-width:82%;padding:10px 13px;border-radius:16px;background:#242429;align-self:flex-start;overflow-wrap:anywhere;font-size:14px;line-height:1.4}
@@ -228,21 +238,31 @@ async function sendDM(e){
  if(error){say("Message non envoyé : "+error.message);return;}
  input.value="";S.dmReplyTo=null;el("afroDmReplyPreview")?.remove();await loadDMMessages();await refreshDMUnread();
 }
-function subscribeDMNotifications(){
- if(!signed()||S.dmBadgeChannel)return;
- S.dmBadgeChannel=db.channel("afro-dm-badge-"+currentUser.id).on("postgres_changes",{event:"INSERT",schema:"public",table:"direct_messages"},async payload=>{
-  if(payload.new?.sender_id!==currentUser.id){await refreshDMUnread();if(!el("afroDmOverlay")?.hidden&&!S.dmConversation)await renderInbox();}
- }).subscribe();
+function ensureDMUnreadDock(){
+ if(el("afroDmUnreadDock"))return el("afroDmUnreadDock");
+ const dock=document.createElement("div");dock.id="afroDmUnreadDock";dock.hidden=true;dock.setAttribute("aria-label","Conversations avec messages non lus");document.body.appendChild(dock);return dock;
 }
 async function refreshDMUnread(){
  if(!signed())return;
- const {data,error}=await db.from("afro_my_conversations").select("unread_count");
+ const {data,error}=await db.from("afro_my_conversations").select("*").order("last_message_at",{ascending:false}).limit(80);
  if(error)return;
- const count=(data||[]).reduce((n,c)=>n+Number(c.unread_count||0),0);
+ const rows=data||[],count=rows.reduce((n,c)=>n+Number(c.unread_count||0),0);
  const nav=document.querySelector('#navigation button[data-page="notifs"] .navdot');
  if(nav){nav.hidden=count===0;nav.textContent=count>99?"99+":String(count);nav.classList.toggle("has-count",count>0);nav.setAttribute("aria-label",count?count+" messages non lus":"Messages");const button=nav.closest("button");if(button)button.classList.toggle("afro-has-unread",count>0);}
- const title=document.querySelector('#navigation button[data-page="notifs"] span');
- if(title)title.textContent=count?"Messages":"Messages";
+ const title=document.querySelector('#navigation button[data-page="notifs"] span');if(title)title.textContent="Messages";
+ const dock=ensureDMUnreadDock(),unread=rows.filter(c=>Number(c.unread_count)>0).slice(0,8);
+ dock.innerHTML=unread.map(c=>'<button type="button" class="afro-dock-row" data-dm-conversation="'+esc(c.id)+'" data-dm-other="'+esc(c.other_id)+'" data-dm-name="'+esc(c.other_display_name||c.other_username||"Membre")+'">'+(c.other_avatar_url?'<img class="afro-dock-avatar" src="'+esc(c.other_avatar_url)+'" alt="">':'<span class="afro-dock-avatar" style="display:grid;place-items:center">'+esc((c.other_display_name||c.other_username||"?").slice(0,1).toUpperCase())+'</span>')+'<span class="afro-dock-copy"><b>'+esc(c.other_display_name||c.other_username||"Membre")+'</b><small>'+esc(c.last_message_preview||"Nouveau message")+'</small></span><i class="afro-dock-status" aria-label="Non lu"></i><span class="afro-dock-count">'+Number(c.unread_count)+'</span></button>').join("");
+ dock.hidden=!unread.length||!!el("afroDmOverlay")&&!el("afroDmOverlay").hidden;
+}
+function subscribeDMNotifications(){
+ if(!signed()||S.dmBadgeChannel)return;
+ S.dmBadgeChannel=db.channel("afro-dm-badge-"+currentUser.id).on("postgres_changes",{event:"INSERT",schema:"public",table:"direct_messages"},async payload=>{
+  if(payload.new?.sender_id!==currentUser.id){
+   await refreshDMUnread();
+   if(!el("afroDmOverlay")?.hidden&&!S.dmConversation)await renderInbox();
+   if(S.dmConversation&&payload.new?.conversation_id===S.dmConversation){await loadDMMessages();await db.rpc("afro_mark_conversation_read",{p_conversation:S.dmConversation});await refreshDMUnread();}
+  }
+ }).subscribe();
 }
 async function openDMSharePicker(kind,id){
  if(!signed())return;
@@ -453,7 +473,7 @@ function patchView(){
  patched.__afroPatched=true;renderView=patched;
 }
 function bind(){
- addStyles();ensureOverlays();addMenuOptions();patchFeed();patchProfile();patchAccount();patchView();refreshDMUnread();
+ addStyles();ensureOverlays();ensureDMUnreadDock();addMenuOptions();patchFeed();patchProfile();patchAccount();patchView();refreshDMUnread();
  const admin=el("admin");if(admin&&!admin.__afroObserver){new MutationObserver(()=>setTimeout(addAdminModeration,0)).observe(admin,{childList:true,subtree:true});admin.__afroObserver=true;}
  const nav=el("navigation");
  if(nav&&!nav.__afroObserver){new MutationObserver(()=>{addMenuOptions();}).observe(nav,{childList:true,subtree:true});nav.__afroObserver=true;}
@@ -543,7 +563,7 @@ document.addEventListener("DOMContentLoaded",bind,{once:true});
 if(document.readyState!=="loading")bind();
 const start=()=>{if(!signed())return;wrapFunctions();subscribeDMNotifications();loadBlocked().then(()=>{patchFeed();refreshSaved();refreshDMUnread();});};
 setTimeout(start,0);
-if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange((event,session)=>{if(session?.user){setTimeout(start,0);}else{S.saved.clear();S.blocked.clear();closeDM();}});
+if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange((event,session)=>{if(session?.user){setTimeout(start,0);}else{S.saved.clear();S.blocked.clear();closeDM();if(el("afroDmUnreadDock"))el("afroDmUnreadDock").hidden=true;}});
 window.openAfroMessages=openDM;
 window.openAfroCreatorConversation=async function(creatorId,creatorName){
  const showFailure=(detail)=>{
