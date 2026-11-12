@@ -1497,17 +1497,17 @@ function fmtCount(n){
 }
 function thumbHTML(p){
  const url=escapeHTML(mediaUrl(p.media_path));
- return p.kind==="video"?`<video src="${url}" autoplay loop muted playsinline webkit-playsinline preload="auto"></video>`:`<img src="${url}" alt="" loading="lazy">`;
+ return p.kind==="video"?`<video src="${url}" loop muted playsinline webkit-playsinline preload="none"></video>`:`<img src="${url}" alt="" loading="lazy" decoding="async">`;
 }
 function feedMediaHTML(p){
  const url=escapeHTML(mediaUrl(p.media_path));
- return p.kind==="video"?`<video class="feed-media" src="${url}" loop muted playsinline preload="metadata"></video>`:`<img class="feed-media" src="${url}" alt="">`;
+ return p.kind==="video"?`<video class="feed-media" src="${url}" loop muted playsinline preload="none"></video>`:`<img class="feed-media" src="${url}" alt="" loading="lazy" decoding="async">`;
 }
 function avatarHTML(p,live=false){
  const initial=escapeHTML(((p.display_name||p.username||"?")[0]||"?").toUpperCase());
  const img=safeHttpUrl(p.avatar_url);
  const ring=statusByCreator.has(p.id);
- return `<span class="avatar-wrap${ring?" ring":""}">${img?`<img class="avatar" src="${escapeHTML(img)}" alt="">`:`<span class="avatar">${initial}</span>`}${live?'<span class="dot-live" title="En direct"></span>':""}</span>`;
+ return `<span class="avatar-wrap${ring?" ring":""}">${img?`<img class="avatar" src="${escapeHTML(img)}" alt="" loading="lazy" decoding="async">`:`<span class="avatar">${initial}</span>`}${live?'<span class="dot-live" title="En direct"></span>':""}</span>`;
 }
 function fileInfo(file){
  if(!file)return null;
@@ -2044,8 +2044,8 @@ function vitemHTML(p){
  const live=liveCreatorIds.has(p.creator_id),isMe=currentUser?.id===p.creator_id,following=myFollows.has(p.creator_id),notifyOn=myNotify.has(p.creator_id);
  const url=escapeHTML(mediaUrl(p.media_path));
  const media=p.kind==="video"
-  ?`<video class="vmedia" src="${url}" loop muted playsinline preload="auto"></video>`
-  :`<img class="vmedia" src="${url}" alt="">`;
+  ?`<video class="vmedia" src="${url}" loop muted playsinline preload="none"></video>`
+  :`<img class="vmedia" src="${url}" alt="" loading="lazy" decoding="async">`;
  const liked=!!p.liked,count=Number(p.like_count)||0;
  return `<section class="vitem" data-post="${escapeHTML(p.id)}">
   ${media}
@@ -2091,8 +2091,11 @@ function observeHomeVideos(){
  homeObserver=new IntersectionObserver(entries=>entries.forEach(e=>{
   const v=e.target.querySelector("video");if(!v)return;
   v.muted=homeMuted;
-  if(e.isIntersecting&&e.intersectionRatio>=0.6)v.play().catch(()=>{});else v.pause();
- }),{root:feed,threshold:[0.6]});
+  if(e.isIntersecting){
+   if(v.preload==="none"&&v.readyState===0){v.preload="metadata";v.load()}
+   if(e.intersectionRatio>=0.6)v.play().catch(()=>{});else v.pause();
+  }else{v.pause();v.preload="none"}
+ }),{root:feed,rootMargin:"100% 0px",threshold:[0,0.6]});
  feed.querySelectorAll(".vitem").forEach(el=>homeObserver.observe(el));
 }
 function pauseHomeFeed(){
