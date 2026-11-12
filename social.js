@@ -546,4 +546,11 @@ const start=()=>{if(!signed())return;wrapFunctions();subscribeDMNotifications();
 setTimeout(start,0);
 if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange((event,session)=>{if(session?.user){setTimeout(start,0);}else{S.saved.clear();S.blocked.clear();closeDM();}});
 window.openAfroMessages=openDM;
+window.openAfroCreatorConversation=async function(creatorId,creatorName){
+ if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}
+ const {data,error}=await db.rpc("afro_start_conversation",{p_other:creatorId});
+ if(error){say("Ouverture de la conversation impossible : "+error.message);return;}
+ await openDM();
+ await openConversation(data,creatorId,creatorName||"Conversation");
+};
 })();
