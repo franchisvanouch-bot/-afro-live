@@ -343,7 +343,7 @@ function bind(){
   if(t.matches("[data-afro-open-saved]")){openSaved();return;}
   if(t.matches("[data-dm-close]")){if(S.dmConversation){if(S.dmChannel){db.removeChannel(S.dmChannel);S.dmChannel=null;}S.dmConversation=null;S.dmOther=null;el("afroDmTitle").textContent="Messages";el("afroDmBody").className="afro-dm-list";renderInbox();}else closeDM();return;}
   if(t.matches("[data-dm-new]")){showNewDM();return;}
-  if(t.matches("[data-dm-conversation]")){openConversation(t.dataset.dmConversation,t.dataset.dmOther,t.dataset.dmName);return;}
+  if(t.matches("[data-dm-conversation]")){if(el("afroDmOverlay")?.hidden)await openDM();await openConversation(t.dataset.dmConversation,t.dataset.dmOther,t.dataset.dmName);return;}
   if(t.matches("[data-dm-start]")){startDM(t.dataset.dmStart,t.dataset.dmName);return;}
   if(t.matches("[data-saved-close]")){el("afroSavedOverlay").hidden=true;return;}
   if(t.matches("[data-reports-close]")){el("afroReportsOverlay").hidden=true;return;}
@@ -359,7 +359,27 @@ function bind(){
  document.addEventListener("submit",e=>{if(e.target?.id==="afroDmForm"){sendDM(e);}},true);
  el("afroDmSearchInput")?.addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchDMUsers,250);});
 }
+async function appendDMInboxToMessagesPage(){
+ const box=el("notifsList");if(!box||!signed())return;
+ const {data,error}=await db.from("afro_my_conversations").select("*").order("last_message_at",{ascending:false}).limit(80);
+ const section=document.createElement("section");
+ section.className="afro-dm-page-section";
+ section.innerHTML='<h3 style="margin:18px 12px 8px;font-size:15px">Conversations</h3>';
+ if(error){
+  section.insertAdjacentHTML("beforeend",'<p class="empty" style="padding:10px 14px">Conversations temporairement indisponibles.</p>');
+ }else if(!data?.length){
+  section.insertAdjacentHTML("beforeend",'<p class="empty" style="padding:10px 14px">Aucun message privé pour le moment.</p>');
+ }else{
+  section.insertAdjacentHTML("beforeend",data.map(c=>'<button class="afro-dm-row" style="width:100%;padding:12px 14px" data-dm-conversation="'+esc(c.id)+'" data-dm-other="'+esc(c.other_id)+'" data-dm-name="'+esc(c.other_display_name||c.other_username||"Membre")+'">'+avatar({avatar_url:c.other_avatar_url,username:c.other_username,display_name:c.other_display_name})+'<span class="afro-dm-copy"><b>'+esc(c.other_display_name||c.other_username||"Membre")+'</b><small>'+esc(c.last_message_preview||"Démarrer la conversation")+'</small></span>'+(Number(c.unread_count)>0?'<span class="afro-dm-unread">'+Number(c.unread_count)+'</span>':'')+'</button>').join(""));
+ }
+ box.prepend(section);
+}
 function wrapFunctions(){
+ if(typeof loadNotifications==="function"&&!loadNotifications.__afroMessagesPatched){
+  const original=loadNotifications;
+  const wrapped=async function(){await original();await appendDMInboxToMessagesPage();};
+  wrapped.__afroMessagesPatched=true;loadNotifications=wrapped;
+ }
  if(typeof loadComments==="function"&&!loadComments.__afroPatched){const f=loadComments;const w=async function(){return enhancedComments();};w.__afroPatched=true;loadComments=w;}
  if(typeof loadHomeFeed==="function"&&!loadHomeFeed.__afroPatched){patchFeed();}
  if(typeof openProfile==="function"&&!openProfile.__afroPatched)patchProfile();
