@@ -2162,8 +2162,7 @@ async function refreshUnread(){
  if(!currentUser)return;
  const {count}=await db.from("notifications").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id).eq("read",false);
  $("bellDot").hidden=!count;
- const navDot=document.querySelector('#navigation button[data-page="notifs"] .navdot');
- if(navDot)navDot.hidden=!count;
+ // Le badge Messages est géré par social.js (messages non lus), pas par les notifications créateur.
 }
 async function loadNotifications(){
  const box=$("notifsList");
@@ -2185,8 +2184,7 @@ async function loadNotifications(){
  }).join("");
  await db.from("notifications").update({read:true}).eq("user_id",currentUser.id).eq("read",false);
  $("bellDot").hidden=true;
- const navDot=document.querySelector('#navigation button[data-page="notifs"] .navdot');
- if(navDot)navDot.hidden=true;
+ // Ne pas masquer le badge Messages ici : il affiche le nombre de messages privés non lus.
 }
 
 document.addEventListener("click",event=>{
