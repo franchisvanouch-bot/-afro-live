@@ -572,6 +572,8 @@ if(document.readyState!=="loading")bind();
 const start=()=>{if(!signed())return;wrapFunctions();subscribeDMNotifications();loadBlocked().then(()=>{patchFeed();refreshSaved();refreshDMUnread();});};
 setTimeout(start,0);
 if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange((event,session)=>{if(session?.user){setTimeout(start,0);}else{S.saved.clear();S.blocked.clear();closeDM();if(el("afroDmUnreadDock"))el("afroDmUnreadDock").hidden=true;}});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&signed()){refreshDMUnread();subscribeDMNotifications();}});
+window.addEventListener("pageshow",()=>{if(signed())refreshDMUnread();});
 window.openAfroMessages=openDM;
 window.openAfroCreatorConversation=async function(creatorId,creatorName){
  const showFailure=(detail)=>{
