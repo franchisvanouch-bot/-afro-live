@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
+<meta name="afro-build" content="20261112-1">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AFRO LIVE</title>
@@ -1726,8 +1727,39 @@ if("serviceWorker" in navigator){
   afroCheckAppUpdate();
  });
  window.addEventListener("pageshow",afroCheckAppUpdate);
- document.addEventListener("visibilitychange",()=>{if(!document.hidden)afroCheckAppUpdate()});
- window.addEventListener("online",afroCheckAppUpdate);
+ // Vérifie si une nouvelle version du site est publiée pendant que l'application reste ouverte.
+ const AFRO_BUILD_ID="20261112-1";
+ let afroNewBuildPending=false;
+ function afroCanReloadForUpdate(){
+  const active=document.activeElement;
+  const editing=!!(active&&active.matches("input,textarea,[contenteditable='true']"));
+  const busyOverlay=!!document.querySelector(".sheet-back:not([hidden]),.viewer:not([hidden]),.lv:not([hidden]),#afroDmOverlay:not([hidden])");
+  return !editing&&!busyOverlay;
+ }
+ async function afroCheckPublishedBuild(){
+  if(!navigator.onLine||document.hidden)return;
+  try{
+   const response=await fetch("/?afro_build_check="+Date.now(),{cache:"no-store",headers:{"Cache-Control":"no-cache"}});
+   if(!response.ok)return;
+   const page=await response.text();
+   const match=page.match(/<meta name="afro-build" content="([^"]+)"/i);
+   if(match&&match[1]!==AFRO_BUILD_ID){
+    afroNewBuildPending=true;
+    if(afroCanReloadForUpdate())window.location.reload();
+   }
+  }catch(e){console.warn("AFRO LIVE : vérification de version impossible",e)}
+ }
+ window.addEventListener("load",()=>{
+  afroCheckPublishedBuild();
+  setInterval(()=>{
+   if(afroNewBuildPending&&afroCanReloadForUpdate())window.location.reload();
+   else afroCheckPublishedBuild();
+  },60000);
+ });
+ document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden){afroCheckAppUpdate();afroCheckPublishedBuild();if(afroNewBuildPending&&afroCanReloadForUpdate())window.location.reload()}
+ });
+ window.addEventListener("online",()=>{afroCheckAppUpdate();afroCheckPublishedBuild()});
 }
 
 /* AUTHENTIFICATION */
