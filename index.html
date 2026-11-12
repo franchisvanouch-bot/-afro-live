@@ -2383,7 +2383,7 @@ async function openProfile(id){
  const profileThumb=x=>{
   const url=escapeHTML(mediaUrl(x.media_path));
   return x.kind==="video"
-   ? `<video src="${url}" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture></video>`
+   ? `<video src="${url}" muted loop playsinline webkit-playsinline preload="none" disablepictureinpicture></video>`
    : `<img src="${url}" alt="" loading="lazy">`;
  };
  profile.innerHTML=`
