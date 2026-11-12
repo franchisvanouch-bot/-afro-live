@@ -1055,7 +1055,13 @@ body.booting>header{visibility:hidden}
 .profile-edit-save{width:100%;margin-top:24px;padding:14px;border:0;border-radius:12px;background:#ff861c;color:#080808;font-weight:800;font-size:15px}
 .pf-edit-top{position:sticky;top:0;z-index:2}
 </style>
-<style id="afro-story-picker-style">
+<style id="afro-story-gallery-tabs-fix">
+.story-picker-tabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.story-picker-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700}
+.story-picker-tabs button i{font-size:18px}
+.story-picker-empty button{display:none!important}
+.story-picker-empty{min-height:260px}
+</style><style id="afro-story-picker-style">
 .story-picker{position:fixed;inset:0;z-index:100080;background:#050505;color:#fff;padding:calc(env(safe-area-inset-top) + 8px) 0 calc(env(safe-area-inset-bottom) + 12px);display:flex;flex-direction:column;overflow:auto}
 .story-picker.hidden{display:none!important}
 .story-picker-head{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 15px;border-bottom:1px solid #202024}
@@ -1513,11 +1519,10 @@ body.booting>header{visibility:hidden}
   <button type="button" data-album="favorites">Favoris</button>
  </div>
  <div class="story-picker-tabs">
-  <button type="button" class="active" data-story-type="all">Tous</button>
-  <button type="button" data-story-type="photo">Photos</button>
-  <button type="button" data-story-type="video">Vidéos</button>
+  <button type="button" class="active" data-story-type="photo"><i class="ti ti-photo"></i> Photos</button>
+  <button type="button" data-story-type="video"><i class="ti ti-video"></i> Vidéos</button>
  </div>
- <div class="story-picker-empty"><i class="ti ti-photo"></i><b>Choisis tes photos ou vidéos</b><span>Ta galerie s’ouvrira pour sélectionner les médias à ajouter à ta Story.</span><button type="button" id="storyChooseMedia">Ouvrir la galerie</button></div>
+ <div class="story-picker-empty" id="storyGalleryHint"><i class="ti ti-photo"></i><b>Ta galerie de photos</b><span>Appuie sur Photos ou Vidéos pour ouvrir directement les médias correspondants sur ton téléphone.</span></div>
  <div class="story-picker-selection" id="storySelection"></div>
 </div>
 
@@ -1630,8 +1635,7 @@ async function uploadStorySelection(files){
 }
 function initStoryPicker(){
  $("storyPickerBack").onclick=closeStoryPicker;
- $("storyPickerNext").onclick=()=>chooseStoryMedia();
- $("storyChooseMedia").onclick=()=>chooseStoryMedia();
+ $("storyPickerNext").onclick=()=>chooseStoryMedia(storyFilter);
  $("storyInstant").onclick=()=>chooseStoryMedia("all",true);
  $("storyMulti").onclick=()=>{
   storyMultiSelect=!storyMultiSelect;
@@ -1644,12 +1648,15 @@ function initStoryPicker(){
   storyAlbum=b.dataset.album;
   $("storyAlbum").innerHTML=(storyAlbum==="recent"?"Récentes":storyAlbum==="all"?"Tous":"Favoris")+' <i class="ti ti-chevron-down"></i>';
   $("storyAlbumOptions").classList.add("hidden");
-  if(storyAlbum==="favorites")message("Les favoris seront disponibles avec la galerie de l’application.");
-  else chooseStoryMedia();
+  if(storyAlbum==="favorites")message("Les favoris ne sont pas accessibles directement depuis la galerie iPhone du navigateur.");
+  else chooseStoryMedia(storyFilter);
  });
  $("storyPicker").querySelectorAll("[data-story-type]").forEach(b=>b.onclick=()=>{
   $("storyPicker").querySelectorAll("[data-story-type]").forEach(x=>x.classList.toggle("active",x===b));
   storyFilter=b.dataset.storyType;
+  $("storyGalleryHint").querySelector("i").className=storyFilter==="photo"?"ti ti-photo":"ti ti-video";
+  $("storyGalleryHint").querySelector("b").textContent=storyFilter==="photo"?"Ta galerie de photos":"Ta galerie de vidéos";
+  $("storyGalleryHint").querySelector("span").textContent=storyFilter==="photo"?"Sélectionne les photos de ton téléphone pour les ajouter à ta Story.":"Sélectionne les vidéos de ton téléphone pour les ajouter à ta Story.";
   chooseStoryMedia(storyFilter);
  });
  $("storyText").onclick=()=>message("La Story texte sera ajoutée dans une prochaine mise à jour.");
