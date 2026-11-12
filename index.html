@@ -2807,10 +2807,11 @@ function closeSubscriptionPage(){
 }
 async function startCreatorMessage(creatorId,creatorName){
  if(!currentUser){guestToAuth();return}
- const {data,error}=await db.rpc("afro_start_conversation",{p_other:creatorId});
- if(error){message(error.message);return}
- await openDM();
- await openConversation(data,creatorId,creatorName||"Conversation");
+ if(typeof window.openAfroCreatorConversation!=="function"){
+  message("La messagerie n'est pas encore prête. Réessaie dans un instant.");
+  return;
+ }
+ await window.openAfroCreatorConversation(creatorId,creatorName||"Conversation");
 }
 async function loadCreatorSubscriptionOptions(){
  const section=$("creatorSubscriptionOptions");
