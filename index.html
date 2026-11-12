@@ -2487,6 +2487,12 @@ async function openProfile(id){
   actions.append(mk(following?"ig-btn":"ig-btn ig-btn-primary",following?"Abonné":"Suivre",()=>toggleFollow(id)));
   actions.append(mk("ig-btn","Offrir un cadeau",()=>openGiftPicker(id)));
   if(liveSessionId)actions.append(mk("ig-btn ig-btn-primary","Voir le direct",()=>joinLive(liveSessionId)));
+  if(settings?.is_accepting_subscriptions&&Number.isInteger(settings.daily_price_fcfa)&&settings.daily_price_fcfa>=100){
+   const dailyPrice=settings.daily_price_fcfa;
+   actions.append(mk("ig-btn ig-btn-primary",
+    `S'abonner · ${dailyPrice.toLocaleString("fr-FR")} FCFA / jour`,
+    ()=>openMbotePay(id,"subscription","daily",dailyPrice)));
+  }
   if(following){
    actions.append(mk("ig-btn ig-btn-icon",`<i class="ti ${myNotify.has(id)?"ti-bell-ringing":"ti-bell"}"></i>`,async()=>{
     await toggleNotify(id);
@@ -2495,7 +2501,7 @@ async function openProfile(id){
   }
  }
  if(!isMe&&settings?.is_accepting_subscriptions){
-  [["daily","1 jour",settings.daily_price_fcfa],["weekly","7 jours",settings.weekly_price_fcfa],["monthly","30 jours",settings.monthly_price_fcfa]].forEach(([plan,label,price])=>{
+  [["weekly","7 jours",settings.weekly_price_fcfa],["monthly","30 jours",settings.monthly_price_fcfa]].forEach(([plan,label,price])=>{
    const amount=Number(price);
    if(!Number.isInteger(amount)||amount<100||amount>1000000)return;
    const b=document.createElement("button");
