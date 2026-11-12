@@ -2,7 +2,7 @@
    Written for AFRO LIVE's existing vanilla JS + Supabase schema; no Expo/VYBE runtime copied. */
 (()=>{
 "use strict";
-const S={saved:new Set(),blocked:new Set(),replyTo:null,dmChannel:null,dmConversation:null,dmOther:null,dmOtherLastReadAt:null,dmBadgeChannel:null,dmPendingFile:null,dmPendingType:null};
+const S={saved:new Set(),blocked:new Set(),replyTo:null,dmChannel:null,dmConversation:null,dmOther:null,dmOtherLastReadAt:null,dmBadgeChannel:null,dmPendingFile:null,dmPendingType:null,dmReplyTo:null,dmMessageMap:{},dmReactions:{}};
 const esc=v=>typeof escapeHTML==="function"?escapeHTML(String(v??"")):String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const el=id=>document.getElementById(id);
 const say=(t,ok=false)=>{if(typeof message==="function")message(t,ok);};
@@ -24,7 +24,7 @@ function addStyles(){
  .afro-dm-bubble{max-width:82%;padding:10px 13px;border-radius:16px;background:#242429;align-self:flex-start;overflow-wrap:anywhere;font-size:14px;line-height:1.4}
  .afro-dm-bubble.mine{align-self:flex-end;background:#ff6a00;color:white}.afro-dm-time{display:block;font-size:10px;opacity:.7;margin-top:4px}
  .afro-dm-compose{display:flex;align-items:center;gap:7px;padding:10px 9px;border-top:1px solid #29292e;background:#09090b}.afro-dm-compose input{flex:1;min-width:0}.afro-dm-compose button{flex:0 0 42px}.afro-dm-tool{background:#242429;color:#fff;border-radius:50%;width:40px!important;height:40px!important;padding:0!important}.afro-dm-tool.recording{background:#d22;color:#fff}.afro-dm-media{display:block;max-width:100%;max-height:360px;border-radius:13px;object-fit:contain}.afro-dm-audio{max-width:230px;width:100%}.afro-dm-caption{margin-top:6px}.afro-dm-ticks{color:#b9b9bf;letter-spacing:-3px;margin-left:5px;font-size:12px}.afro-dm-ticks.read{color:#45a7ff}.afro-dm-share{min-width:180px;display:grid;gap:5px}.afro-dm-share i{font-size:24px}.afro-dm-share small{opacity:.75}.afro-dm-record-status{padding:7px 14px;color:#ff9b57;font-size:12px}.afro-dm-bubble{border-radius:20px 20px 20px 5px}.afro-dm-bubble.mine{border-radius:20px 20px 5px 20px}.afro-dm-compose input{flex:1;min-width:0}.afro-dm-compose button{border-radius:50%;width:44px;height:44px;padding:0}
- .afro-dm-attachment-preview{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:#202024;color:#fff;font-size:12px}.afro-dm-attachment-preview[hidden]{display:none}.afro-dm-attachment-preview button{border:0;border-radius:50%;width:28px;height:28px;background:#393940;color:#fff;font-size:19px}#navigation button.afro-has-unread{position:relative}#navigation button.afro-has-unread>i{outline:2px solid #ff8a24;outline-offset:4px;border-radius:50%;color:#ff8a24}#navigation button.afro-has-unread .navdot{display:flex!important;align-items:center;justify-content:center;position:absolute;top:0;right:calc(50% - 20px);min-width:17px;height:17px;padding:0 4px;border:2px solid var(--bg,#09090b);border-radius:20px;background:#ff8a24;color:#171717;font-size:9px;font-weight:800;line-height:1}.afro-social-empty{color:#999;text-align:center;padding:35px 18px;font-size:14px}
+ .afro-dm-attachment-preview{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:#202024;color:#fff;font-size:12px}.afro-dm-attachment-preview[hidden]{display:none}.afro-dm-attachment-preview button{border:0;border-radius:50%;width:28px;height:28px;background:#393940;color:#fff;font-size:19px}#navigation button.afro-has-unread{position:relative}#navigation button.afro-has-unread>i{outline:2px solid #ff8a24;outline-offset:4px;border-radius:50%;color:#ff8a24}#navigation button.afro-has-unread .navdot{display:flex!important;align-items:center;justify-content:center;position:absolute;top:0;right:calc(50% - 20px);min-width:17px;height:17px;padding:0 4px;border:2px solid var(--bg,#09090b);border-radius:20px;background:#ff8a24;color:#171717;font-size:9px;font-weight:800;line-height:1}.afro-dm-row-message{display:flex;flex-direction:column;align-items:flex-start;max-width:84%;margin:8px 0;position:relative}.afro-dm-row-message.mine{margin-left:auto;align-items:flex-end}.afro-dm-image-open{padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;max-width:190px;max-height:230px;overflow:hidden;border-radius:12px}.afro-dm-media{display:block;max-width:190px;max-height:230px;width:auto;height:auto;object-fit:contain;border-radius:12px}.afro-dm-audio-wrap audio{max-width:210px;width:100%}.afro-dm-message-tools{display:flex;gap:7px;align-items:center}.afro-dm-message-tools button{border:0;background:transparent;color:#aaa;padding:3px 6px}.afro-dm-reaction-picker{display:flex;gap:4px;padding:5px;background:#333;border-radius:20px}.afro-dm-reaction-picker[hidden]{display:none}.afro-dm-reaction-picker button{border:0;background:transparent;font-size:20px}.afro-dm-reaction{font-size:16px}.afro-dm-quoted{font-size:12px;border-left:3px solid #ff8a24;padding:4px 7px;margin-bottom:6px;background:#0002}.afro-dm-attachment-preview{background:transparent!important;border:0!important}.afro-dm-attachment-preview img{width:52px;height:52px;object-fit:cover;border-radius:8px}.afro-dm-reply-preview{padding:7px 12px;background:#222;border-left:3px solid #ff8a24;color:#ddd;font-size:12px}.afro-dm-image-modal{position:fixed;inset:0;z-index:99999;background:#050505f5;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px}.afro-dm-image-modal[hidden]{display:none}.afro-dm-image-modal>img{max-width:96vw;max-height:78vh;width:auto;height:auto;object-fit:contain}.afro-dm-modal-close{position:absolute;top:20px;right:18px;border:0;border-radius:50%;background:#333;color:#fff;width:42px;height:42px;font-size:25px}.afro-dm-image-actions{display:flex;gap:12px;margin-top:16px}.afro-dm-image-actions a,.afro-dm-image-actions button{border:0;border-radius:20px;background:#28282c;color:#fff;padding:10px 14px;text-decoration:none}.afro-social-empty{color:#999;text-align:center;padding:35px 18px;font-size:14px}
  .afro-comment-actions{display:flex;align-items:center;gap:14px;margin-top:7px}.afro-comment-actions button{padding:2px 0;background:none;color:#aaa;font-size:11px;font-weight:500}.afro-comment-actions button.liked{color:#ff526b}
  .afro-comment-reply{margin:8px 0 0 34px;padding-left:10px;border-left:2px solid #38383e}.afro-comment-row{display:flex;gap:9px;padding:10px 0}.afro-comment-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:13px;overflow-wrap:anywhere}.afro-comment-text b{font-size:12px}.afro-comment-text small{color:#888;font-size:10px}
  .afro-replying{display:none;padding:6px 12px;color:#ffb47c;font-size:12px}.afro-replying.on{display:block}
@@ -144,25 +144,27 @@ function dmPublicUrl(path){return db.storage.from("creator-media").getPublicUrl(
 function renderDMMessage(m){
  const mine=m.sender_id===currentUser.id;
  let content="";
- if(m.message_type==="image"||m.message_type==="video"){
-  const url=dmPublicUrl(m.media_path||"");
-  content=m.message_type==="image"?'<img class="afro-dm-media" src="'+esc(url)+'" alt="Photo envoyée" loading="lazy">':'<video class="afro-dm-media" src="'+esc(url)+'" controls playsinline preload="metadata"></video>';
- }else if(m.message_type==="audio"){
-  content='<audio class="afro-dm-audio" controls preload="none" src="'+esc(dmPublicUrl(m.media_path||""))+'"></audio>';
- }else if(m.message_type==="post"){
-  content='<div class="afro-dm-share"><i class="ti ti-player-play"></i><b>Publication partagée</b><small>'+esc(m.body||"Ouvrir la publication dans AFRO LIVE")+'</small></div>';
- }else if(m.message_type==="live"){
-  content='<div class="afro-dm-share"><i class="ti ti-broadcast"></i><b>Direct partagé</b><small>'+esc(m.body||"Un direct AFRO LIVE a été partagé")+'</small></div>';
- }else content=esc(m.body||"");
- const read=mine&&S.dmOtherLastReadAt&&new Date(S.dmOtherLastReadAt)>=new Date(m.created_at);const ticks=mine?'<span class="afro-dm-ticks'+(read?" read":"")+'" title="'+(read?"Lu":"Envoyé · non lu")+'">✓✓</span>':"";
- return '<div class="afro-dm-bubble'+(mine?" mine":"")+'">'+content+(m.body&&["image","video","audio"].includes(m.message_type)?'<div class="afro-dm-caption">'+esc(m.body)+'</div>':"")+'<small class="afro-dm-time">'+new Date(m.created_at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+' '+ticks+'</small></div>';
+ const url=m.media_path?dmPublicUrl(m.media_path):"";
+ if(m.message_type==="image")content='<button class="afro-dm-image-open" data-dm-image="'+esc(m.id)+'"><img class="afro-dm-media" src="'+esc(url)+'" alt="Photo" loading="lazy"></button>';
+ else if(m.message_type==="video")content='<video class="afro-dm-media" src="'+esc(url)+'" controls playsinline preload="metadata"></video>';
+ else if(m.message_type==="audio")content='<div class="afro-dm-audio-wrap">🎤 <audio controls preload="metadata" src="'+esc(url)+'"></audio></div>';
+ else if(m.message_type==="post")content='<div class="afro-dm-share"><b>Publication partagée</b></div>';
+ else if(m.message_type==="live")content='<div class="afro-dm-share"><b>Direct partagé</b></div>';
+ else content=esc(m.body||"");
+ const parent=m.reply_to_id?S.dmMessageMap?.[m.reply_to_id]:null;
+ const quote=parent?'<div class="afro-dm-quoted">↪ '+esc(parent.body|| (parent.message_type==="image"?"Photo":parent.message_type==="audio"?"Note vocale":"Message"))+'</div>':"";
+ const read=mine&&S.dmOtherLastReadAt&&new Date(S.dmOtherLastReadAt)>=new Date(m.created_at);
+ const ticks=mine?'<span class="afro-dm-ticks'+(read?" read":"")+'>✓✓</span>':"";
+ const reactions=(S.dmReactions?.[m.id]||[]).map(x=>'<span class="afro-dm-reaction">'+esc(x.emoji)+'</span>').join("");
+ return '<div class="afro-dm-row-message'+(mine?" mine":"") +'" data-dm-message="'+esc(m.id)+'"><div class="afro-dm-bubble'+(mine?" mine":"") +'">'+quote+content+(m.body&&["image","video","audio"].includes(m.message_type)?'<div class="afro-dm-caption">'+esc(m.body)+'</div>':"")+'<small class="afro-dm-time">'+new Date(m.created_at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+" "+ticks+'</small></div><div class="afro-dm-message-tools"><button data-dm-reply="'+esc(m.id)+'">↩</button><button data-dm-react="'+esc(m.id)+'">☺</button>'+reactions+'</div><div class="afro-dm-reaction-picker" data-dm-picker="'+esc(m.id)+'" hidden>'+["❤️","😂","😮","😢","👍","🔥"].map(e=>'<button data-dm-emoji="'+e+'" data-dm-message-id="'+esc(m.id)+'">'+e+'</button>').join("")+'</div></div>';
 }
 async function loadDMMessages(){
  const box=el("afroDmMessages");if(!box||!S.dmConversation)return;
- const {data,error}=await db.from("direct_messages").select("id,sender_id,body,shared_post_id,shared_live_session_id,message_type,media_path,media_mime,duration_seconds,created_at").eq("conversation_id",S.dmConversation).order("created_at",{ascending:true}).limit(250);
+ const {data,error}=await db.from("direct_messages").select("id,sender_id,body,shared_post_id,shared_live_session_id,message_type,media_path,media_mime,duration_seconds,reply_to_id,created_at").eq("conversation_id",S.dmConversation).order("created_at",{ascending:true}).limit(250);
  if(error){box.innerHTML='<div class="afro-social-empty">'+esc(error.message)+'</div>';return;}
- box.innerHTML=(data||[]).map(renderDMMessage).join("")||'<div class="afro-social-empty">Démarre la conversation.</div>';
- box.scrollTop=box.scrollHeight;
+ S.dmMessageMap=Object.fromEntries((data||[]).map(m=>[m.id,m]));S.dmReactions={};
+ const ids=(data||[]).map(m=>m.id);if(ids.length){const rr=await db.from("direct_message_reactions").select("message_id,user_id,emoji").in("message_id",ids).eq("user_id",currentUser.id);if(!rr.error)(rr.data||[]).forEach(x=>(S.dmReactions[x.message_id]??=[]).push(x));}
+ box.innerHTML=(data||[]).map(renderDMMessage).join("")||'<div class="afro-social-empty">Démarre la conversation.</div>';box.scrollTop=box.scrollHeight;
 }
 async function uploadDMFile(file,type,caption=""){
  if(!file||!S.dmConversation||!signed())return false;
@@ -186,11 +188,11 @@ function showDMPendingFile(file,type){
  S.dmPendingFile=file;S.dmPendingType=type;
  const p=el("afroDmAttachmentPreview");if(!p)return;
  p.hidden=false;
- p.innerHTML='<span>'+ (type==="image"?"Photo prête à envoyer":"Vidéo prête à envoyer") +' · '+esc(file.name||"fichier")+'</span><button type="button" data-dm-cancel-file aria-label="Retirer">×</button>';
+ p.innerHTML=(type==="image"?'<img src="'+URL.createObjectURL(file)+'" alt="Aperçu">':'<span>🎬</span>')+'<span>Prêt à envoyer</span><button type="button" data-dm-cancel-file aria-label="Retirer">×</button>';
 }
 async function toggleDMRecording(){
  const status=el("afroDmRecordStatus");
- if(dmRecorder?.state==="recording"){dmRecorder.stop();return;}
+ if(dmRecorder?.state==="recording"){dmRecorder.requestData?.();dmRecorder.stop();return;}
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){say("Les notes vocales ne sont pas prises en charge sur cet appareil.");return;}
  try{
   const stream=await navigator.mediaDevices.getUserMedia({audio:true});
@@ -206,9 +208,9 @@ async function toggleDMRecording(){
    if(status)status.hidden=true;
    document.querySelector("[data-dm-record]")?.classList.remove("recording");
   };
-  dmRecorder.start();if(status){status.textContent="Enregistrement… touche le micro pour terminer";status.hidden=false;}
+  dmRecorder.start(250);if(status){status.textContent="Enregistrement… touche le micro pour terminer";status.hidden=false;}
   document.querySelector("[data-dm-record]")?.classList.add("recording");
- }catch(error){say("Autorise le microphone pour envoyer une note vocale.");}
+ }catch(error){if(status){status.hidden=false;status.textContent="Micro indisponible : "+(error.message||"autorisation requise");}say("Impossible de démarrer le micro : "+(error.message||"vérifie les autorisations"));}
 }
 async function sendDM(e){
  e.preventDefault();if(!S.dmConversation)return;
@@ -224,7 +226,7 @@ async function sendDM(e){
  const {error}=await db.from("direct_messages").insert({conversation_id:S.dmConversation,sender_id:currentUser.id,body,message_type:"text"});
  input.disabled=false;
  if(error){say("Message non envoyé : "+error.message);return;}
- input.value="";await loadDMMessages();await refreshDMUnread();
+ input.value="";S.dmReplyTo=null;el("afroDmReplyPreview")?.remove();await loadDMMessages();await refreshDMUnread();
 }
 function subscribeDMNotifications(){
  if(!signed()||S.dmBadgeChannel)return;
