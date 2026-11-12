@@ -2255,12 +2255,17 @@ function openFeedFrom(key,index){
  const owner=key==="creator";
  const body=$("feedBody");
  body.innerHTML=`<div class="feed" id="feedScroll">${list.map(p=>`
-  <section class="feed-item" data-id="${escapeHTML(p.id||"")}">
+  <section class="feed-item" data-id="${escapeHTML(p.id||"")}" data-post="${escapeHTML(p.id||"")}">
    ${feedMediaHTML(p)}
    <div class="feed-shade"></div>
    <div class="feed-side">
     ${owner?`<button class="feed-more" type="button" aria-label="Plus d'options"><i class="ti ti-dots" aria-hidden="true"></i></button>`:""}
     <button class="sound-btn" type="button" aria-label="Activer le son"><i class="ti ti-volume-off" aria-hidden="true"></i></button>
+   </div>
+   <div class="feed-engagement">
+    <button class="feed-action feed-like" type="button" data-action="like" data-post="${escapeHTML(p.id||"")}" data-liked="0" aria-label="J'aime"><i class="ti ti-heart" aria-hidden="true"></i><span class="vcount" data-n="0">0</span></button>
+    <button class="feed-action" type="button" data-action="comments" data-post="${escapeHTML(p.id||"")}" aria-label="Commentaires"><i class="ti ti-message-circle" aria-hidden="true"></i><span class="vcount">0</span></button>
+    <button class="feed-action" type="button" data-action="share" data-creator="${escapeHTML(p.creator_id||"")}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Partager"><i class="ti ti-share-3" aria-hidden="true"></i><span class="vcount">Partager</span></button>
    </div>
    <div class="feed-meta">
     <b>@${escapeHTML(p.username||"")}</b>
@@ -2271,6 +2276,12 @@ function openFeedFrom(key,index){
  const feed=$("feedScroll");
  $("viewer").classList.remove("hidden");
  feed.addEventListener("click",e=>{
+  const action=e.target.closest("[data-action]");
+  if(action){
+   if(action.dataset.action==="like"){toggleLike(action);return}
+   if(action.dataset.action==="comments"){openComments(action.dataset.post);return}
+   if(action.dataset.action==="share"){sharePostToNetwork(action);return}
+  }
   const more=e.target.closest(".feed-more");
   if(more){const id=more.closest(".feed-item").dataset.id;openMoreSheet(id);return}
   const profileBtn=e.target.closest(".feed-profile");
@@ -2290,6 +2301,21 @@ function openFeedFrom(key,index){
   if(e.isIntersecting&&e.intersectionRatio>=0.6)v.play().catch(()=>{});else v.pause();
  }),{root:feed,threshold:[0.6]});
  feed.querySelectorAll(".feed-item").forEach(el=>feedObserver.observe(el));
+ // Charge les compteurs et l'état J'aime de chaque publication affichée.
+ list.forEach(async p=>{
+  if(!p.id)return;
+  const item=feed.querySelector('.feed-item[data-id="'+CSS.escape(p.id)+'"]');
+  if(!item)return;
+  const likeBtn=item.querySelector('[data-action="like"]');
+  const commentBtn=item.querySelector('[data-action="comments"]');
+  const [likes,comments,mine]=await Promise.all([
+   db.from("post_likes").select("post_id",{count:"exact",head:true}).eq("post_id",p.id),
+   db.from("post_comments").select("id",{count:"exact",head:true}).eq("post_id",p.id),
+   currentUser?db.from("post_likes").select("post_id").eq("post_id",p.id).eq("user_id",currentUser.id).maybeSingle():Promise.resolve({data:null})
+  ]);
+  if(likeBtn&&!likes.error){const n=likes.count||0;likeBtn.dataset.liked=mine.data?1:0;likeBtn.querySelector("i").className="ti "+(mine.data?"ti-heart-filled":"ti-heart");likeBtn.classList.toggle("on",!!mine.data);const count=likeBtn.querySelector(".vcount");count.dataset.n=n;count.textContent=fmtCount(n);}
+  if(commentBtn&&!comments.error)commentBtn.querySelector(".vcount").textContent=fmtCount(comments.count||0);
+ });
  requestAnimationFrame(()=>{feed.scrollTop=index*feed.clientHeight});
 }
 function closeViewer(){
@@ -4045,6 +4071,16 @@ db.auth.onAuthStateChange((event,session)=>{
  }
 });
 </script>
+<style id="afro-profile-viewer-engagement">
+#viewer .feed-item{position:relative}
+#viewer .feed-engagement{position:absolute;z-index:5;right:12px;bottom:105px;display:flex;flex-direction:column;align-items:center;gap:19px}
+#viewer .feed-action{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:48px;min-height:48px;padding:3px;border:0;background:transparent;color:#fff;text-shadow:0 1px 5px #000;font-size:25px}
+#viewer .feed-action .vcount{font-size:12px;font-weight:700;line-height:1.2;color:#fff}
+#viewer .feed-action.on{color:#ff315b}
+#viewer .feed-action.on i{color:#ff315b}
+#viewer .feed-meta{right:72px;max-width:calc(100% - 105px)}
+@media(max-width:480px){#viewer .feed-engagement{right:8px;bottom:100px;gap:16px}}
+</style>
 <script src="/social.js?v=20261112-dm-photo-reactions2"></script>
 </body>
 </html>
