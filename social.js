@@ -262,6 +262,11 @@ async function sendDMShare(conversationId,kind,id){
  S.dmShare=null;await openConversation(conversationId,null,"Conversation");await refreshDMUnread();
 }
 window.afroShareLiveToDM=id=>openDMSharePicker("live",id);
+function setDMReply(id){const m=S.dmMessageMap?.[id];if(!m)return;S.dmReplyTo=id;let p=el("afroDmReplyPreview");if(!p){p=document.createElement("div");p.id="afroDmReplyPreview";el("afroDmForm")?.before(p);}p.className="afro-dm-reply-preview";p.innerHTML='Réponse à : '+esc(m.body||(m.message_type==="image"?"Photo":m.message_type==="audio"?"Note vocale":"Message"))+' <button data-dm-cancel-reply>×</button>';el("afroDmInput")?.focus();}
+async function reactDMMessage(id,emoji){const {error}=await db.from("direct_message_reactions").upsert({message_id:id,conversation_id:S.dmConversation,user_id:currentUser.id,emoji},{onConflict:"message_id,user_id"});if(error){say("Réaction impossible : "+error.message);return;}await loadDMMessages();}
+function openDMImage(id){const m=S.dmMessageMap?.[id];if(!m?.media_path)return;const url=dmPublicUrl(m.media_path);let modal=el("afroDmImageModal");if(!modal){modal=document.createElement("div");modal.id="afroDmImageModal";modal.className="afro-dm-image-modal";document.body.appendChild(modal);}modal.innerHTML='<button class="afro-dm-modal-close" data-dm-image-close>×</button><img src="'+esc(url)+'" alt="Photo originale"><div class="afro-dm-image-actions"><a href="'+esc(url)+'" download="afro-live-photo">Télécharger</a><button data-dm-image-share="'+esc(id)+'">Partager</button>'+(m.sender_id===currentUser.id?'<button data-dm-image-delete="'+esc(id)+'">Supprimer</button>':"") +'</div>';modal.hidden=false;}
+async function shareDMImage(id){const m=S.dmMessageMap?.[id];if(!m?.media_path)return;const url=dmPublicUrl(m.media_path);try{if(navigator.share){const response=await fetch(url);const blob=await response.blob();const file=new File([blob],"afro-live-photo",{type:blob.type});if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file]});else await navigator.share({url});}else{await navigator.clipboard.writeText(url);say("Lien de la photo copié.");}}catch(e){if(e.name!=="AbortError")say("Partage indisponible.");}}
+async function deleteDMImage(id){const m=S.dmMessageMap?.[id];if(!m||m.sender_id!==currentUser.id||!confirm("Supprimer cette photo pour tous les participants ?"))return;const {error}=await db.from("direct_messages").delete().eq("id",id);if(error){say("Suppression impossible : "+error.message);return;}if(m.media_path)await db.storage.from("creator-media").remove([m.media_path]);el("afroDmImageModal").hidden=true;await loadDMMessages();}
 async function refreshSaved(){
  if(!signed())return;
  const {data,error}=await db.from("post_saves").select("post_id").eq("user_id",currentUser.id).limit(500);
@@ -456,6 +461,14 @@ function bind(){
   if(t.matches("[data-dm-new]")){showNewDM();return;}
   if(t.matches("[data-dm-photo]")){el("afroDmFile")?.click();return;}
   if(t.matches("[data-dm-cancel-file]")){S.dmPendingFile=null;S.dmPendingType=null;const p=el("afroDmAttachmentPreview");if(p){p.hidden=true;p.innerHTML="";}return;}
+  if(t.matches("[data-dm-cancel-reply]")){S.dmReplyTo=null;el("afroDmReplyPreview")?.remove();return;}
+  if(t.matches("[data-dm-image]")){openDMImage(t.dataset.dmImage);return;}
+  if(t.matches("[data-dm-image-close]")){el("afroDmImageModal").hidden=true;return;}
+  if(t.matches("[data-dm-image-share]")){shareDMImage(t.dataset.dmImageShare);return;}
+  if(t.matches("[data-dm-image-delete]")){deleteDMImage(t.dataset.dmImageDelete);return;}
+  if(t.matches("[data-dm-reply]")){setDMReply(t.dataset.dmReply);return;}
+  if(t.matches("[data-dm-react]")){const p=document.querySelector('[data-dm-picker="'+t.dataset.dmReact+'"]');if(p)p.hidden=!p.hidden;return;}
+  if(t.matches("[data-dm-emoji]")){reactDMMessage(t.dataset.dmMessageId,t.dataset.dmEmoji);return;}
   if(t.matches("[data-dm-record]")){toggleDMRecording();return;}
   if(t.matches("[data-dm-conversation]")){if(t.dataset.dmShareKind){await sendDMShare(t.dataset.dmConversation,t.dataset.dmShareKind,t.dataset.dmShareId);return;}if(el("afroDmOverlay")?.hidden)await openDM();await openConversation(t.dataset.dmConversation,t.dataset.dmOther,t.dataset.dmName);return;}
   if(t.matches("[data-dm-start]")){startDM(t.dataset.dmStart,t.dataset.dmName);return;}
@@ -472,7 +485,7 @@ function bind(){
   if(t.matches("[data-delete-comment]")){e.preventDefault();e.stopImmediatePropagation();if(typeof deleteComment==="function")deleteComment(t.dataset.deleteComment);return;}
  },true);
  document.addEventListener("submit",e=>{if(e.target?.id==="afroDmForm"){sendDM(e);}},true);
- el("afroDmSearchInput")?.addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchDMUsers,250);});
+ el("afroDmSearchInput")?.addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchDMUsers,250);});let dmTouch=null;document.addEventListener("touchstart",e=>{const row=e.target.closest("[data-dm-message]");if(row&&e.touches.length===1)dmTouch={id:row.dataset.dmMessage,x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});document.addEventListener("touchend",e=>{if(!dmTouch)return;const dx=e.changedTouches[0].clientX-dmTouch.x,dy=e.changedTouches[0].clientY-dmTouch.y;const id=dmTouch.id;dmTouch=null;if(dx>65&&Math.abs(dx)>Math.abs(dy)*1.3)setDMReply(id);},{passive:true});
  document.addEventListener("change",e=>{if(e.target?.id!=="afroDmFile")return;const f=e.target.files?.[0];if(!f)return;const type=f.type.startsWith("video/")?"video":f.type.startsWith("image/")?"image":null;if(!type){say("Choisis une photo ou une vidéo.");return;}showDMPendingFile(f,type);e.target.value="";});
 }
 async function appendDMInboxToMessagesPage(){
