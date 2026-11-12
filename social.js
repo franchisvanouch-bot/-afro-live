@@ -237,7 +237,7 @@ async function sendDM(e){
  const {error}=await db.from("direct_messages").insert({conversation_id:S.dmConversation,sender_id:currentUser.id,body,message_type:"text",reply_to_id:S.dmReplyTo||null});
  input.disabled=false;
  if(error){say("Message non envoyé : "+error.message);return;}
- input.value="";S.dmReplyTo=null;el("afroDmReplyPreview")?.remove();await loadDMMessages();await refreshDMUnread();
+ input.value="";S.dmReplyTo=null;el("afroDmReplyPreview")?.remove();await loadDMMessages();await refreshDMUnread();await appendDMInboxToMessagesPage();
 }
 function ensureDMUnreadDock(){
  if(el("afroDmUnreadDock"))return el("afroDmUnreadDock");
@@ -258,10 +258,14 @@ async function refreshDMUnread(){
 function subscribeDMNotifications(){
  if(!signed()||S.dmBadgeChannel)return;
  S.dmBadgeChannel=db.channel("afro-dm-badge-"+currentUser.id).on("postgres_changes",{event:"INSERT",schema:"public",table:"direct_messages"},async payload=>{
-  if(payload.new?.sender_id!==currentUser.id){
+  await refreshDMUnread();
+  if(!el("afroDmOverlay")?.hidden&&!S.dmConversation)await renderInbox();
+  if(el("notifsPage")&&!el("notifsPage").classList.contains("hidden"))await appendDMInboxToMessagesPage();
+  if(payload.new?.sender_id!==currentUser.id&&S.dmConversation&&payload.new?.conversation_id===S.dmConversation){
+   await loadDMMessages();
+   await db.rpc("afro_mark_conversation_read",{p_conversation:S.dmConversation});
    await refreshDMUnread();
-   if(!el("afroDmOverlay")?.hidden&&!S.dmConversation)await renderInbox();
-   if(S.dmConversation&&payload.new?.conversation_id===S.dmConversation){await loadDMMessages();await db.rpc("afro_mark_conversation_read",{p_conversation:S.dmConversation});await refreshDMUnread();}
+   if(el("notifsPage")&&!el("notifsPage").classList.contains("hidden"))await appendDMInboxToMessagesPage();
   }
  }).subscribe();
 }
@@ -429,6 +433,7 @@ function patchProfile(){
   const messageProfile=async()=>{
    if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}
    if(typeof window.openAfroCreatorConversation!=="function"){say("La messagerie n’est pas encore prête.");return;}
+   if(typeof showPage==="function")showPage("notifs");
    await window.openAfroCreatorConversation(id,pName);
   };
   const top=profile?.querySelector(".ig-top");
@@ -537,17 +542,19 @@ function bind(){
 }
 async function appendDMInboxToMessagesPage(){
  const box=el("notifsList");if(!box||!signed())return;
+ const previous=el("afroDmInboxSection");
  const {data,error}=await db.from("afro_my_conversations").select("*").order("last_message_at",{ascending:false}).limit(80);
  const section=document.createElement("section");
- section.className="afro-dm-page-section";
+ section.id="afroDmInboxSection";section.className="afro-dm-page-section";
  section.innerHTML='<h3 style="margin:18px 12px 8px;font-size:15px">Conversations</h3>';
  if(error){
   section.insertAdjacentHTML("beforeend",'<p class="empty" style="padding:10px 14px">Conversations temporairement indisponibles.</p>');
  }else if(!data?.length){
-  section.insertAdjacentHTML("beforeend",'<p class="empty" style="padding:10px 14px">Aucun message privé pour le moment.</p>');
+  section.insertAdjacentHTML("beforeend",'<p class="empty" style="padding:10px 14px">Aucune conversation pour le moment.</p>');
  }else{
   section.insertAdjacentHTML("beforeend",data.map(c=>'<button class="afro-dm-row" style="width:100%;padding:12px 14px" data-dm-conversation="'+esc(c.id)+'" data-dm-other="'+esc(c.other_id)+'" data-dm-name="'+esc(c.other_display_name||c.other_username||"Membre")+'">'+avatar({avatar_url:c.other_avatar_url,username:c.other_username,display_name:c.other_display_name})+'<span class="afro-dm-copy"><b>'+esc(c.other_display_name||c.other_username||"Membre")+'</b><small>'+esc(c.last_message_preview||"Démarrer la conversation")+'</small></span>'+(Number(c.unread_count)>0?'<span class="afro-dm-unread">'+Number(c.unread_count)+'</span>':'')+'</button>').join(""));
  }
+ if(previous)previous.remove();
  box.prepend(section);
 }
 function wrapFunctions(){
