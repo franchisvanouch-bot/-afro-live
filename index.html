@@ -2464,7 +2464,7 @@ async function openProfile(id){
     ? '<button class="ig-icon" type="button" id="igAdd" aria-label="Créer"><i class="ti ti-plus"></i></button>'
     : '<button class="ig-icon" type="button" id="pfBack" aria-label="Retour"><i class="ti ti-arrow-left"></i></button>'}
    <span class="ig-user"><b>${escapeHTML(p.username)}</b>${p.is_live?' <span class="ig-live-dot"></span>':""}</span>
-   <button class="ig-icon" type="button" id="pfMenu" aria-label="${isMe?"Menu":"Partager"}"><i class="ti ${isMe?"ti-menu-2":"ti-share"}"></i></button>
+   ${!isMe?'<button class="ig-icon" type="button" id="pfMenu" aria-label="Options du profil"><i class="ti ti-dots"></i></button>':'<span class="ig-top-spacer" aria-hidden="true"></span>'}
   </header>
   <section class="ig-head">
    <button class="ig-avatar" type="button" id="pfAvatar" aria-label="${hasStatus?"Voir le statut":(isMe?"Modifier la photo":"Photo de profil")}">
@@ -2517,7 +2517,7 @@ async function openProfile(id){
  // Le partage reste accessible depuis le menu supérieur ; aucune deuxième ligne de bouton.
  const back=$("pfBack");if(back)back.onclick=()=>showPage("discover");
  const add=$("igAdd");if(add)add.onclick=openCreateAction;
- $("pfMenu").onclick=()=>isMe?openMenuSheet():shareCreator(p.username,name);
+ const pfMenu=$("pfMenu");if(pfMenu)pfMenu.onclick=()=>{};
  $("pfAvatar").onclick=()=>{
   if(hasStatus)openStatusViewer(id);
   else if(isMe)$("avatarInput").click();
