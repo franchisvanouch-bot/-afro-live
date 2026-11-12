@@ -2,7 +2,7 @@
    Written for AFRO LIVE's existing vanilla JS + Supabase schema; no Expo/VYBE runtime copied. */
 (()=>{
 "use strict";
-const S={saved:new Set(),blocked:new Set(),replyTo:null,dmChannel:null,dmConversation:null,dmOther:null,dmOtherLastReadAt:null};
+const S={saved:new Set(),blocked:new Set(),replyTo:null,dmChannel:null,dmConversation:null,dmOther:null,dmOtherLastReadAt:null,dmBadgeChannel:null};
 const esc=v=>typeof escapeHTML==="function"?escapeHTML(String(v??"")):String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const el=id=>document.getElementById(id);
 const say=(t,ok=false)=>{if(typeof message==="function")message(t,ok);};
@@ -201,6 +201,12 @@ async function sendDM(e){
  input.disabled=false;
  if(error){say("Message non envoyé : "+error.message);return;}
  input.value="";await loadDMMessages();await refreshDMUnread();
+}
+function subscribeDMNotifications(){
+ if(!signed()||S.dmBadgeChannel)return;
+ S.dmBadgeChannel=db.channel("afro-dm-badge-"+currentUser.id).on("postgres_changes",{event:"INSERT",schema:"public",table:"direct_messages"},async payload=>{
+  if(payload.new?.sender_id!==currentUser.id){await refreshDMUnread();if(!el("afroDmOverlay")?.hidden&&!S.dmConversation)await renderInbox();}
+ }).subscribe();
 }
 async function refreshDMUnread(){
  if(!signed())return;
@@ -469,7 +475,7 @@ function wrapFunctions(){
 }
 document.addEventListener("DOMContentLoaded",bind,{once:true});
 if(document.readyState!=="loading")bind();
-const start=()=>{if(!signed())return;wrapFunctions();loadBlocked().then(()=>{patchFeed();refreshSaved();});};
+const start=()=>{if(!signed())return;wrapFunctions();subscribeDMNotifications();loadBlocked().then(()=>{patchFeed();refreshSaved();refreshDMUnread();});};
 setTimeout(start,0);
 if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange((event,session)=>{if(session?.user){setTimeout(start,0);}else{S.saved.clear();S.blocked.clear();closeDM();}});
 window.openAfroMessages=openDM;
