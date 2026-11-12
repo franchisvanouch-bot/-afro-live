@@ -1851,6 +1851,7 @@ function renderView(){
   `<button class="nav-create" aria-label="Créer" onclick="openCreateAction()"><i class="ti ti-plus"></i></button>`+
   `<button data-page="notifs" onclick="showPage('notifs')"><i class="ti ti-message-circle"></i><span>Messages</span><i class="navdot" hidden></i></button>`+
   `<button data-page="profile" onclick="showPage('profile')"><i class="ti ti-user"></i><span>Profil</span></button>`;
+ if(window.afroRefreshDMUnread)setTimeout(()=>window.afroRefreshDMUnread(),0);
  loadSpectatorData();
 }
 async function loadSpectatorData(){
@@ -4495,6 +4496,6 @@ body:has(#publicProfile:not(.hidden)) #publicProfile{
 #subscriptionsPage .my-sub-list-title{margin-top:22px}
 @media(max-width:360px){#publicProfile .ig-public-actions{gap:5px!important}#publicProfile .ig-public-actions .ig-btn{font-size:10px!important;padding:10px 2px!important}}
 </style>
-<script src="/social.js?v=20261112-green-unread-foreground-fix"></script>
+<script src="/social.js?v=20261112-unread-poll-nav-fix"></script>
 </body>
 </html>
