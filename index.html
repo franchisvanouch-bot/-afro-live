@@ -4033,7 +4033,8 @@ async function uploadAvatar(file){
  if(error)return message("Photo enregistrée mais non liée au profil : "+error.message);
  currentProfile.avatar_url=url;
  message("Photo de profil mise à jour.",true);
- loadCreator();
+ if($("publicProfile")?.querySelector(".profile-edit-page"))openProfileEditor();
+ else loadCreator();
 }
 
 /* ABONNÉS (noms visibles uniquement par le créateur) */
