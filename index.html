@@ -2439,6 +2439,11 @@ async function openProfile(id){
   return;
  }
  const list=(posts||[]).map(x=>({...x,username:p.username,creator_id:id}));
+ let likesCount=0;
+ if(list.length){
+  const {count}=await db.from("post_likes").select("id",{count:"exact",head:true}).in("post_id",list.map(x=>x.id));
+  likesCount=Number(count)||0;
+ }
  feedSources.profile=list;
  let liveSessionId=null;
  if(p.is_live){
@@ -2471,7 +2476,7 @@ async function openProfile(id){
     ${isMe?'<span class="ig-add"><i class="ti ti-plus"></i></span>':""}
    </button>
    <div class="ig-stats">
-    <div><b>${list.length}</b><span>Likes</span></div>
+    <div><b>${likesCount}</b><span>Likes</span></div>
     <div><b>${followerCount}</b><span>Followers</span></div>
     <div><b>${followingTotal}</b><span>Suivis</span></div>
    </div>
