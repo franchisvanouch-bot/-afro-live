@@ -4151,11 +4151,11 @@ db.auth.onAuthStateChange((event,session)=>{
 </style>
 <style id="afro-profile-fullscreen-black">
 /* Profil plein écran : noir uniforme, sans en-tête de marque ni séparateurs superflus */
-body.profile-mode{background:#000!important;overflow:hidden!important}
-body.profile-mode>header{display:none!important}
-body.profile-mode main{padding:0!important;margin:0!important;max-width:none!important;width:100%!important}
-body.profile-mode #navigation{display:none!important}
-body.profile-mode #publicProfile{
+body:has(#publicProfile:not(.hidden)){background:#000!important;overflow:hidden!important}
+body:has(#publicProfile:not(.hidden))>header{display:none!important}
+body:has(#publicProfile:not(.hidden)) main{padding:0!important;margin:0!important;max-width:none!important;width:100%!important}
+body:has(#publicProfile:not(.hidden)) #navigation{display:none!important}
+body:has(#publicProfile:not(.hidden)) #publicProfile{
  position:fixed!important;inset:0!important;z-index:100030!important;
  width:100vw!important;height:100vh!important;height:100dvh!important;
  min-height:100vh!important;margin:0!important;padding:
