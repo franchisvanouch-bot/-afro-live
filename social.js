@@ -12,7 +12,7 @@ function addStyles(){
  const st=document.createElement("style");st.id="afroSocialStyles";
  st.textContent=`
  #homeFeed .vitem{touch-action:pan-y}
- .afro-social-overlay{position:fixed;inset:0;z-index:100020;background:#09090b;color:#fff;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+ .afro-social-overlay{position:fixed;inset:0;z-index:2147483000;background:#09090b;color:#fff;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
  .afro-social-head{height:56px;flex:0 0 56px;display:flex;align-items:center;gap:12px;padding:0 14px;border-bottom:1px solid #29292e}
  .afro-social-head strong{flex:1;font-size:17px}.afro-social-close,.afro-social-back{border:0;background:#242429;color:#fff;border-radius:50%;width:38px;height:38px;padding:0;font-size:20px}
  .afro-dm-list{overflow:auto;flex:1;padding:8px 12px}.afro-dm-row{display:flex;align-items:center;gap:11px;padding:13px 5px;border-bottom:1px solid #242429;color:#fff;background:none;border-radius:0;width:100%;text-align:left}
@@ -407,9 +407,8 @@ function patchProfile(){
   const username=profile?.querySelector(".ig-user b")?.textContent||"";
   const messageProfile=async()=>{
    if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}
-   const {data,error}=await db.rpc("afro_start_conversation",{p_other:id});
-   if(error){say(error.message);return;}
-   await openDM();await openConversation(data,id,pName);
+   if(typeof window.openAfroCreatorConversation!=="function"){say("La messagerie n’est pas encore prête.");return;}
+   await window.openAfroCreatorConversation(id,pName);
   };
   const top=profile?.querySelector(".ig-top");
   if(top&&!top.querySelector("[data-afro-profile-message]")){
