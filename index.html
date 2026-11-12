@@ -2460,21 +2460,20 @@ async function openProfile(id){
  };
  profile.innerHTML=`
   <header class="ig-top">
-   ${isMe
-    ? '<button class="ig-icon" type="button" id="igAdd" aria-label="Créer"><i class="ti ti-plus"></i></button>'
-    : '<button class="ig-icon" type="button" id="pfBack" aria-label="Retour"><i class="ti ti-arrow-left"></i></button>'}
+   <button class="ig-icon" type="button" id="pfBack" aria-label="Retour à l’accueil"><i class="ti ti-arrow-left"></i></button>
    <span class="ig-user"><b>${escapeHTML(p.username)}</b>${p.is_live?' <span class="ig-live-dot"></span>':""}</span>
    ${!isMe?'<button class="ig-icon" type="button" id="pfMenu" aria-label="Options du profil"><i class="ti ti-dots"></i></button>':'<span class="ig-top-spacer" aria-hidden="true"></span>'}
   </header>
   <section class="ig-head">
+   ${isMe?'<button class="ig-edit-profile" type="button" id="igEditProfile" aria-label="Modifier le profil"><i class="ti ti-pencil"></i></button>':""}
    <button class="ig-avatar" type="button" id="pfAvatar" aria-label="${hasStatus?"Voir le statut":(isMe?"Modifier la photo":"Photo de profil")}">
     ${avatarHTML(p,p.is_live)}
     ${isMe?'<span class="ig-add"><i class="ti ti-plus"></i></span>':""}
    </button>
    <div class="ig-stats">
-    <div><b>${list.length}</b><span>publications</span></div>
-    <div><b>${followerCount}</b><span>abonnés</span></div>
-    <div><b>${followingTotal}</b><span>abonnements</span></div>
+    <div><b>${list.length}</b><span>Likes</span></div>
+    <div><b>${followerCount}</b><span>Followers</span></div>
+    <div><b>${followingTotal}</b><span>Suivis</span></div>
    </div>
   </section>
   <section class="ig-bio">
@@ -2501,9 +2500,8 @@ async function openProfile(id){
  };
  if(isMe){
   actions.append(
-   mk("ig-btn","Modifier",editMyProfile),
    mk("ig-btn",currentProfile?.role==="creator"?"Espace créateur":"Devenir créateur",()=>currentProfile?.role==="creator"?setViewMode("creator"):showPage("application")),
-   mk("ig-btn","Mes abonnements",()=>showPage("subscriptions"))
+   mk("ig-btn ig-subscriptions-entry","Mes abonnements",()=>showPage("subscriptions"))
   );
  }else{
   actions.classList.add("ig-public-actions");
@@ -2516,7 +2514,7 @@ async function openProfile(id){
 
  // Le partage reste accessible depuis le menu supérieur ; aucune deuxième ligne de bouton.
  const back=$("pfBack");if(back)back.onclick=()=>showPage("discover");
- const add=$("igAdd");if(add)add.onclick=openCreateAction;
+ const editProfile=$("igEditProfile");if(editProfile)editProfile.onclick=editMyProfile;
  const pfMenu=$("pfMenu");if(pfMenu)pfMenu.onclick=()=>{};
  $("pfAvatar").onclick=()=>{
   if(hasStatus)openStatusViewer(id);
@@ -4148,6 +4146,25 @@ db.auth.onAuthStateChange((event,session)=>{
 #viewer .feed-action.on i{color:#ff315b}
 #viewer .feed-meta{right:72px;max-width:calc(100% - 105px)}
 @media(max-width:480px){#viewer .feed-engagement{right:8px;bottom:100px;gap:16px}}
+</style>
+<style id="afro-profile-labels-and-buttons">
+#publicProfile .ig-actions .ig-subscriptions-entry,
+#publicProfile .ig-actions .ig-follow-entry{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ text-align:center!important;color:#080808!important;background:#ff861c!important;
+ font-weight:800!important;border:0!important;padding-left:5px!important;padding-right:5px!important
+}
+#publicProfile .ig-actions .ig-subscriptions-entry *,
+#publicProfile .ig-actions .ig-follow-entry *{color:#080808!important}
+#publicProfile .ig-head{position:relative!important}
+#publicProfile .ig-edit-profile{
+ flex:0 0 36px!important;width:36px!important;height:36px!important;
+ padding:0!important;margin:0!important;border-radius:50%!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ background:#242428!important;color:#fff!important;border:1px solid #3a3a40!important;
+ font-size:18px!important
+}
+#publicProfile .ig-edit-profile i{color:#fff!important}
 </style>
 <style id="afro-profile-fullscreen-black">
 /* Profil plein écran : noir uniforme, sans en-tête de marque ni séparateurs superflus */
