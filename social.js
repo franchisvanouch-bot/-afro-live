@@ -2,7 +2,7 @@
    Written for AFRO LIVE's existing vanilla JS + Supabase schema; no Expo/VYBE runtime copied. */
 (()=>{
 "use strict";
-const S={saved:new Set(),blocked:new Set(),replyTo:null,dmChannel:null,dmConversation:null,dmOther:null};
+const S={saved:new Set(),blocked:new Set(),replyTo:null,dmChannel:null,dmConversation:null,dmOther:null,dmOtherLastReadAt:null};
 const esc=v=>typeof escapeHTML==="function"?escapeHTML(String(v??"")):String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const el=id=>document.getElementById(id);
 const say=(t,ok=false)=>{if(typeof message==="function")message(t,ok);};
@@ -23,7 +23,7 @@ function addStyles(){
  .afro-dm-chat{display:flex;flex-direction:column;flex:1;min-height:0}.afro-dm-messages{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
  .afro-dm-bubble{max-width:82%;padding:10px 13px;border-radius:16px;background:#242429;align-self:flex-start;overflow-wrap:anywhere;font-size:14px;line-height:1.4}
  .afro-dm-bubble.mine{align-self:flex-end;background:#ff6a00;color:white}.afro-dm-time{display:block;font-size:10px;opacity:.7;margin-top:4px}
- .afro-dm-compose{display:flex;align-items:center;gap:7px;padding:10px 9px;border-top:1px solid #29292e;background:#09090b}.afro-dm-compose input{flex:1;min-width:0}.afro-dm-compose button{flex:0 0 42px}.afro-dm-tool{background:#242429;color:#fff;border-radius:50%;width:40px!important;height:40px!important;padding:0!important}.afro-dm-tool.recording{background:#d22;color:#fff}.afro-dm-media{display:block;max-width:100%;max-height:360px;border-radius:13px;object-fit:contain}.afro-dm-audio{max-width:230px;width:100%}.afro-dm-caption{margin-top:6px}.afro-dm-ticks{color:#b9b9bf;letter-spacing:-3px;margin-left:5px;font-size:12px}.afro-dm-share{min-width:180px;display:grid;gap:5px}.afro-dm-share i{font-size:24px}.afro-dm-share small{opacity:.75}.afro-dm-record-status{padding:7px 14px;color:#ff9b57;font-size:12px}.afro-dm-bubble{border-radius:20px 20px 20px 5px}.afro-dm-bubble.mine{border-radius:20px 20px 5px 20px}.afro-dm-compose input{flex:1;min-width:0}.afro-dm-compose button{border-radius:50%;width:44px;height:44px;padding:0}
+ .afro-dm-compose{display:flex;align-items:center;gap:7px;padding:10px 9px;border-top:1px solid #29292e;background:#09090b}.afro-dm-compose input{flex:1;min-width:0}.afro-dm-compose button{flex:0 0 42px}.afro-dm-tool{background:#242429;color:#fff;border-radius:50%;width:40px!important;height:40px!important;padding:0!important}.afro-dm-tool.recording{background:#d22;color:#fff}.afro-dm-media{display:block;max-width:100%;max-height:360px;border-radius:13px;object-fit:contain}.afro-dm-audio{max-width:230px;width:100%}.afro-dm-caption{margin-top:6px}.afro-dm-ticks{color:#b9b9bf;letter-spacing:-3px;margin-left:5px;font-size:12px}.afro-dm-ticks.read{color:#45a7ff}.afro-dm-share{min-width:180px;display:grid;gap:5px}.afro-dm-share i{font-size:24px}.afro-dm-share small{opacity:.75}.afro-dm-record-status{padding:7px 14px;color:#ff9b57;font-size:12px}.afro-dm-bubble{border-radius:20px 20px 20px 5px}.afro-dm-bubble.mine{border-radius:20px 20px 5px 20px}.afro-dm-compose input{flex:1;min-width:0}.afro-dm-compose button{border-radius:50%;width:44px;height:44px;padding:0}
  .afro-social-empty{color:#999;text-align:center;padding:35px 18px;font-size:14px}
  .afro-comment-actions{display:flex;align-items:center;gap:14px;margin-top:7px}.afro-comment-actions button{padding:2px 0;background:none;color:#aaa;font-size:11px;font-weight:500}.afro-comment-actions button.liked{color:#ff526b}
  .afro-comment-reply{margin:8px 0 0 34px;padding-left:10px;border-left:2px solid #38383e}.afro-comment-row{display:flex;gap:9px;padding:10px 0}.afro-comment-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:13px;overflow-wrap:anywhere}.afro-comment-text b{font-size:12px}.afro-comment-text small{color:#888;font-size:10px}
@@ -128,6 +128,7 @@ async function startDM(userId,name){
 async function openConversation(conversationId,otherId,name){
  if(S.dmChannel){db.removeChannel(S.dmChannel);S.dmChannel=null;}
  S.dmConversation=conversationId;S.dmOther=otherId;
+ const receipt=await db.from("afro_my_conversations").select("other_last_read_at").eq("id",conversationId).maybeSingle();S.dmOtherLastReadAt=receipt.data?.other_last_read_at||null;
  el("afroDmTitle").textContent=name||"Conversation";
  el("afroDmSearch").hidden=true;
  const body=el("afroDmBody");body.className="afro-dm-chat";
@@ -153,7 +154,7 @@ function renderDMMessage(m){
  }else if(m.message_type==="live"){
   content='<div class="afro-dm-share"><i class="ti ti-broadcast"></i><b>Direct partagé</b><small>'+esc(m.body||"Un direct AFRO LIVE a été partagé")+'</small></div>';
  }else content=esc(m.body||"");
- const ticks=mine?'<span class="afro-dm-ticks" title="Envoyé et livré">✓✓</span>':"";
+ const read=mine&&S.dmOtherLastReadAt&&new Date(S.dmOtherLastReadAt)>=new Date(m.created_at);const ticks=mine?'<span class="afro-dm-ticks'+(read?" read":"")+'" title="'+(read?"Lu":"Envoyé · non lu")+'">✓✓</span>':"";
  return '<div class="afro-dm-bubble'+(mine?" mine":"")+'">'+content+(m.body&&["image","video","audio"].includes(m.message_type)?'<div class="afro-dm-caption">'+esc(m.body)+'</div>':"")+'<small class="afro-dm-time">'+new Date(m.created_at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+' '+ticks+'</small></div>';
 }
 async function loadDMMessages(){
