@@ -402,15 +402,42 @@ function patchProfile(){
   await old(id);
   if(!id||!el("pfActions")||id===currentUser?.id)return;
   const actions=el("pfActions");
-  const pName=el("publicProfile")?.querySelector(".ig-name")?.textContent||"ce membre";
-  const mk=(txt,cls,fn)=>{const b=document.createElement("button");b.type="button";b.className=cls||"ig-btn";b.textContent=txt;b.onclick=fn;return b;};
-  const messageProfile=async()=>{if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}const {data,error}=await db.rpc("afro_start_conversation",{p_other:id});if(error){say(error.message);return;}await openDM();await openConversation(data,id,pName);};
-  const top=el("publicProfile")?.querySelector(".ig-top");
+  const profile=el("publicProfile");
+  const pName=profile?.querySelector(".ig-name")?.textContent||"ce membre";
+  const username=profile?.querySelector(".ig-user b")?.textContent||"";
+  const messageProfile=async()=>{
+   if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}
+   const {data,error}=await db.rpc("afro_start_conversation",{p_other:id});
+   if(error){say(error.message);return;}
+   await openDM();await openConversation(data,id,pName);
+  };
+  const top=profile?.querySelector(".ig-top");
   if(top&&!top.querySelector("[data-afro-profile-message]")){
    const b=document.createElement("button");b.type="button";b.className="ig-icon";b.dataset.afroProfileMessage="1";b.setAttribute("aria-label","Messagerie");b.innerHTML='<i class="ti ti-message-circle"></i>';b.addEventListener("click",messageProfile);top.insertBefore(b,top.querySelector("#pfMenu"));
   }
-  actions.append(mk("Signaler","ig-btn",()=>reportTarget({reported_user_id:id})));
-  actions.append(mk("Bloquer","ig-btn",()=>blockProfile(id,pName)));
+  const menu=top?.querySelector("#pfMenu");
+  if(menu){
+   menu.setAttribute("aria-label","Options du profil");
+   menu.onclick=()=>{
+    let sheet=el("afroProfileOptions");
+    if(!sheet){
+     sheet=document.createElement("div");sheet.id="afroProfileOptions";
+     sheet.style.cssText="position:fixed;inset:0;z-index:100050;background:rgba(0,0,0,.58);display:none;align-items:flex-end";
+     sheet.innerHTML='<div data-profile-options-panel style="width:100%;background:#17171b;border-radius:20px 20px 0 0;padding:12px 16px calc(18px + env(safe-area-inset-bottom));border-top:1px solid #333"><div style="width:38px;height:4px;border-radius:9px;background:#555;margin:0 auto 15px"></div><button type="button" data-profile-option="share" style="display:flex;align-items:center;gap:13px;width:100%;padding:15px 4px;background:none;border:0;color:#fff;text-align:left;font-size:15px"><i class="ti ti-share-3"></i>Partager le profil</button><button type="button" data-profile-option="report" style="display:flex;align-items:center;gap:13px;width:100%;padding:15px 4px;background:none;border:0;border-top:1px solid #303036;color:#fff;text-align:left;font-size:15px"><i class="ti ti-flag"></i>Signaler</button><button type="button" data-profile-option="block" style="display:flex;align-items:center;gap:13px;width:100%;padding:15px 4px;background:none;border:0;border-top:1px solid #303036;color:#ff7777;text-align:left;font-size:15px"><i class="ti ti-ban"></i>Bloquer</button><button type="button" data-profile-option="cancel" style="width:100%;padding:13px;margin-top:8px;background:#29292f;border:0;border-radius:12px;color:#fff;font-weight:700">Annuler</button></div>';
+     document.body.appendChild(sheet);
+     sheet.addEventListener("click",e=>{
+      if(e.target===sheet||e.target.closest('[data-profile-option="cancel"]'))sheet.style.display="none";
+      const action=e.target.closest("[data-profile-option]")?.dataset.profileOption;
+      if(!action||action==="cancel")return;
+      sheet.style.display="none";
+      if(action==="share"){if(typeof shareCreator==="function")shareCreator(username,pName);}
+      if(action==="report")reportTarget({reported_user_id:id});
+      if(action==="block")blockProfile(id,pName);
+     });
+    }
+    sheet.style.display="flex";
+   };
+  }
  };
  patched.__afroPatched=true;openProfile=patched;
 }
