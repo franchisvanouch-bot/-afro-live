@@ -570,7 +570,7 @@ function wrapFunctions(){
 }
 document.addEventListener("DOMContentLoaded",bind,{once:true});
 if(document.readyState!=="loading")bind();
-const start=()=>{if(!signed())return;wrapFunctions();subscribeDMNotifications();loadBlocked().then(()=>{patchFeed();refreshSaved();refreshDMUnread();});if(!S.dmBadgeTimer)S.dmBadgeTimer=setInterval(()=>{if(signed())refreshDMUnread();},15000);};
+const start=()=>{if(!signed())return;wrapFunctions();subscribeDMNotifications();loadBlocked().then(()=>{patchFeed();refreshSaved();refreshDMUnread();});if(!S.dmBadgeTimer)S.dmBadgeTimer=setInterval(()=>{if(!signed()||document.visibilityState!=="visible")return;refreshDMUnread();if(el("notifsPage")&&!el("notifsPage").classList.contains("hidden"))appendDMInboxToMessagesPage();if(el("afroDmOverlay")&&!el("afroDmOverlay").hidden&&!S.dmConversation)renderInbox();},10000);};
 setTimeout(start,0);
 if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange((event,session)=>{if(session?.user){setTimeout(start,0);}else{S.saved.clear();S.blocked.clear();closeDM();if(el("afroDmUnreadDock"))el("afroDmUnreadDock").hidden=true;}});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&signed()){refreshDMUnread();subscribeDMNotifications();}});
