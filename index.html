@@ -1037,6 +1037,24 @@ body.booting>header{visibility:hidden}
 }
 #publicProfile .ig-edit-profile{align-self:center!important}
 </style>
+<style id="afro-profile-editor-style">
+.profile-edit-page{max-width:620px;margin:0 auto;padding:14px 18px 36px;background:#000;color:#fff}
+.profile-edit-photo{display:flex;flex-direction:column;align-items:center;gap:9px;padding:12px 0 22px}
+.profile-edit-avatar{width:92px;height:92px;border-radius:50%;overflow:hidden;border:2px solid #ff861c}
+.profile-edit-avatar img,.profile-edit-avatar .avatar{width:100%;height:100%;object-fit:cover}
+.profile-edit-photo button{border:0;background:none;color:#ff9a35;font-weight:700;font-size:14px}
+.profile-edit-field{display:flex;flex-direction:column;gap:7px;padding:13px 0;border-bottom:1px solid #242428}
+.profile-edit-field>span{font-size:13px;color:#bdbdc4}
+.profile-edit-field input,.profile-edit-field textarea{width:100%;box-sizing:border-box;background:#151518;color:#fff;border:1px solid #34343a;border-radius:10px;padding:12px;font:inherit;outline:none}
+.profile-edit-field small{color:#92929b;font-size:12px}
+.profile-edit-section{padding:23px 0 8px;color:#ff9a35;font-weight:800;font-size:14px}
+.profile-edit-row{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#000;color:#fff;border:0;border-bottom:1px solid #242428;padding:16px 2px}
+.profile-edit-row span{display:flex;flex-direction:column;gap:5px}
+.profile-edit-row small{color:#9999a2;font-size:12px}
+.profile-edit-row i{color:#9999a2}
+.profile-edit-save{width:100%;margin-top:24px;padding:14px;border:0;border-radius:12px;background:#ff861c;color:#080808;font-weight:800;font-size:15px}
+.pf-edit-top{position:sticky;top:0;z-index:2}
+</style>
 </head>
 <body class="booting">
 <header><div class="logo"><img src="data:image/webp;base64,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" alt="AFRO LIVE — Regarde, partage, connecte-toi"></div><button id="logout" class="soft hidden">Déconnexion</button></header>
@@ -2532,7 +2550,7 @@ async function openProfile(id){
 
  // Le partage reste accessible depuis le menu supérieur ; aucune deuxième ligne de bouton.
  const back=$("pfBack");if(back)back.onclick=()=>showPage("discover");
- const editProfile=$("igEditProfile");if(editProfile)editProfile.onclick=editMyProfile;
+ const editProfile=$("igEditProfile");if(editProfile)editProfile.onclick=openProfileEditor;
  const pfMenu=$("pfMenu");if(pfMenu)pfMenu.onclick=()=>{};
  $("pfAvatar").onclick=()=>{
   if(hasStatus)openStatusViewer(id);
@@ -2549,19 +2567,65 @@ async function openProfile(id){
  refreshFollowUI();
 }
 function closeProfile(){showPage("discover")}
-async function editMyProfile(){
- if(!currentUser)return;
- const name=prompt("Nom affiché :",currentProfile.display_name||"");
- if(name===null)return;
- const bio=prompt("Bio :",currentProfile.bio||"");
- if(bio===null)return;
- const cleanName=name.trim().slice(0,60)||currentProfile.username;
- const cleanBio=bio.trim().slice(0,300);
- const {error}=await db.from("profiles").update({display_name:cleanName,bio:cleanBio}).eq("id",currentUser.id);
+function openProfileEditor(){
+ if(!currentUser||!currentProfile)return;
+ const profile=$("publicProfile");
+ const avatar=avatarHTML(currentProfile,false);
+ const displayName=currentProfile.display_name||"";
+ const username=currentProfile.username||"";
+ const bio=currentProfile.bio||"";
+ profile.innerHTML=`
+  <header class="ig-top pf-edit-top">
+   <button class="ig-icon" type="button" id="editProfileBack" aria-label="Retour au profil"><i class="ti ti-arrow-left"></i></button>
+   <span class="ig-user"><b>Modifier le profil</b></span>
+   <button class="ig-icon" type="button" id="saveProfileTop" aria-label="Enregistrer"><i class="ti ti-check"></i></button>
+  </header>
+  <div class="profile-edit-page">
+   <div class="profile-edit-photo">
+    <div class="profile-edit-avatar">${avatar}</div>
+    <button type="button" id="changeProfilePhoto">Changer de photo</button>
+   </div>
+   <label class="profile-edit-field"><span>Nom</span><input id="editDisplayName" maxlength="60" value="${escapeHTML(displayName)}" placeholder="Ton nom"></label>
+   <label class="profile-edit-field"><span>Nom d'utilisateur</span><input id="editUsername" maxlength="30" value="${escapeHTML(username)}" placeholder="nom_utilisateur" autocapitalize="none" autocomplete="username"><small id="editProfileLink">afrolive.app/@${escapeHTML(username)}</small></label>
+   <div class="profile-edit-section">Informations de base</div>
+   <label class="profile-edit-field"><span>Bio</span><textarea id="editBio" maxlength="300" rows="3" placeholder="Présente-toi">${escapeHTML(bio)}</textarea></label>
+   <button class="profile-edit-row" type="button" data-edit-extra="pronouns"><span><b>Pronoms</b><small>Ajouter des pronoms</small></span><i class="ti ti-chevron-right"></i></button>
+   <button class="profile-edit-row" type="button" data-edit-extra="links"><span><b>Liens</b><small>Ajouter des liens</small></span><i class="ti ti-chevron-right"></i></button>
+   <div class="profile-edit-section">Autres</div>
+   <button class="profile-edit-row" type="button" data-edit-extra="fundraiser"><span><b>Collecte de fonds</b><small>Ajouter une collecte de fonds</small></span><i class="ti ti-chevron-right"></i></button>
+   <button class="profile-edit-row" type="button" data-edit-extra="ai"><span><b>AI Self</b><small>Ajoute un AI Self</small></span><i class="ti ti-chevron-right"></i></button>
+   <button class="profile-edit-save" type="button" id="saveProfileButton">Enregistrer</button>
+  </div>`;
+ $("editProfileBack").onclick=()=>openProfile(currentUser.id);
+ const save=saveProfileEditor;
+ $("saveProfileTop").onclick=save;
+ $("saveProfileButton").onclick=save;
+ $("changeProfilePhoto").onclick=()=>$("avatarInput").click();
+ $("editUsername").addEventListener("input",e=>{
+  const v=e.target.value.trim().replace(/^@/,"");
+  $("editProfileLink").textContent="afrolive.app/@"+v;
+ });
+ profile.querySelectorAll("[data-edit-extra]").forEach(b=>b.onclick=()=>{
+  const names={pronouns:"Les pronoms",links:"Les liens",fundraiser:"La collecte de fonds",ai:"AI Self"};
+  message(names[b.dataset.editExtra]+" : cette option sera ajoutée dans une prochaine mise à jour.");
+ });
+}
+async function saveProfileEditor(){
+ if(!currentUser||!currentProfile)return;
+ const cleanName=$("editDisplayName").value.trim().slice(0,60);
+ const cleanUsername=$("editUsername").value.trim().replace(/^@/,"").toLowerCase().replace(/[^a-z0-9._]/g,"").slice(0,30);
+ const cleanBio=$("editBio").value.trim().slice(0,300);
+ if(!cleanName)return message("Entre ton nom.");
+ if(cleanUsername.length<3)return message("Le nom d'utilisateur doit contenir au moins 3 caractères.");
+ if(cleanUsername!==currentProfile.username){
+  const {data:existing,error:checkError}=await db.from("profiles").select("id").eq("username",cleanUsername).neq("id",currentUser.id).maybeSingle();
+  if(checkError)return message("Impossible de vérifier ce nom : "+checkError.message);
+  if(existing)return message("Ce nom d'utilisateur est déjà utilisé.");
+ }
+ const {error}=await db.from("profiles").update({display_name:cleanName,username:cleanUsername,bio:cleanBio}).eq("id",currentUser.id);
  if(error)return message("Enregistrement impossible : "+error.message);
- currentProfile.display_name=cleanName;
- currentProfile.bio=cleanBio;
- $("myProfile").textContent=cleanName+" · @"+currentProfile.username+" · "+currentUser.email;
+ currentProfile.display_name=cleanName;currentProfile.username=cleanUsername;currentProfile.bio=cleanBio;
+ $("myProfile").textContent=cleanName+" · @"+cleanUsername+" · "+currentUser.email;
  message("Profil mis à jour.",true);
  openProfile(currentUser.id);
 }
