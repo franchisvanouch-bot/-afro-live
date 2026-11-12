@@ -2387,6 +2387,26 @@ function guestToAuth(){
  $("auth").classList.remove("hidden");
 }
 
+/* ABONNEMENTS : mode d'essai gratuit (à passer à false avant la mise en production) */
+const AFRO_SUB_TEST_MODE=true;
+const SUB_DAYS={daily:1,weekly:7,monthly:30};
+async function subscribeToCreator(creatorId,plan,price){
+ if(!currentUser)return guestToAuth();
+ if(creatorId===currentUser.id)return message("Tu ne peux pas t'abonner à ton propre compte.");
+ if(!AFRO_SUB_TEST_MODE)return openMbotePay(creatorId,"subscription",plan,price);
+ const days=SUB_DAYS[plan];
+ if(!days)return message("Durée d'abonnement inconnue.");
+ const now=new Date();
+ const expires=new Date(now.getTime()+days*86400000);
+ const {error}=await db.from("subscriptions").insert({
+  spectator_id:currentUser.id,creator_id:creatorId,plan_type:plan,
+  status:"active",starts_at:now.toISOString(),expires_at:expires.toISOString()
+ });
+ if(error)return message("Abonnement non enregistré : "+error.message);
+ message("Abonnement d'essai activé pour "+days+" jour(s). Aucun paiement.",true);
+ openProfile(creatorId);
+}
+
 /* PROFIL PUBLIC */
 async function openProfile(id){
  if(!id)return;
@@ -2481,7 +2501,8 @@ async function openProfile(id){
  if(isMe){
   actions.append(
    mk("ig-btn","Modifier",editMyProfile),
-   mk("ig-btn",currentProfile?.role==="creator"?"Espace créateur":"Devenir créateur",()=>currentProfile?.role==="creator"?setViewMode("creator"):showPage("application"))
+   mk("ig-btn",currentProfile?.role==="creator"?"Espace créateur":"Devenir créateur",()=>currentProfile?.role==="creator"?setViewMode("creator"):showPage("application")),
+   mk("ig-btn","Mes abonnements",()=>showPage("subscriptions"))
   );
  }else{
   actions.append(mk(following?"ig-btn":"ig-btn ig-btn-primary",following?"Abonné":"Suivre",()=>toggleFollow(id)));
@@ -2491,7 +2512,7 @@ async function openProfile(id){
    const dailyPrice=settings.daily_price_fcfa;
    actions.append(mk("ig-btn ig-btn-primary",
     `S'abonner · ${dailyPrice.toLocaleString("fr-FR")} FCFA / jour`,
-    ()=>openMbotePay(id,"subscription","daily",dailyPrice)));
+    ()=>subscribeToCreator(id,"daily",dailyPrice)));
   }
   if(following){
    actions.append(mk("ig-btn ig-btn-icon",`<i class="ti ${myNotify.has(id)?"ti-bell-ringing":"ti-bell"}"></i>`,async()=>{
@@ -2507,7 +2528,7 @@ async function openProfile(id){
    const b=document.createElement("button");
    b.type="button";b.className="ig-plan";
    b.textContent=`${label} · ${amount.toLocaleString("fr-FR")} FCFA`;
-   b.onclick=()=>openMbotePay(id,"subscription",plan,amount);
+   b.onclick=()=>subscribeToCreator(id,plan,amount);
    $("pfPay").appendChild(b);
   });
  }
@@ -2590,10 +2611,27 @@ async function submitCreatorApplication(event){
 /* ABONNEMENTS */
 async function loadSubscriptions(){
  const box=$("mySubscriptions");
- const {data,error}=await db.from("subscriptions").select("creator_id,starts_at,expires_at,status").eq("spectator_id",currentUser.id).order("expires_at",{ascending:false});
+ box.innerHTML="<p>Chargement...</p>";
+ const {data,error}=await db.from("subscriptions").select("creator_id,plan_type,starts_at,expires_at,status").eq("spectator_id",currentUser.id).order("expires_at",{ascending:false});
  if(error){box.textContent="Impossible de charger les abonnements : "+error.message;return}
- if(!data.length){box.innerHTML="<p>Tu n'as pas encore d'abonnement.</p>";return}
- box.innerHTML=data.map(s=>`<div class="item"><p>Statut : ${escapeHTML(s.status)}</p><p>Expire le : ${new Date(s.expires_at).toLocaleDateString("fr-FR")}</p></div>`).join("");
+ if(!data.length){box.innerHTML="<p class='empty'>Tu n'as encore aucun abonnement.</p>";return}
+ const ids=[...new Set(data.map(s=>s.creator_id))];
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name").in("id",ids);
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ const labels={daily:"1 jour",weekly:"7 jours",monthly:"30 jours"};
+ const now=Date.now();
+ box.innerHTML=data.map(s=>{
+  const p=map[s.creator_id]||{};
+  const active=s.status==="active"&&new Date(s.expires_at).getTime()>now;
+  const state=active?"Actif jusqu'au "+new Date(s.expires_at).toLocaleDateString("fr-FR"):"Expiré";
+  return `<div class="item sub-row" style="display:flex;align-items:center;gap:12px">
+   <div class="ami-info" onclick="openProfile('${escapeHTML(s.creator_id)}')">
+    <b>${escapeHTML(p.display_name||p.username||"Créateur")}</b>
+    <span>${escapeHTML(labels[s.plan_type]||"Accès")} · ${escapeHTML(state)}</span>
+   </div>
+   <button class="ami-btn primary" type="button" onclick="openProfile('${escapeHTML(s.creator_id)}')">Voir</button>
+  </div>`;
+ }).join("");
 }
 
 /* LIVEKIT */
