@@ -2514,9 +2514,7 @@ async function openProfile(id){
   );
  }
 
- if(!isMe){
-  actions.append(mk("ig-btn ig-share-profile","Partager le profil",()=>shareCreator(p.username,name)));
- }
+ // Le partage reste accessible depuis le menu supérieur ; aucune deuxième ligne de bouton.
  const back=$("pfBack");if(back)back.onclick=()=>showPage("discover");
  const add=$("igAdd");if(add)add.onclick=openCreateAction;
  $("pfMenu").onclick=()=>isMe?openMenuSheet():shareCreator(p.username,name);
@@ -4150,6 +4148,28 @@ db.auth.onAuthStateChange((event,session)=>{
 #viewer .feed-action.on i{color:#ff315b}
 #viewer .feed-meta{right:72px;max-width:calc(100% - 105px)}
 @media(max-width:480px){#viewer .feed-engagement{right:8px;bottom:100px;gap:16px}}
+</style>
+<style id="afro-profile-polish">
+/* Profil AFRO LIVE : en-tête compact, statistiques orange et actions sur une ligne */
+#publicProfile .ig-head{gap:clamp(12px,4vw,22px);padding:18px 16px 7px}
+#publicProfile .ig-avatar .avatar{width:clamp(86px,23vw,100px)!important;height:clamp(86px,23vw,100px)!important}
+#publicProfile .ig-stats b{color:#ff9b35!important;font-size:20px!important;font-weight:800!important}
+#publicProfile .ig-stats span{color:#dedee3!important;font-size:11px!important}
+#publicProfile .ig-bio{padding:8px 16px 6px}
+#publicProfile .ig-name{font-size:16px!important}
+#publicProfile .ig-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;padding:12px 14px 10px!important;flex-wrap:nowrap!important}
+#publicProfile .ig-actions .ig-btn{min-width:0!important;min-height:42px!important;padding:9px 4px!important;font-size:clamp(10px,3vw,13px)!important;white-space:nowrap!important;border-radius:11px!important}
+#publicProfile .ig-actions .ig-share-profile{display:none!important}
+#publicProfile .ig-tabs{margin-top:7px!important;border-top:1px solid rgba(255,255,255,.10)!important}
+#publicProfile .ig-tab.active{color:#ff9b35!important;box-shadow:inset 0 -2px 0 #ff9b35!important}
+#publicProfile .ig-grid{gap:2px!important}
+@media(max-width:360px){
+ #publicProfile .ig-head{gap:9px;padding-left:12px;padding-right:12px}
+ #publicProfile .ig-stats b{font-size:17px!important}
+ #publicProfile .ig-stats span{font-size:9px!important}
+ #publicProfile .ig-actions{padding-left:10px!important;padding-right:10px!important;gap:5px!important}
+ #publicProfile .ig-actions .ig-btn{font-size:10px!important}
+}
 </style>
 <style id="afro-subscription-page-style">
 #publicProfile .ig-public-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px!important;align-items:stretch}
