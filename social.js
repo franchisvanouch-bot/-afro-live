@@ -11,6 +11,7 @@ function addStyles(){
  if(el("afroSocialStyles"))return;
  const st=document.createElement("style");st.id="afroSocialStyles";
  st.textContent=`
+ #homeFeed .vitem{touch-action:pan-y}
  .afro-social-overlay{position:fixed;inset:0;z-index:100020;background:#09090b;color:#fff;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
  .afro-social-head{height:56px;flex:0 0 56px;display:flex;align-items:center;gap:12px;padding:0 14px;border-bottom:1px solid #29292e}
  .afro-social-head strong{flex:1;font-size:17px}.afro-social-close,.afro-social-back{border:0;background:#242429;color:#fff;border-radius:50%;width:38px;height:38px;padding:0;font-size:20px}
@@ -287,7 +288,12 @@ function patchProfile(){
   const actions=el("pfActions");
   const pName=el("publicProfile")?.querySelector(".ig-name")?.textContent||"ce membre";
   const mk=(txt,cls,fn)=>{const b=document.createElement("button");b.type="button";b.className=cls||"ig-btn";b.textContent=txt;b.onclick=fn;return b;};
-  actions.append(mk("Message privé","ig-btn ig-btn-primary",async()=>{if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}const {data,error}=await db.rpc("afro_start_conversation",{p_other:id});if(error){say(error.message);return;}await openDM();await openConversation(data,id,pName);}));
+  const messageProfile=async()=>{if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}const {data,error}=await db.rpc("afro_start_conversation",{p_other:id});if(error){say(error.message);return;}await openDM();await openConversation(data,id,pName);};
+  actions.append(mk("Message privé","ig-btn ig-btn-primary",messageProfile));
+  const top=el("publicProfile")?.querySelector(".ig-top");
+  if(top&&!top.querySelector("[data-afro-profile-message]")){
+   const b=document.createElement("button");b.type="button";b.className="ig-icon";b.dataset.afroProfileMessage="1";b.setAttribute("aria-label","Envoyer un message");b.innerHTML='<i class="ti ti-message-circle"></i>';b.addEventListener("click",messageProfile);top.insertBefore(b,top.querySelector("#pfMenu"));
+  }
   actions.append(mk("Signaler","ig-btn",()=>reportTarget({reported_user_id:id})));
   actions.append(mk("Bloquer","ig-btn",()=>blockProfile(id,pName)));
  };
@@ -310,6 +316,24 @@ function bind(){
  const admin=el("admin");if(admin&&!admin.__afroObserver){new MutationObserver(()=>setTimeout(addAdminModeration,0)).observe(admin,{childList:true,subtree:true});admin.__afroObserver=true;}
  const nav=el("navigation");
  if(nav&&!nav.__afroObserver){new MutationObserver(()=>{addMenuOptions();}).observe(nav,{childList:true,subtree:true});nav.__afroObserver=true;}
+ const home=el("homeFeed");
+ if(home&&!home.__afroSwipeBound){
+  let start=null;
+  home.addEventListener("pointerdown",e=>{
+   if(e.pointerType==="mouse"||e.target.closest("button,a,input,textarea,[contenteditable='true']")){start=null;return;}
+   const card=e.target.closest(".vitem[data-creator]");
+   start=card?{x:e.clientX,y:e.clientY,id:card.dataset.creator}:null;
+  },{passive:true});
+  home.addEventListener("pointerup",e=>{
+   if(!start)return;
+   const dx=e.clientX-start.x,dy=e.clientY-start.y,id=start.id;start=null;
+   if(dx < -85 && Math.abs(dx)>Math.abs(dy)*1.35 && id && typeof openProfile==="function"){
+    e.preventDefault();openProfile(id);
+   }
+  });
+  home.addEventListener("pointercancel",()=>{start=null;},{passive:true});
+  home.__afroSwipeBound=true;
+ }
  const cmForm=el("cmForm");
  if(cmForm&&!cmForm.__afroSubmit){cmForm.addEventListener("submit",submitEnhancedComment,true);cmForm.__afroSubmit=true;}
  const cmHead=el("cmHead");
