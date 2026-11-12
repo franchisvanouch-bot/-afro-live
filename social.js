@@ -107,6 +107,7 @@ function closeDM(){
  if(el("afroDmOverlay"))el("afroDmOverlay").hidden=true;
  if(S.dmChannel){db.removeChannel(S.dmChannel);S.dmChannel=null;}
  S.dmConversation=null;S.dmOther=null;
+ refreshDMUnread();
 }
 async function renderInbox(){
  const body=el("afroDmBody");if(!body||!signed())return;
