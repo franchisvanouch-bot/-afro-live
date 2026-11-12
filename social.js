@@ -20,6 +20,7 @@ function addStyles(){
  .afro-dm-copy{min-width:0;flex:1}.afro-dm-copy b{display:block;font-size:14px}.afro-dm-copy small{display:block;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
  .afro-dm-unread{background:#ff6a00;border-radius:99px;padding:3px 7px;font-size:11px}
  #afroDmUnreadDock{position:fixed;left:10px;right:10px;bottom:calc(62px + env(safe-area-inset-bottom));z-index:58;display:flex;gap:8px;overflow-x:auto;padding:8px 2px;scrollbar-width:none;pointer-events:auto;mask-image:linear-gradient(90deg,#000 0%,#000 94%,transparent)}
+ #afroDmUnreadDock{display:none!important}
  #afroDmUnreadDock[hidden]{display:none!important}
  .afro-dock-row{flex:0 0 auto;max-width:210px;min-width:150px;display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid rgba(255,255,255,.13);border-radius:15px;background:rgba(18,18,21,.94);color:#fff;text-align:left;box-shadow:0 5px 18px #0007;backdrop-filter:blur(14px)}
  .afro-dock-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#303036;flex:0 0 34px}
