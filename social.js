@@ -7,6 +7,35 @@ const esc=v=>typeof escapeHTML==="function"?escapeHTML(String(v??"")):String(v??
 const el=id=>document.getElementById(id);
 const say=(t,ok=false)=>{if(typeof message==="function")message(t,ok);};
 const signed=()=>typeof currentUser!=="undefined"&&currentUser?.id;
+window.openAfroCreatorConversation=async function(creatorId,creatorName){
+ const showFailure=(detail)=>{
+  try{
+   ensureOverlays();addStyles();
+   const overlay=el("afroDmOverlay"),body=el("afroDmBody");
+   if(overlay)overlay.hidden=false;
+   if(body){body.className="afro-dm-list";body.innerHTML='<div class="afro-social-empty">Impossible d’ouvrir cette discussion. '+esc(detail||"Réessaie dans un instant.")+'</div>';}
+  }catch(_){}
+ };
+ try{
+  if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}
+  if(!creatorId||creatorId===currentUser?.id){showFailure("Ce profil ne peut pas être contacté.");return;}
+  ensureOverlays();addStyles();
+  const overlay=el("afroDmOverlay"),body=el("afroDmBody");
+  if(!overlay||!body){showFailure("La fenêtre de messagerie n’a pas pu être créée.");return;}
+  overlay.hidden=false;el("afroDmSearch").hidden=true;el("afroDmTitle").textContent=creatorName||"Conversation";
+  body.className="afro-dm-chat";body.innerHTML='<div class="afro-social-empty">Ouverture de la discussion...</div>';
+  const {data,error}=await db.rpc("afro_start_conversation",{p_other:creatorId});
+  if(error)throw error;
+  const conversationId=typeof data==="string"?data:(data?.id||data?.conversation_id||data?.[0]?.id||data?.[0]);
+  if(!conversationId)throw new Error("La conversation n’a pas reçu d’identifiant.");
+  await openConversation(conversationId,creatorId,creatorName||"Conversation");
+ }catch(error){
+  console.error("[AFRO LIVE] ouverture messagerie:",error);
+  showFailure(error?.message||"Erreur inattendue.");
+ }
+};
+window.afroBlockProfile=blockProfile;
+window.afroReportProfile=reportTarget;
 function addStyles(){
  if(el("afroSocialStyles"))return;
  const st=document.createElement("style");st.id="afroSocialStyles";
@@ -563,24 +592,6 @@ function bind(){
  const admin=el("admin");if(admin&&!admin.__afroObserver){new MutationObserver(()=>setTimeout(addAdminModeration,0)).observe(admin,{childList:true,subtree:true});admin.__afroObserver=true;}
  const nav=el("navigation");
  if(nav&&!nav.__afroObserver){new MutationObserver(()=>{addMenuOptions();}).observe(nav,{childList:true,subtree:true});nav.__afroObserver=true;}
- // Balayage horizontal sur une publication : ouvrir le profil du créateur.
- if(!document.__afroProfileSwipeBound){
-  let swipe=null;
-  document.addEventListener("pointerdown",e=>{
-   if(!document.body.classList.contains("feed-mode")||e.target.closest("button,a,input,textarea,[contenteditable='true']")){swipe=null;return;}
-   const card=e.target.closest("#homeFeed .vitem[data-creator]");
-   swipe=card?{x:e.clientX,y:e.clientY,id:card.dataset.creator}:null;
-  },{passive:true});
-  document.addEventListener("pointerup",e=>{
-   if(!swipe)return;
-   const dx=e.clientX-swipe.x,dy=e.clientY-swipe.y,id=swipe.id;swipe=null;
-   if(dx < -60&&Math.abs(dx)>Math.abs(dy)*1.25&&id&&typeof openProfile==="function"){
-    e.preventDefault();openProfile(id);
-   }
-  },{passive:false});
-  document.addEventListener("pointercancel",()=>{swipe=null;},{passive:true});
-  document.__afroProfileSwipeBound=true;
- }
 
  const cmForm=el("cmForm");
  if(cmForm&&!cmForm.__afroSubmit){cmForm.addEventListener("submit",submitEnhancedComment,true);cmForm.__afroSubmit=true;}
@@ -677,31 +688,5 @@ try{patchProfile();}catch(e){console.error("[AFRO LIVE] profile init",e);}
 window.afroRefreshDMUnread=refreshDMUnread;
 window.afroLoadMessagesPage=async function(){await loadNotifications();await appendDMInboxToMessagesPage();};
 window.openAfroMessages=openDM;
-window.openAfroCreatorConversation=async function(creatorId,creatorName){
- const showFailure=(detail)=>{
-  try{
-   ensureOverlays();addStyles();
-   const overlay=el("afroDmOverlay"),body=el("afroDmBody");
-   if(overlay)overlay.hidden=false;
-   if(body){body.className="afro-dm-list";body.innerHTML='<div class="afro-social-empty">Impossible d’ouvrir cette discussion. '+esc(detail||"Réessaie dans un instant.")+'</div>';}
-  }catch(_){}
- };
- try{
-  if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}
-  if(!creatorId||creatorId===currentUser?.id){showFailure("Ce profil ne peut pas être contacté.");return;}
-  ensureOverlays();addStyles();
-  const overlay=el("afroDmOverlay"),body=el("afroDmBody");
-  if(!overlay||!body){showFailure("La fenêtre de messagerie n’a pas pu être créée.");return;}
-  overlay.hidden=false;el("afroDmSearch").hidden=true;el("afroDmTitle").textContent=creatorName||"Conversation";
-  body.className="afro-dm-chat";body.innerHTML='<div class="afro-social-empty">Ouverture de la discussion...</div>';
-  const {data,error}=await db.rpc("afro_start_conversation",{p_other:creatorId});
-  if(error)throw error;
-  const conversationId=typeof data==="string"?data:(data?.id||data?.conversation_id||data?.[0]?.id||data?.[0]);
-  if(!conversationId)throw new Error("La conversation n’a pas reçu d’identifiant.");
-  await openConversation(conversationId,creatorId,creatorName||"Conversation");
- }catch(error){
-  console.error("[AFRO LIVE] ouverture messagerie:",error);
-  showFailure(error?.message||"Erreur inattendue.");
- }
-};
+
 })();
