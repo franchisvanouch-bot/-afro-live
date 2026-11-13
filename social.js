@@ -608,7 +608,7 @@ function bind(){
  try{patchProfile()}catch(e){console.error("[AFRO LIVE] profile patch",e)}
  try{patchAccount()}catch(e){console.error("[AFRO LIVE] account patch",e)}
  try{patchView()}catch(e){console.error("[AFRO LIVE] view patch",e)}
- try{refreshDMUnread()}catch(e){console.error("[AFRO LIVE] unread refresh",e)}
+ // La messagerie est maintenant gérée exclusivement par messaging.js v2.
  const admin=el("admin");if(admin&&!admin.__afroObserver){new MutationObserver(()=>setTimeout(addAdminModeration,0)).observe(admin,{childList:true,subtree:true});admin.__afroObserver=true;}
  const nav=el("navigation");
  if(nav&&!nav.__afroObserver){new MutationObserver(()=>{addMenuOptions();}).observe(nav,{childList:true,subtree:true});nav.__afroObserver=true;}
@@ -619,7 +619,7 @@ function bind(){
  if(!el("afroReplying")&&cmForm){const x=document.createElement("div");x.id="afroReplying";x.className="afro-replying";x.addEventListener("click",()=>{S.replyTo=null;updateReplyLabel();});cmForm.before(x);}
  document.addEventListener("click",async e=>{
   const t=e.target.closest("button");if(!t)return;
-  if(t.matches("[data-afro-open-dm]")){openDM();return;}
+  if(t.matches("[data-afro-open-dm]")){return;}
   if(t.matches("[data-afro-open-saved]")){openSaved();return;}
   if(t.matches("[data-dm-close]")){if(S.dmConversation){if(S.dmChannel){db.removeChannel(S.dmChannel);S.dmChannel=null;}S.dmConversation=null;S.dmOther=null;if(el("afroDmDeleteConversation"))el("afroDmDeleteConversation").hidden=true;el("afroDmTitle").textContent="Messages";el("afroDmBody").className="afro-dm-list";renderInbox();}else closeDM();return;}
   if(t.matches("[data-dm-new]")){showNewDM();return;}
@@ -695,11 +695,11 @@ function wrapFunctions(){
 }
 document.addEventListener("DOMContentLoaded",()=>{try{bind()}catch(e){console.error("[AFRO LIVE] initialisation:",e)}},{once:true});
 if(document.readyState!=="loading"){try{bind()}catch(e){console.error("[AFRO LIVE] initialisation:",e)}}
-const start=()=>{if(!signed())return;wrapFunctions();subscribeDMNotifications();loadBlocked().then(()=>{patchFeed();refreshSaved();refreshDMUnread();});if(!S.dmBadgeTimer)S.dmBadgeTimer=setInterval(()=>{if(!signed()||document.visibilityState!=="visible")return;refreshDMUnread();if(el("notifsPage")&&!el("notifsPage").classList.contains("hidden"))appendDMInboxToMessagesPage();if(el("afroDmOverlay")&&!el("afroDmOverlay").hidden&&!S.dmConversation)renderInbox();},10000);};
+const start=()=>{if(!signed())return;wrapFunctions();loadBlocked().then(()=>{patchFeed();refreshSaved();});};
 setTimeout(start,0);
 if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange((event,session)=>{if(session?.user){setTimeout(start,0);}else{S.saved.clear();S.blocked.clear();closeDM();if(el("afroDmUnreadDock"))el("afroDmUnreadDock").hidden=true;}});
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&signed()){refreshDMUnread();subscribeDMNotifications();}});
-window.addEventListener("pageshow",()=>{if(signed())refreshDMUnread();});
+document.addEventListener("visibilitychange",()=>{});
+window.addEventListener("pageshow",()=>{});
 document.addEventListener("click",e=>{
  const like=e.target.closest('#homeFeed [data-action="like"]');
  if(like){e.preventDefault();e.stopImmediatePropagation();toggleLike(like);return;}
