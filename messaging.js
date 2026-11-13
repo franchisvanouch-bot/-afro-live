@@ -203,6 +203,7 @@ async function refreshUnreadBadge(){if(!me())return;const r=await db.from("dm_me
 function init(){
  ensure();window.openAfroCreatorConversation=start;window.openAfroMessages=openInbox;window.afroLoadMessagesPage=openInbox;window.afroRefreshDMUnread=refreshUnreadBadge;
  document.addEventListener("click",e=>{if(e.target.closest("[data-afro-open-dm]")){e.preventDefault();openInbox();}},false);
+ document.addEventListener("click",e=>{const nav=e.target.closest('#navigation button[data-page="notifs"]');if(!nav)return;e.preventDefault();e.stopImmediatePropagation();openInbox();},true);
  if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange((event,session)=>{if(!session?.user)close();else setTimeout(refreshUnreadBadge,500);});
  setTimeout(refreshUnreadBadge,700);
 }
