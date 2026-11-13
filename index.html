@@ -2255,7 +2255,7 @@ function vitemHTML(p){
   ?`<video class="vmedia" src="${url}" loop muted playsinline preload="none"></video>`
   :`<img class="vmedia" src="${url}" alt="" loading="lazy" decoding="async">`;
  const liked=!!p.liked,count=Number(p.like_count)||0;
- return `<section class="vitem" data-post="${escapeHTML(p.id)}">
+ return `<section class="vitem" data-creator="${escapeHTML(p.creator_id)}" data-post="${escapeHTML(p.id)}">
   ${media}
   <div class="vshade"></div>
   <div class="vside">
@@ -2714,7 +2714,7 @@ async function openProfile(id){
  // Le partage reste accessible depuis le menu supérieur ; aucune deuxième ligne de bouton.
  const back=$("pfBack");if(back)back.onclick=()=>showPage("discover");
  const editProfile=$("igEditProfile");if(editProfile)editProfile.onclick=openProfileEditor;
- const pfMenu=$("pfMenu");if(pfMenu)pfMenu.onclick=()=>{};
+ const pfMenu=$("pfMenu");if(pfMenu)pfMenu.type="button";
  $("pfAvatar").onclick=()=>{
   if(hasStatus)openStatusViewer(id);
   else if(isMe)$("avatarInput").click();
@@ -4505,6 +4505,6 @@ body:has(#publicProfile:not(.hidden)) #publicProfile{
 #subscriptionsPage .my-sub-list-title{margin-top:22px}
 @media(max-width:360px){#publicProfile .ig-public-actions{gap:5px!important}#publicProfile .ig-public-actions .ig-btn{font-size:10px!important;padding:10px 2px!important}}
 </style>
-<script src="/social.js?v=20261113-events-repair-4"></script>
+<script src="/social.js?v=20261113-profile-actions-5"></script>
 </body>
 </html>
