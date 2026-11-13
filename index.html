@@ -2714,7 +2714,29 @@ async function openProfile(id){
  // Le partage reste accessible depuis le menu supérieur ; aucune deuxième ligne de bouton.
  const back=$("pfBack");if(back)back.onclick=()=>showPage("discover");
  const editProfile=$("igEditProfile");if(editProfile)editProfile.onclick=openProfileEditor;
- const pfMenu=$("pfMenu");if(pfMenu)pfMenu.type="button";
+ const pfMenu=$("pfMenu");
+ if(pfMenu){
+  pfMenu.type="button";
+  pfMenu.onclick=e=>{
+   e.preventDefault();e.stopPropagation();
+   let sheet=$("afroProfileOptions");
+   if(!sheet){
+    sheet=document.createElement("div");sheet.id="afroProfileOptions";
+    sheet.style.cssText="position:fixed;inset:0;z-index:100050;background:rgba(0,0,0,.58);display:none;align-items:flex-end";
+    sheet.innerHTML='<div style="width:100%;background:#17171b;border-radius:20px 20px 0 0;padding:12px 16px calc(18px + env(safe-area-inset-bottom));border-top:1px solid #333"><div style="width:38px;height:4px;border-radius:9px;background:#555;margin:0 auto 15px"></div><button type="button" data-profile-option="share" style="display:block;width:100%;padding:15px 4px;background:none;border:0;color:#fff;text-align:left">Partager le profil</button><button type="button" data-profile-option="report" style="display:block;width:100%;padding:15px 4px;background:none;border:0;border-top:1px solid #303036;color:#fff;text-align:left">Signaler</button><button type="button" data-profile-option="block" style="display:block;width:100%;padding:15px 4px;background:none;border:0;border-top:1px solid #303036;color:#ff7777;text-align:left">Bloquer</button><button type="button" data-profile-option="cancel" style="width:100%;padding:13px;margin-top:8px;background:#29292f;border:0;border-radius:12px;color:#fff;font-weight:700">Annuler</button></div>';
+    document.body.appendChild(sheet);
+    sheet.addEventListener("click",async ev=>{
+     const action=ev.target.closest("[data-profile-option]")?.dataset.profileOption;
+     if(ev.target===sheet||action)sheet.style.display="none";
+     if(!action||action==="cancel")return;
+     if(action==="share"&&typeof shareCreator==="function")shareCreator(p.username,name);
+     if(action==="report"&&typeof window.afroReportProfile==="function")await window.afroReportProfile({reported_user_id:id});
+     if(action==="block"&&typeof window.afroBlockProfile==="function")await window.afroBlockProfile(id,name);
+    });
+   }
+   sheet.style.display="flex";
+  };
+ }
  $("pfAvatar").onclick=()=>{
   if(hasStatus)openStatusViewer(id);
   else if(isMe)$("avatarInput").click();
@@ -4342,6 +4364,24 @@ $("cmList").addEventListener("click",e=>{
  if(b&&confirm("Supprimer ce commentaire ?"))deleteComment(b.dataset.deleteComment);
 });
 $("commentsSheet").addEventListener("click",e=>{if(e.target===$("commentsSheet"))closeComments()});
+const homeFeedSwipe=$("homeFeed");
+if(homeFeedSwipe&&!homeFeedSwipe.__afroTouchSwipe){
+ let swipeStart=null;
+ homeFeedSwipe.addEventListener("touchstart",e=>{
+  if(e.touches.length!==1||e.target.closest("button,a,input,textarea,[contenteditable='true']")){swipeStart=null;return;}
+  const card=e.target.closest(".vitem[data-creator]");
+  swipeStart=card?{x:e.touches[0].clientX,y:e.touches[0].clientY,id:card.dataset.creator}:null;
+ },{passive:true});
+ homeFeedSwipe.addEventListener("touchend",e=>{
+  if(!swipeStart)return;
+  const dx=e.changedTouches[0].clientX-swipeStart.x;
+  const dy=e.changedTouches[0].clientY-swipeStart.y;
+  const id=swipeStart.id;swipeStart=null;
+  if(dx < -65&&Math.abs(dx)>Math.abs(dy)*1.25&&id){e.preventDefault();openProfile(id);}
+ },{passive:false});
+ homeFeedSwipe.addEventListener("touchcancel",()=>{swipeStart=null;},{passive:true});
+ homeFeedSwipe.__afroTouchSwipe=true;
+}
 $("homeFeed").addEventListener("click",e=>{
  const btn=e.target.closest("[data-action]");
  if(btn){
@@ -4505,6 +4545,6 @@ body:has(#publicProfile:not(.hidden)) #publicProfile{
 #subscriptionsPage .my-sub-list-title{margin-top:22px}
 @media(max-width:360px){#publicProfile .ig-public-actions{gap:5px!important}#publicProfile .ig-public-actions .ig-btn{font-size:10px!important;padding:10px 2px!important}}
 </style>
-<script src="/social.js?v=20261113-profile-actions-5"></script>
+<script src="/social.js?v=20261113-source-repair-6"></script>
 </body>
 </html>
