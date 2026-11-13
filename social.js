@@ -496,6 +496,7 @@ function patchProfile(){
   if(!id||!el("pfActions")||id===currentUser?.id)return;
   const actions=el("pfActions");
   const profile=el("publicProfile");
+  if(profile)profile.dataset.afroCreatorId=id;
   const pName=profile?.querySelector(".ig-name")?.textContent||"ce membre";
   const username=profile?.querySelector(".ig-user b")?.textContent||"";
   const messageProfile=async()=>{
@@ -511,7 +512,10 @@ function patchProfile(){
   const menu=top?.querySelector("#pfMenu");
   if(menu){
    menu.setAttribute("aria-label","Options du profil");
-   menu.onclick=()=>{
+   menu.type="button";
+   menu.onclick=(event)=>{
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
     let sheet=el("afroProfileOptions");
     if(!sheet){
      sheet=document.createElement("div");sheet.id="afroProfileOptions";
@@ -575,6 +579,23 @@ function bind(){
    }
   });
   home.addEventListener("pointercancel",()=>{start=null;},{passive:true});
+  // Secours tactile iOS/Android : le balayage horizontal vers la gauche ouvre le profil.
+  let touchStart=null;
+  home.addEventListener("touchstart",e=>{
+   if(e.touches.length!==1||e.target.closest("button,a,input,textarea,[contenteditable='true']")){touchStart=null;return;}
+   const card=e.target.closest(".vitem[data-creator]");
+   touchStart=card?{x:e.touches[0].clientX,y:e.touches[0].clientY,id:card.dataset.creator}:null;
+  },{passive:true});
+  home.addEventListener("touchend",e=>{
+   if(!touchStart)return;
+   const dx=e.changedTouches[0].clientX-touchStart.x;
+   const dy=e.changedTouches[0].clientY-touchStart.y;
+   const id=touchStart.id;touchStart=null;
+   if(dx < -65 && Math.abs(dx)>Math.abs(dy)*1.25 && id && typeof openProfile==="function"){
+    e.preventDefault();openProfile(id);
+   }
+  },{passive:false});
+  home.addEventListener("touchcancel",()=>{touchStart=null;},{passive:true});
   home.__afroSwipeBound=true;
  }
  const cmForm=el("cmForm");
@@ -583,6 +604,26 @@ function bind(){
  if(!el("afroReplying")&&cmForm){const x=document.createElement("div");x.id="afroReplying";x.className="afro-replying";x.addEventListener("click",()=>{S.replyTo=null;updateReplyLabel();});cmForm.before(x);}
  document.addEventListener("click",async e=>{
   const t=e.target.closest("button");if(!t)return;
+  // Intercepte les boutons du profil avant les anciens gestionnaires.
+  if(t.id==="pfMenu"){
+   e.preventDefault();e.stopImmediatePropagation();
+   if(typeof t.onclick==="function")t.onclick.call(t,e);
+   return;
+  }
+  if(t.matches(".ig-message-entry,[data-afro-profile-message]")){
+   e.preventDefault();e.stopImmediatePropagation();
+   const profile=el("publicProfile");
+   const id=profile?.dataset.afroCreatorId;
+   const name=profile?.querySelector(".ig-name")?.textContent||"Conversation";
+   if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}
+   if(id&&typeof window.openAfroCreatorConversation==="function"){
+    if(typeof showPage==="function")showPage("notifs");
+    await window.openAfroCreatorConversation(id,name);
+   }else{
+    say("La messagerie n’est pas encore prête. Réessaie dans un instant.");
+   }
+   return;
+  }
   if(t.matches("[data-afro-open-dm]")){openDM();return;}
   if(t.matches("[data-afro-open-saved]")){openSaved();return;}
   if(t.matches("[data-dm-close]")){if(S.dmConversation){if(S.dmChannel){db.removeChannel(S.dmChannel);S.dmChannel=null;}S.dmConversation=null;S.dmOther=null;if(el("afroDmDeleteConversation"))el("afroDmDeleteConversation").hidden=true;el("afroDmTitle").textContent="Messages";el("afroDmBody").className="afro-dm-list";renderInbox();}else closeDM();return;}
