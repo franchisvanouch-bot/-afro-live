@@ -547,7 +547,15 @@ function patchView(){
  patched.__afroPatched=true;renderView=patched;
 }
 function bind(){
- addStyles();ensureOverlays();ensureDMUnreadDock();addMenuOptions();patchFeed();patchProfile();patchAccount();patchView();refreshDMUnread();
+ try{addStyles()}catch(e){console.error("[AFRO LIVE] styles",e)}
+ try{ensureOverlays()}catch(e){console.error("[AFRO LIVE] overlays",e)}
+ try{ensureDMUnreadDock()}catch(e){console.error("[AFRO LIVE] unread dock",e)}
+ try{addMenuOptions()}catch(e){console.error("[AFRO LIVE] menu",e)}
+ try{patchFeed()}catch(e){console.error("[AFRO LIVE] feed patch",e)}
+ try{patchProfile()}catch(e){console.error("[AFRO LIVE] profile patch",e)}
+ try{patchAccount()}catch(e){console.error("[AFRO LIVE] account patch",e)}
+ try{patchView()}catch(e){console.error("[AFRO LIVE] view patch",e)}
+ try{refreshDMUnread()}catch(e){console.error("[AFRO LIVE] unread refresh",e)}
  const admin=el("admin");if(admin&&!admin.__afroObserver){new MutationObserver(()=>setTimeout(addAdminModeration,0)).observe(admin,{childList:true,subtree:true});admin.__afroObserver=true;}
  const nav=el("navigation");
  if(nav&&!nav.__afroObserver){new MutationObserver(()=>{addMenuOptions();}).observe(nav,{childList:true,subtree:true});nav.__afroObserver=true;}
@@ -562,7 +570,7 @@ function bind(){
   home.addEventListener("pointerup",e=>{
    if(!start)return;
    const dx=e.clientX-start.x,dy=e.clientY-start.y,id=start.id;start=null;
-   if(dx < -85 && Math.abs(dx)>Math.abs(dy)*1.35 && id && typeof openProfile==="function"){
+   if(Math.abs(dx)>85 && Math.abs(dx)>Math.abs(dy)*1.35 && id && typeof openProfile==="function"){
     e.preventDefault();openProfile(id);
    }
   });
@@ -656,6 +664,11 @@ setTimeout(start,0);
 if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange((event,session)=>{if(session?.user){setTimeout(start,0);}else{S.saved.clear();S.blocked.clear();closeDM();if(el("afroDmUnreadDock"))el("afroDmUnreadDock").hidden=true;}});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&signed()){refreshDMUnread();subscribeDMNotifications();}});
 window.addEventListener("pageshow",()=>{if(signed())refreshDMUnread();});
+document.addEventListener("click",e=>{
+ const like=e.target.closest('#homeFeed [data-action="like"]');
+ if(like){e.preventDefault();e.stopImmediatePropagation();toggleLike(like);return;}
+},true);
+try{patchProfile();}catch(e){console.error("[AFRO LIVE] profile init",e);}
 window.afroRefreshDMUnread=refreshDMUnread;
 window.afroLoadMessagesPage=async function(){await loadNotifications();await appendDMInboxToMessagesPage();};
 window.openAfroMessages=openDM;
