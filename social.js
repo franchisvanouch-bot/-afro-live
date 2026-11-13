@@ -162,10 +162,14 @@ async function searchDMUsers(){
  body.innerHTML=data.map(p=>'<button class="afro-dm-row" data-dm-start="'+esc(p.id)+'" data-dm-name="'+esc(p.display_name||p.username)+'">'+avatar(p)+'<span class="afro-dm-copy"><b>'+esc(p.display_name||p.username)+'</b><small>@'+esc(p.username)+'</small></span></button>').join("");
 }
 async function startDM(userId,name){
- const {data,error}=await db.rpc("afro_start_conversation",{p_other:userId});
- if(error){say(error.message);return;}
- el("afroDmSearch").hidden=true;
- await openConversation(data,userId,name);
+ // Tous les démarrages de conversation passent par le nouveau module dm_*.
+ const legacy=el("afroDmOverlay");
+ if(legacy)legacy.hidden=true;
+ if(typeof window.openAfroCreatorConversation!=="function"){
+  say("La nouvelle messagerie n'est pas encore chargée. Actualise AFRO LIVE.");
+  return;
+ }
+ await window.openAfroCreatorConversation(userId,name||"Conversation");
 }
 async function openConversation(conversationId,otherId,name){
  if(el("afroDmDeleteConversation"))el("afroDmDeleteConversation").hidden=false;
