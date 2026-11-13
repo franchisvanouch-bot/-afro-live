@@ -559,11 +559,6 @@ async function appendDMInboxToMessagesPage(){
  box.prepend(section);
 }
 function wrapFunctions(){
- if(typeof loadNotifications==="function"&&!loadNotifications.__afroMessagesPatched){
-  const original=loadNotifications;
-  const wrapped=async function(){await original();await appendDMInboxToMessagesPage();};
-  wrapped.__afroMessagesPatched=true;loadNotifications=wrapped;
- }
  if(typeof loadComments==="function"&&!loadComments.__afroPatched){const f=loadComments;const w=async function(){return enhancedComments();};w.__afroPatched=true;loadComments=w;}
  if(typeof loadHomeFeed==="function"&&!loadHomeFeed.__afroPatched){patchFeed();}
  if(typeof openProfile==="function"&&!openProfile.__afroPatched)patchProfile();
@@ -576,6 +571,7 @@ if(typeof db!=="undefined"&&db.auth?.onAuthStateChange)db.auth.onAuthStateChange
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&signed()){refreshDMUnread();subscribeDMNotifications();}});
 window.addEventListener("pageshow",()=>{if(signed())refreshDMUnread();});
 window.afroRefreshDMUnread=refreshDMUnread;
+window.afroLoadMessagesPage=async function(){await loadNotifications();await appendDMInboxToMessagesPage();};
 window.openAfroMessages=openDM;
 window.openAfroCreatorConversation=async function(creatorId,creatorName){
  const showFailure=(detail)=>{
