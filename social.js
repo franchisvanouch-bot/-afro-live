@@ -167,11 +167,11 @@ function renderDMMessage(m){
  else content=esc(m.body||"");
  const parent=m.reply_to_id?S.dmMessageMap?.[m.reply_to_id]:null;
  const quote=parent?'<div class="afro-dm-quoted">↪ '+esc(parent.body|| (parent.message_type==="image"?"Photo":parent.message_type==="audio"?"Note vocale":"Message"))+'</div>':"";
- const isText=m.message_type==="text";
+ const isText=m.message_type==="text",bubbleOverride=localStorage.getItem("afroDmBubbleStyle:"+m.id),textOnly=bubbleOverride?bubbleOverride==="text":isText;
  const read=mine&&S.dmOtherLastReadAt&&new Date(S.dmOtherLastReadAt)>=new Date(m.created_at);
  const ticks=mine?'<span class="afro-dm-ticks'+(read?" read":"")+'>✓✓</span>':"";
  const reactions=(S.dmReactions?.[m.id]||[]).map(x=>'<span class="afro-dm-reaction">'+esc(x.emoji)+'</span>').join("");
- return '<div class="afro-dm-row-message'+(mine?" mine":"") +'" data-dm-message="'+esc(m.id)+'"><div class="afro-dm-bubble'+(mine?" mine":"")+(isText?" text-only":"") +'">'+quote+content+(m.body&&["image","video","audio"].includes(m.message_type)?'<div class="afro-dm-caption">'+esc(m.body)+'</div>':"")+'<small class="afro-dm-time">'+new Date(m.created_at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+(m.edited_at?" · modifié":"")+" "+ticks+'</small></div><div class="afro-dm-reactions-inline">'+reactions+'</div></div>';
+ return '<div class="afro-dm-row-message'+(mine?" mine":"") +'" data-dm-message="'+esc(m.id)+'"><div class="afro-dm-bubble'+(mine?" mine":"")+(textOnly?" text-only":"") +'">'+quote+content+(m.body&&["image","video","audio"].includes(m.message_type)?'<div class="afro-dm-caption">'+esc(m.body)+'</div>':"")+'<small class="afro-dm-time">'+new Date(m.created_at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+(m.edited_at?" · modifié":"")+" "+ticks+'</small></div><div class="afro-dm-reactions-inline">'+reactions+'</div></div>';
 }
 async function loadDMMessages(){
  const box=el("afroDmMessages");if(!box||!S.dmConversation)return;
@@ -355,7 +355,7 @@ async function forwardDMMessage(id){
 }
 function toggleDMBubbleStyle(id){
  const m=S.dmMessageMap?.[id],row=document.querySelector('[data-dm-message="'+CSS.escape(id)+'"] .afro-dm-bubble');if(!m||!row)return;
- row.classList.toggle("text-only");say("Style de bulle modifié sur cet appareil.",true);
+ const textOnly=!row.classList.contains("text-only");row.classList.toggle("text-only",textOnly);localStorage.setItem("afroDmBubbleStyle:"+id,textOnly?"text":"bubble");say("Style de bulle enregistré sur cet appareil.",true);
 }
 async function copyDMMessage(id){const m=S.dmMessageMap?.[id];if(!m)return;try{await navigator.clipboard.writeText(m.body||"");say("Message copié.",true);}catch(_){say("Copie impossible sur cet appareil.");}}
 
