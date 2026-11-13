@@ -1,0 +1,58 @@
+/* ===== MESSAGERIE AFRO LIVE ===== */
+#msgPage{padding-bottom:90px}
+.msg-head{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:6px 0 10px;position:relative}
+.msg-head h2{margin:0;flex:1}
+.msg-head button{padding:9px 12px;font-size:13px}
+#msgSearch{margin:0 0 10px}
+#msgNewBox{margin-bottom:10px}
+#msgUserResults .msg-row{padding:8px 4px}
+
+.msg-row{display:flex;align-items:center;gap:12px;width:100%;background:transparent;color:var(--text);text-align:left;padding:10px 4px;border-radius:12px;font-weight:400;border-bottom:1px solid var(--line)}
+.msg-row-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.msg-row-txt b{font-size:15px}
+.msg-row-txt small{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-row.unread .msg-row-txt b{color:#fff}
+.msg-row.unread .msg-row-txt small{color:#eee;font-weight:600}
+.msg-row-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;color:var(--muted);font-size:11px}
+.msg-badge{font-style:normal;background:var(--orange);color:#fff;border-radius:999px;padding:2px 7px;font-size:11px;font-weight:700}
+
+.msg-av{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:0 0 auto;background:var(--surface2)}
+.msg-av-txt{display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:17px}
+
+/* Conversation */
+#msgChatView{display:flex;flex-direction:column;height:calc(100dvh - 215px);min-height:360px}
+.msg-chat-head{padding-bottom:8px;border-bottom:1px solid var(--line);margin-top:0}
+.msg-chat-title{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.msg-head-name{display:flex;flex-direction:column;min-width:0}
+.msg-head-name b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-head-name small{color:var(--muted)}
+#msgMenu{position:absolute;right:0;top:48px;background:var(--surface2);border-radius:12px;padding:6px;z-index:5;display:flex;flex-direction:column;min-width:210px;box-shadow:0 10px 30px #000a}
+#msgMenu button{background:none;color:var(--text);text-align:left;padding:11px 10px;font-weight:500;font-size:14px}
+#msgMenu button.danger{color:#ff8a8a}
+
+#msgThread{flex:1;overflow-y:auto;padding:10px 4px;display:flex;flex-direction:column;gap:2px;-webkit-overflow-scrolling:touch}
+.msg-day{align-self:center;color:var(--muted);font-size:12px;margin:12px 0 6px}
+.msg-line{display:flex;flex-direction:column;max-width:82%;margin:2px 0;cursor:pointer}
+.msg-line.mine{align-self:flex-end;align-items:flex-end}
+.msg-line.theirs{align-self:flex-start;align-items:flex-start}
+.msg-bubble{background:#1f1f24;border-radius:16px;padding:8px 12px;max-width:100%}
+.msg-line.mine .msg-bubble{background:linear-gradient(135deg,#ff9a35,#ff5a00)}
+.msg-bubble.deleted{background:transparent;border:1px dashed var(--line);color:var(--muted);font-style:italic}
+.msg-text{white-space:pre-wrap;word-break:break-word;font-size:15px;line-height:1.35}
+.msg-meta{font-size:10px;opacity:.75;text-align:right;margin-top:3px}
+.msg-quote{border-left:3px solid rgba(255,255,255,.6);padding:2px 8px;margin-bottom:6px;font-size:12px;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+.msg-reacts{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.msg-reacts span{background:rgba(0,0,0,.45);border-radius:999px;padding:1px 7px;font-size:12px}
+.msg-reacts span.on{background:rgba(255,106,0,.55)}
+.msg-seen{font-size:11px;color:var(--muted);margin-top:2px}
+.msg-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;background:var(--surface2);padding:8px;border-radius:12px;max-width:300px}
+.msg-actions button{background:#2c2c32;color:var(--text);padding:6px 9px;font-size:13px;border-radius:9px}
+.msg-actions button.danger{background:#8b1d1d;color:#fff}
+
+#msgTyping{font-size:12px;color:var(--muted);min-height:18px;padding:4px 8px 0}
+#msgReplyBar{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--surface2);padding:8px 12px;border-radius:10px;font-size:13px;margin:4px 0;color:#ddd}
+#msgReplyBar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#msgReplyBar button{background:none;color:#fff;font-size:20px;padding:0 6px}
+#msgForm{display:flex;gap:8px;align-items:center;padding-top:6px}
+#msgForm input{margin:0;border-radius:999px;flex:1;min-width:0}
+#msgForm button{border-radius:999px;padding:11px 16px}
