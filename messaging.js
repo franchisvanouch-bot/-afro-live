@@ -9,7 +9,7 @@ const avatar=p=>p?.avatar_url?'<img class="afro-v2-avatar" src="'+esc(p.avatar_u
 function ensure(){
  if(!$("afroMessengerV2Styles")){
   const st=document.createElement("style");st.id="afroMessengerV2Styles";
-  st.textContent=\`
+  st.textContent=`
   #afroMessengerV2{position:fixed;inset:0;z-index:2147483600;background:#08090c;color:#f7f7f8;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);font-family:inherit}
   #afroMessengerV2[hidden]{display:none!important}
   #afroMessengerV2 .v2-head{height:58px;flex:0 0 58px;display:flex;align-items:center;gap:12px;padding:0 15px;border-bottom:1px solid #24252b}
@@ -39,15 +39,15 @@ function ensure(){
   #afroMessengerV2 .v2-compose input{flex:1}
   #afroMessengerV2 .v2-send{width:46px;height:46px;border:0;border-radius:50%;background:#ff7818;color:#111;font-size:20px;font-weight:800}
   #afroMessengerV2 .v2-send:disabled{opacity:.5}
-  \`;
+  `;
   document.head.appendChild(st);
  }
  if($("afroMessengerV2"))return $("afroMessengerV2");
  const root=document.createElement("section");root.id="afroMessengerV2";root.hidden=true;
- root.innerHTML=\`
+ root.innerHTML=`
  <header class="v2-head"><button class="v2-icon" type="button" data-v2-back>‹</button><strong id="afroV2Title">Messages</strong><button class="v2-icon" type="button" data-v2-new>＋</button></header>
  <div id="afroV2Search" class="v2-search" hidden><input id="afroV2SearchInput" type="search" placeholder="Rechercher un nom ou un pseudo" autocomplete="off"></div>
- <main id="afroV2Body" class="v2-list"><div class="v2-empty">Tes conversations apparaîtront ici.</div></main>\`;
+ <main id="afroV2Body" class="v2-list"><div class="v2-empty">Tes conversations apparaîtront ici.</div></main>`;
  document.body.appendChild(root);root.addEventListener("click",click);root.addEventListener("keydown",key);
  $("afroV2SearchInput").addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchUsers,250)});
  return root;
