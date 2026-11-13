@@ -175,11 +175,14 @@ function renderDMMessage(m){
 }
 async function loadDMMessages(){
  const box=el("afroDmMessages");if(!box||!S.dmConversation)return;
- const {data,error}=await db.from("direct_messages").select("id,sender_id,body,shared_post_id,shared_live_session_id,message_type,media_path,media_mime,duration_seconds,reply_to_id,created_at,edited_at").eq("conversation_id",S.dmConversation).order("created_at",{ascending:true}).limit(250);
+ const {data:all,error}=await db.from("direct_messages").select("id,sender_id,body,shared_post_id,shared_live_session_id,message_type,media_path,media_mime,duration_seconds,reply_to_id,created_at,edited_at").eq("conversation_id",S.dmConversation).order("created_at",{ascending:true}).limit(250);
  if(error){box.innerHTML='<div class="afro-social-empty">'+esc(error.message)+'</div>';return;}
- S.dmMessageMap=Object.fromEntries((data||[]).map(m=>[m.id,m]));S.dmReactions={};
- const ids=(data||[]).map(m=>m.id);if(ids.length){const rr=await db.from("direct_message_reactions").select("message_id,user_id,emoji").in("message_id",ids);if(!rr.error)(rr.data||[]).forEach(x=>(S.dmReactions[x.message_id]??=[]).push(x));}
- box.innerHTML=(data||[]).map(renderDMMessage).join("")||'<div class="afro-social-empty">Démarre la conversation.</div>';box.scrollTop=box.scrollHeight;
+ const {data:hidden,error:hiddenError}=await db.from("direct_message_hidden_for_user").select("message_id").eq("user_id",currentUser.id);
+ if(hiddenError){box.innerHTML='<div class="afro-social-empty">Impossible de charger les messages masqués : '+esc(hiddenError.message)+'</div>';return;}
+ const hiddenIds=new Set((hidden||[]).map(x=>x.message_id)),data=(all||[]).filter(m=>!hiddenIds.has(m.id));
+ S.dmMessageMap=Object.fromEntries(data.map(m=>[m.id,m]));S.dmReactions={};
+ const ids=data.map(m=>m.id);if(ids.length){const rr=await db.from("direct_message_reactions").select("message_id,user_id,emoji").in("message_id",ids);if(!rr.error)(rr.data||[]).forEach(x=>(S.dmReactions[x.message_id]??=[]).push(x));}
+ box.innerHTML=data.map(renderDMMessage).join("")||'<div class="afro-social-empty">Démarre la conversation.</div>';box.scrollTop=box.scrollHeight;
 }
 async function uploadDMFile(file,type,caption=""){
  if(!file||!S.dmConversation||!signed())return false;
@@ -336,6 +339,13 @@ function showDMContextMenu(id,x,y){
  document.body.appendChild(menu);
  const w=Math.min(430,window.innerWidth-28),left=Math.max(14,Math.min(x-w/2,window.innerWidth-w-14));
  menu.style.left=left+"px";menu.style.top=Math.max(16,Math.min(y-30,window.innerHeight-menu.offsetHeight-18))+"px";
+}
+async function hideDMMessageForMe(id){
+ const m=S.dmMessageMap?.[id];if(!m)return;
+ if(!confirm("Supprimer ce message uniquement de ta messagerie ? L’autre personne le conservera."))return;
+ const {error}=await db.from("direct_message_hidden_for_user").upsert({user_id:currentUser.id,message_id:id},{onConflict:"user_id,message_id"});
+ if(error){say("Suppression pour moi impossible : "+error.message);return;}
+ await loadDMMessages();await refreshDMUnread();say("Message supprimé uniquement chez toi.",true);
 }
 async function forwardDMMessage(id){
  const m=S.dmMessageMap?.[id];if(!m)return;
@@ -580,7 +590,7 @@ function bind(){
 if(t.matches("[data-dm-context-forward]")){const id=t.dataset.dmContextForward;hideDMContextMenu();forwardDMMessage(id);return;}
 if(t.matches("[data-dm-context-translate]")){const m=S.dmMessageMap?.[t.dataset.dmContextTranslate];hideDMContextMenu();if(m?.body)window.open("https://translate.google.com/?sl=auto&tl=fr&text="+encodeURIComponent(m.body),"_blank","noopener");else say("Aucun texte à traduire.");return;}
 if(t.matches("[data-dm-context-style]")){const id=t.dataset.dmContextStyle;hideDMContextMenu();toggleDMBubbleStyle(id);return;}
-if(t.matches("[data-dm-context-hide]")){hideDMContextMenu();say("La suppression personnelle nécessite encore une sauvegarde privée par utilisateur.");return;}
+if(t.matches("[data-dm-context-hide]")){const id=t.dataset.dmContextHide;hideDMContextMenu();hideDMMessageForMe(id);return;}
 if(t.matches("[data-dm-context-reply]")){const id=t.dataset.dmContextReply;hideDMContextMenu();setDMReply(id);return;}
 if(t.matches("[data-dm-context-copy]")){const id=t.dataset.dmContextCopy;hideDMContextMenu();copyDMMessage(id);return;}
 if(t.matches("[data-dm-context-edit]")){const id=t.dataset.dmContextEdit;hideDMContextMenu();editDMMessage(id);return;}
