@@ -359,7 +359,7 @@ function toggleDMBubbleStyle(id){
 }
 async function copyDMMessage(id){const m=S.dmMessageMap?.[id];if(!m)return;try{await navigator.clipboard.writeText(m.body||"");say("Message copié.",true);}catch(_){say("Copie impossible sur cet appareil.");}}
 
-function deleteDMImage(id){await deleteDMMessage(id);}
+async function deleteDMImage(id){await deleteDMMessage(id);}
 async function refreshSaved(){
  if(!signed())return;
  const {data,error}=await db.from("post_saves").select("post_id").eq("user_id",currentUser.id).limit(500);
