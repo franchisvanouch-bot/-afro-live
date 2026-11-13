@@ -152,7 +152,7 @@ async function openConversation(conversationId,otherId,name){
  S.dmChannel=db.channel("afro-dm-"+conversationId).on("postgres_changes",{event:"INSERT",schema:"public",table:"direct_messages",filter:"conversation_id=eq."+conversationId},async payload=>{
   if(payload.new?.sender_id!==currentUser.id){await loadDMMessages();await db.rpc("afro_mark_conversation_read",{p_conversation:conversationId});}
   await refreshDMUnread();
- }).on("postgres_changes",{event:"UPDATE",schema:"public",table:"direct_messages",filter:"conversation_id=eq."+conversationId},loadDMMessages).subscribe();
+ }).on("postgres_changes",{event:"UPDATE",schema:"public",table:"direct_messages",filter:"conversation_id=eq."+conversationId},loadDMMessages).on("postgres_changes",{event:"DELETE",schema:"public",table:"direct_messages",filter:"conversation_id=eq."+conversationId},async()=>{const check=await db.from("afro_my_conversations").select("id").eq("id",conversationId).maybeSingle();if(!check.data&&S.dmConversation===conversationId){if(S.dmChannel){db.removeChannel(S.dmChannel);S.dmChannel=null;}S.dmConversation=null;S.dmOther=null;if(el("afroDmDeleteConversation"))el("afroDmDeleteConversation").hidden=true;el("afroDmTitle").textContent="Messages";el("afroDmBody").className="afro-dm-list";await renderInbox();}else await loadDMMessages();await refreshDMUnread();}).subscribe();
 }
 function dmPublicUrl(path){return db.storage.from("creator-media").getPublicUrl(path).data.publicUrl;}
 function renderDMMessage(m){
@@ -326,7 +326,7 @@ async function deleteDMConversation(){
  el("afroDmTitle").textContent="Messages";el("afroDmBody").className="afro-dm-list";
  await renderInbox();await refreshDMUnread();await appendDMInboxToMessagesPage();say("Conversation supprimée chez les deux personnes.",true);
 }
-async function deleteDMImage(id){const m=S.dmMessageMap?.[id];if(!m||m.sender_id!==currentUser.id||!confirm("Supprimer cette photo pour tous les participants ?"))return;const {error}=await db.from("direct_messages").delete().eq("id",id);if(error){say("Suppression impossible : "+error.message);return;}if(m.media_path)await db.storage.from("creator-media").remove([m.media_path]);el("afroDmImageModal").hidden=true;await loadDMMessages();}
+async function deleteDMImage(id){await deleteDMMessage(id);}
 async function refreshSaved(){
  if(!signed())return;
  const {data,error}=await db.from("post_saves").select("post_id").eq("user_id",currentUser.id).limit(500);
