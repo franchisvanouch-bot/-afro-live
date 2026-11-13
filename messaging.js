@@ -1,7 +1,7 @@
 /* AFRO LIVE — messagerie neuve v2 */
 (()=>{
 "use strict";
-const $=id=>document.getElementById(id), state={conversation:null,channel:null,inboxChannel:null,busy:false};
+const $=id=>document.getElementById(id), state={conversation:null,channel:null,inboxChannel:null,busy:false,pendingFile:null,recorder:null,chunks:[],reactions:{}};
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const me=()=>typeof currentUser!=="undefined"&&currentUser?.id?currentUser:null;
 const say=t=>{if(typeof message==="function")message(t)};
@@ -39,6 +39,16 @@ function ensure(){
   #afroMessengerV2 .v2-compose input{flex:1}
   #afroMessengerV2 .v2-send{width:46px;height:46px;border:0;border-radius:50%;background:#ff7818;color:#111;font-size:20px;font-weight:800}
   #afroMessengerV2 .v2-send:disabled{opacity:.5}
+  #afroMessengerV2 .v2-media{display:block;max-width:min(230px,68vw);max-height:300px;border-radius:14px;object-fit:contain}
+  #afroMessengerV2 .v2-audio{max-width:min(230px,68vw);width:100%}
+  #afroMessengerV2 .v2-tools{display:flex;gap:5px;align-items:center}
+  #afroMessengerV2 .v2-tool{width:40px;height:40px;border:0;border-radius:50%;background:#202127;color:#fff;font-size:18px}
+  #afroMessengerV2 .v2-tool.recording{background:#c62828}
+  #afroMessengerV2 .v2-reactions{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+  #afroMessengerV2 .v2-reactions button{border:1px solid #363840;border-radius:15px;background:#1d1e24;color:#fff;padding:3px 7px;font-size:13px}
+  #afroMessengerV2 .v2-reactions button.mine{border-color:#ff861c}
+  #afroMessengerV2 .v2-status{font-size:11px;color:#ffb16d;padding:5px 12px}
+  #afroMessengerV2 .v2-status[hidden]{display:none!important}
   `;
   document.head.appendChild(st);
  }
@@ -50,6 +60,8 @@ function ensure(){
  <main id="afroV2Body" class="v2-list"><div class="v2-empty">Tes conversations apparaîtront ici.</div></main>`;
  document.body.appendChild(root);root.addEventListener("click",click);root.addEventListener("keydown",key);
  $("afroV2SearchInput").addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchUsers,250)});
+ $("afroV2File").addEventListener("change",async e=>{const f=e.target.files?.[0];e.target.value="";if(!f)return;const type=f.type.startsWith("image/")?"image":f.type.startsWith("video/")?"video":null;if(!type){say("Choisis une photo ou une vidéo.");return;}await uploadMedia(f,type);});
+
  return root;
 }
 let searchTimer=null;
@@ -94,22 +106,72 @@ async function openConversation(id,other,name){
  if(state.channel){db.removeChannel(state.channel);state.channel=null;}
  state.conversation=id;$("afroV2Title").textContent=name||"Conversation";$("afroV2Search").hidden=true;
  const body=$("afroV2Body");body.className="v2-chat";
- body.innerHTML='<div id="afroV2Messages" class="v2-messages"><div class="v2-empty">Chargement des messages…</div></div><div class="v2-compose"><input id="afroV2Input" maxlength="2000" placeholder="Message…" autocomplete="off"><button type="button" class="v2-send" data-v2-send>➤</button></div>';
+ body.innerHTML='<div id="afroV2Messages" class="v2-messages"><div class="v2-empty">Chargement des messages…</div></div><div id="afroV2Status" class="v2-status" hidden></div><div class="v2-compose"><input id="afroV2File" type="file" accept="image/*,video/*" hidden><div class="v2-tools"><button type="button" class="v2-tool" data-v2-file aria-label="Photo ou vidéo">＋</button><button type="button" class="v2-tool" data-v2-record aria-label="Note vocale">🎙</button></div><input id="afroV2Input" maxlength="2000" placeholder="Message…" autocomplete="off"><button type="button" class="v2-send" data-v2-send>➤</button></div>';
  await loadMessages();await db.rpc("dm_mark_read",{p_conversation:id});
- state.channel=db.channel("afro-dm-v2-"+id).on("postgres_changes",{event:"*",schema:"public",table:"dm_messages",filter:"conversation_id=eq."+id},async()=>{await loadMessages();await db.rpc("dm_mark_read",{p_conversation:id});}).subscribe();
+ state.channel=db.channel("afro-dm-v2-"+id).on("postgres_changes",{event:"*",schema:"public",table:"dm_messages",filter:"conversation_id=eq."+id},async()=>{await loadMessages();await db.rpc("dm_mark_read",{p_conversation:id});}).on("postgres_changes",{event:"*",schema:"public",table:"dm_message_reactions",filter:"conversation_id=eq."+id},loadMessages).subscribe();
+}
+function mediaUrl(path){return db.storage.from("creator-media").getPublicUrl(path).data.publicUrl;}
+function renderMessage(m){
+ const mine=m.sender_id===me().id,url=m.media_path?mediaUrl(m.media_path):"";
+ let content="";
+ if(m.message_type==="image")content='<img class="v2-media" src="'+esc(url)+'" alt="Photo" loading="lazy">';
+ else if(m.message_type==="video")content='<video class="v2-media" src="'+esc(url)+'" controls playsinline preload="metadata"></video>';
+ else if(m.message_type==="audio")content='<audio class="v2-audio" src="'+esc(url)+'" controls preload="metadata"></audio>';
+ else content=esc(m.body||"");
+ const reacts=state.reactions[m.id]||[];
+ const emojis=["❤️","😂","😭","👍","😮","🔥"];
+ return '<article class="v2-msg'+(mine?' mine':'')+'"><div class="v2-bubble">'+content+(m.body&&["image","video","audio"].includes(m.message_type)?'<div>'+esc(m.body)+'</div>':"")+'</div><small class="v2-meta">'+new Date(m.created_at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+(m.edited_at?" · modifié":"")+'</small><div class="v2-reactions">'+emojis.map(e=>'<button type="button" data-v2-react="'+m.id+'" data-v2-emoji="'+e+'" class="'+(reacts.some(x=>x.user_id===me().id&&x.emoji===e)?"mine":"")+'">'+e+(reacts.filter(x=>x.emoji===e).length||"")+'</button>').join("")+'</div>'+(mine?'<div class="v2-actions"><button type="button" data-v2-edit="'+m.id+'">Modifier</button><button type="button" data-v2-delete="'+m.id+'">Supprimer pour tous</button></div>':'')+'</article>';
 }
 async function loadMessages(){
  const box=$("afroV2Messages");if(!box||!state.conversation)return;
- const r=await db.from("dm_messages").select("id,sender_id,body,created_at,edited_at").eq("conversation_id",state.conversation).order("created_at",{ascending:true}).limit(300);
+ const r=await db.from("dm_messages").select("id,sender_id,body,message_type,media_path,media_mime,duration_seconds,reply_to_id,created_at,edited_at").eq("conversation_id",state.conversation).order("created_at",{ascending:true}).limit(300);
  if(r.error){box.innerHTML='<div class="v2-empty">'+esc(r.error.message)+'</div>';return;}
- box.innerHTML=(r.data||[]).map(m=>{const mine=m.sender_id===me().id;return '<article class="v2-msg'+(mine?' mine':'')+'"><div class="v2-bubble">'+esc(m.body)+'</div><small class="v2-meta">'+new Date(m.created_at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+(m.edited_at?" · modifié":"")+'</small>'+(mine?'<div class="v2-actions"><button type="button" data-v2-edit="'+m.id+'">Modifier</button><button type="button" data-v2-delete="'+m.id+'">Supprimer pour tous</button></div>':'')+'</article>';}).join("")||'<div class="v2-empty">Démarre la conversation 👋</div>';
+ const ids=(r.data||[]).map(x=>x.id);state.reactions={};
+ if(ids.length){const rr=await db.from("dm_message_reactions").select("message_id,user_id,emoji").in("message_id",ids);if(!rr.error)(rr.data||[]).forEach(x=>(state.reactions[x.message_id]??=[]).push(x));}
+ box.innerHTML=(r.data||[]).map(renderMessage).join("")||'<div class="v2-empty">Démarre la conversation 👋</div>';
  box.scrollTop=box.scrollHeight;
+}
+async function uploadMedia(file,type,caption=""){
+ if(!file||!state.conversation||!me())return false;
+ const limit=type==="video"?40*1024*1024:type==="image"?15*1024*1024:12*1024*1024;
+ if(file.size>limit){say("Fichier trop volumineux. Limite : "+(limit/1024/1024)+" Mo.");return false;}
+ const status=$("afroV2Status");if(status){status.hidden=false;status.textContent="Envoi du fichier…";}
+ const ext=(file.name.split(".").pop()||file.type.split("/")[1]||"bin").split(";")[0].replace(/[^a-z0-9]/gi,"").slice(0,8)||"bin";
+ const path=me().id+"/dm/"+state.conversation+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
+ try{
+  const up=await db.storage.from("creator-media").upload(path,file,{contentType:file.type||"application/octet-stream",upsert:false});
+  if(up.error)throw up.error;
+  const ins=await db.from("dm_messages").insert({conversation_id:state.conversation,sender_id:me().id,body:caption||"",message_type:type,media_path:path,media_mime:file.type||null});
+  if(ins.error){await db.storage.from("creator-media").remove([path]);throw ins.error;}
+  if(status){status.textContent="Envoyé";setTimeout(()=>{if(status)status.hidden=true;},1300);}
+  await loadMessages();return true;
+ }catch(e){if(status){status.hidden=false;status.textContent="Échec : "+(e.message||"envoi impossible");}say("Envoi impossible : "+(e.message||"réessaie."));return false;}
+}
+async function toggleRecording(){
+ const status=$("afroV2Status"),btn=$("afroMessengerV2")?.querySelector("[data-v2-record]");
+ if(state.recorder?.state==="recording"){state.recorder.stop();return;}
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){say("Les notes vocales ne sont pas prises en charge sur cet appareil.");return;}
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({audio:true});state.chunks=[];
+  const mime=["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(x=>MediaRecorder.isTypeSupported?.(x));
+  state.recorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
+  state.recorder.ondataavailable=e=>{if(e.data.size)state.chunks.push(e.data);};
+  state.recorder.onerror=()=>{stream.getTracks().forEach(t=>t.stop());say("Erreur pendant l'enregistrement.");};
+  state.recorder.onstop=async()=>{
+   stream.getTracks().forEach(t=>t.stop());const blob=new Blob(state.chunks,{type:state.recorder.mimeType||"audio/mp4"});
+   const ext=blob.type.includes("mp4")?"m4a":"webm";
+   await uploadMedia(new File([blob],"note-vocale."+ext,{type:blob.type}),"audio");
+   if(btn)btn.classList.remove("recording");if(status)status.hidden=true;
+  };
+  state.recorder.start(250);if(btn)btn.classList.add("recording");
+  if(status){status.hidden=false;status.textContent="Enregistrement… appuie encore sur 🎙 pour envoyer.";}
+ }catch(e){say("Micro indisponible : "+(e.message||"autorise le microphone."));}
 }
 async function send(){
  if(state.busy||!state.conversation||!me())return;
  const input=$("afroV2Input"),body=input?.value.trim()||"";if(!body)return;
  state.busy=true;const btn=$("afroMessengerV2")?.querySelector("[data-v2-send]");if(btn)btn.disabled=true;
- const r=await db.from("dm_messages").insert({conversation_id:state.conversation,sender_id:me().id,body});
+ const r=await db.from("dm_messages").insert({conversation_id:state.conversation,sender_id:me().id,body,message_type:"text"});
  state.busy=false;if(btn)btn.disabled=false;
  if(r.error){say("Message non envoyé : "+r.error.message);return;}
  input.value="";await loadMessages();await db.rpc("dm_mark_read",{p_conversation:state.conversation});
@@ -128,6 +190,9 @@ async function click(e){
  if(t.hasAttribute("data-v2-back")){if(state.conversation){if(state.channel){db.removeChannel(state.channel);state.channel=null;}state.conversation=null;$("afroV2Title").textContent="Messages";$("afroV2Body").className="v2-list";$("afroV2Search").hidden=true;await inbox();}else close();return;}
  if(t.hasAttribute("data-v2-new")){$("afroV2Search").hidden=false;$("afroV2Title").textContent="Nouveau message";$("afroV2Body").className="v2-list";$("afroV2Body").innerHTML='<div class="v2-empty">Recherche un pseudo ou un nom.</div>';$("afroV2SearchInput").value="";$("afroV2SearchInput").focus();return;}
  if(t.hasAttribute("data-v2-send")){e.preventDefault();await send();return;}
+ if(t.hasAttribute("data-v2-file")){$("afroV2File")?.click();return;}
+ if(t.hasAttribute("data-v2-record")){await toggleRecording();return;}
+ if(t.dataset.v2React){const id=t.dataset.v2React,emoji=t.dataset.v2Emoji,old=(state.reactions[id]||[]).find(x=>x.user_id===me().id);if(old){const d=await db.from("dm_message_reactions").delete().eq("message_id",id).eq("user_id",me().id);if(d.error){say("Réaction impossible : "+d.error.message);return;}if(old.emoji===emoji){await loadMessages();return;}}const ins=await db.from("dm_message_reactions").insert({message_id:id,conversation_id:state.conversation,user_id:me().id,emoji});if(ins.error)say("Réaction impossible : "+ins.error.message);else await loadMessages();return;}
  if(t.dataset.v2Open){await openConversation(t.dataset.v2Open,t.dataset.v2Other,t.dataset.v2Name);return;}
  if(t.dataset.v2Start){await start(t.dataset.v2Start,t.dataset.v2Name);return;}
  if(t.dataset.v2Edit){const old=t.closest(".v2-msg")?.querySelector(".v2-bubble")?.textContent||"",v=prompt("Modifier le message :",old);if(v===null)return;if(!v.trim()||v.length>2000)return say("Message invalide.");const r=await db.from("dm_messages").update({body:v.trim(),edited_at:new Date().toISOString()}).eq("id",t.dataset.v2Edit).eq("sender_id",me().id);if(r.error)say("Modification impossible : "+r.error.message);else await loadMessages();return;}
