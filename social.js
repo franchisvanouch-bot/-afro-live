@@ -176,6 +176,26 @@ async function openConversation(conversationId,otherId,name){
  el("afroDmSearch").hidden=true;
  const body=el("afroDmBody");body.className="afro-dm-chat";
  body.innerHTML='<div id="afroDmMessages" class="afro-dm-messages"><div class="afro-social-empty">Chargement...</div></div><div id="afroDmAttachmentPreview" class="afro-dm-attachment-preview" hidden></div><form id="afroDmForm" class="afro-dm-compose"><input id="afroDmFile" type="file" accept="image/*,video/*" hidden><button type="button" class="afro-dm-tool" data-dm-photo aria-label="Photo ou vidéo"><i class="ti ti-photo"></i></button><input id="afroDmInput" maxlength="2000" placeholder="Message..." autocomplete="off"><button type="button" class="afro-dm-tool" data-dm-record aria-label="Note vocale"><i class="ti ti-microphone"></i></button><button type="submit" aria-label="Envoyer"><i class="ti ti-send"></i></button></form><div id="afroDmRecordStatus" class="afro-dm-record-status" hidden></div>';
+ const dmForm=el("afroDmForm");
+ if(dmForm){
+  // Intercepte l'envoi directement sur le formulaire créé à chaque ouverture de conversation.
+  dmForm.addEventListener("submit",event=>{
+   event.preventDefault();
+   event.stopImmediatePropagation();
+   sendDM(event).catch(error=>{
+    console.error("[AFRO LIVE] envoi du message:",error);
+    say("Erreur pendant l’envoi du message. Réessaie.");
+   });
+   return false;
+  },true);
+  dmForm.addEventListener("keydown",event=>{
+   if(event.key==="Enter"&&!event.shiftKey&&event.target?.id==="afroDmInput"){
+    event.preventDefault();
+    dmForm.requestSubmit();
+   }
+  });
+ }
+
  await loadDMMessages();
  await db.rpc("afro_mark_conversation_read",{p_conversation:conversationId});
  S.dmChannel=db.channel("afro-dm-"+conversationId).on("postgres_changes",{event:"INSERT",schema:"public",table:"direct_messages",filter:"conversation_id=eq."+conversationId},async payload=>{
