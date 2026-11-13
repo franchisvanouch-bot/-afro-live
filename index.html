@@ -1917,7 +1917,7 @@ function showPage(page){
  if(page==="follows")loadFollowsPage();
  if(page==="subscriptions")loadSubscriptions();
  if(page==="application")loadApplication();
- if(page==="notifs")loadNotifications();
+ if(page==="notifs"){if(window.afroLoadMessagesPage)window.afroLoadMessagesPage();else loadNotifications();}
  if(page==="search")focusSearch();
 }
 
