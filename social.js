@@ -33,7 +33,7 @@ function addStyles(){
  .afro-dm-search{padding:12px;border-bottom:1px solid #29292e}.afro-dm-search input,.afro-dm-compose input{margin:0;background:#202024;color:#fff;border:1px solid #34343a;border-radius:22px;padding:12px 14px}
  .afro-dm-chat{display:flex;flex-direction:column;flex:1;min-height:0}.afro-dm-messages{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
  .afro-dm-bubble{max-width:82%;padding:10px 13px;border-radius:16px;background:#242429;align-self:flex-start;overflow-wrap:anywhere;font-size:14px;line-height:1.4}
- .afro-dm-bubble.mine{align-self:flex-end;background:#ff6a00;color:white}.afro-dm-time{display:block;font-size:10px;opacity:.7;margin-top:4px}
+ .afro-dm-bubble.mine{align-self:flex-end;background:#ff6a00;color:white}.afro-dm-bubble.text-only{background:transparent!important;padding:2px 0!important;border-radius:0!important;max-width:90%;color:#f4f4f5}.afro-dm-bubble.mine.text-only{background:transparent!important;color:#f4f4f5}.afro-dm-bubble.text-only .afro-dm-time{opacity:.55}.afro-dm-time{display:block;font-size:10px;opacity:.7;margin-top:4px}
  .afro-dm-compose{display:flex;align-items:center;gap:7px;padding:10px 9px;border-top:1px solid #29292e;background:#09090b}.afro-dm-compose input{flex:1;min-width:0}.afro-dm-compose button{flex:0 0 42px}.afro-dm-tool{background:#242429;color:#fff;border-radius:50%;width:40px!important;height:40px!important;padding:0!important}.afro-dm-tool.recording{background:#d22;color:#fff}.afro-dm-media{display:block;max-width:100%;max-height:360px;border-radius:13px;object-fit:contain}.afro-dm-audio{max-width:230px;width:100%}.afro-dm-caption{margin-top:6px}.afro-dm-ticks{color:#b9b9bf;letter-spacing:-3px;margin-left:5px;font-size:12px}.afro-dm-ticks.read{color:#45a7ff}.afro-dm-share{min-width:180px;display:grid;gap:5px}.afro-dm-share i{font-size:24px}.afro-dm-share small{opacity:.75}.afro-dm-record-status{padding:7px 14px;color:#ff9b57;font-size:12px}.afro-dm-bubble{border-radius:20px 20px 20px 5px}.afro-dm-bubble.mine{border-radius:20px 20px 5px 20px}.afro-dm-compose input{flex:1;min-width:0}.afro-dm-compose button{border-radius:50%;width:44px;height:44px;padding:0}
  .afro-dm-attachment-preview{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:#202024;color:#fff;font-size:12px}.afro-dm-attachment-preview[hidden]{display:none}.afro-dm-attachment-preview button{border:0;border-radius:50%;width:28px;height:28px;background:#393940;color:#fff;font-size:19px}#navigation button.afro-has-unread{position:relative}#navigation button.afro-has-unread .navdot{display:flex!important;align-items:center;justify-content:center;position:absolute;top:0;right:calc(50% - 20px);min-width:19px;height:19px;padding:0 5px;border:0;border-radius:50%;background:#22c55e;color:#fff;font-size:10px;font-weight:800;line-height:1;box-shadow:0 0 0 2px var(--bg,#09090b)}.afro-dm-row-message .afro-dm-bubble{border:0!important;box-shadow:none!important;outline:0!important}.afro-dm-row-message{display:flex;flex-direction:column;align-items:flex-start;max-width:84%;margin:8px 0;position:relative}.afro-dm-row-message.mine{margin-left:auto;align-items:flex-end}.afro-dm-image-open{padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;max-width:190px;max-height:230px;overflow:hidden;border-radius:12px}.afro-dm-media{display:block;max-width:190px;max-height:230px;width:auto;height:auto;object-fit:contain;border-radius:12px}.afro-dm-audio-wrap audio{max-width:210px;width:100%}.afro-dm-message-tools{display:flex;gap:7px;align-items:center}.afro-dm-message-tools button{border:0;background:transparent;color:#aaa;padding:3px 6px}.afro-dm-reaction-picker{display:flex;gap:4px;padding:5px;background:#333;border-radius:20px}.afro-dm-reaction-picker[hidden]{display:none}.afro-dm-reaction-picker button{border:0;background:transparent;font-size:20px}.afro-dm-reaction{font-size:16px}.afro-dm-reply-preview{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:#202024;border-left:3px solid #ff8a24;color:#ddd;font-size:12px}.afro-dm-reply-preview button{border:0;background:transparent;color:#fff;font-size:18px}.afro-dm-quoted{font-size:12px;border-left:3px solid #ff8a24;padding:4px 7px;margin-bottom:6px;background:#0002}.afro-dm-attachment-preview{background:transparent!important;border:0!important}.afro-dm-attachment-preview img{width:52px;height:52px;object-fit:cover;border-radius:8px}.afro-dm-reply-preview{padding:7px 12px;background:#222;border-left:3px solid #ff8a24;color:#ddd;font-size:12px}.afro-dm-image-modal{position:fixed;inset:0;z-index:99999;background:#050505f5;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px}.afro-dm-image-modal[hidden]{display:none}.afro-dm-image-modal>img{max-width:96vw;max-height:78vh;width:auto;height:auto;object-fit:contain}.afro-dm-modal-close{position:absolute;top:20px;right:18px;border:0;border-radius:50%;background:#333;color:#fff;width:42px;height:42px;font-size:25px}.afro-dm-image-actions{display:flex;gap:12px;margin-top:16px}.afro-dm-image-actions a,.afro-dm-image-actions button{border:0;border-radius:20px;background:#28282c;color:#fff;padding:10px 14px;text-decoration:none}.afro-social-empty{color:#999;text-align:center;padding:35px 18px;font-size:14px}
  .afro-comment-actions{display:flex;align-items:center;gap:14px;margin-top:7px}.afro-comment-actions button{padding:2px 0;background:none;color:#aaa;font-size:11px;font-weight:500}.afro-comment-actions button.liked{color:#ff526b}
@@ -48,7 +48,7 @@ function avatar(p){const u=p?.avatar_url;return u?'<img class="afro-dm-avatar" s
 function ensureOverlays(){
  if(!el("afroDmOverlay")){
   const wrap=document.createElement("section");wrap.id="afroDmOverlay";wrap.className="afro-social-overlay";wrap.hidden=true;
-  wrap.innerHTML='<div class="afro-social-head"><button class="afro-social-close" data-dm-close aria-label="Retour">‹</button><strong id="afroDmTitle">Messages</strong><button class="afro-social-close" data-dm-new aria-label="Nouveau message">＋</button></div><div id="afroDmSearch" class="afro-dm-search" hidden><input id="afroDmSearchInput" type="search" placeholder="Rechercher un utilisateur"></div><div id="afroDmBody" class="afro-dm-list"><div class="afro-social-empty">Chargement...</div></div>';
+  wrap.innerHTML='<div class="afro-social-head"><button class="afro-social-close" data-dm-close aria-label="Retour">‹</button><strong id="afroDmTitle">Messages</strong><button class="afro-social-close" id="afroDmDeleteConversation" data-dm-delete-conversation aria-label="Supprimer toute la conversation" hidden>🗑</button><button class="afro-social-close" data-dm-new aria-label="Nouveau message">＋</button></div><div id="afroDmSearch" class="afro-dm-search" hidden><input id="afroDmSearchInput" type="search" placeholder="Rechercher un utilisateur"></div><div id="afroDmBody" class="afro-dm-list"><div class="afro-social-empty">Chargement...</div></div>';
   document.body.appendChild(wrap);
  }
  if(!el("afroSavedOverlay")){
@@ -98,6 +98,7 @@ function addMenuOptions(){
  anchor?.after(box);
 }
 async function openDM(){
+ if(el("afroDmDeleteConversation"))el("afroDmDeleteConversation").hidden=true;
  if(!signed()){if(typeof guestToAuth==="function")guestToAuth();return;}
  ensureOverlays();addStyles();
  el("afroDmOverlay").hidden=false;el("afroDmSearch").hidden=true;el("afroDmTitle").textContent="Messages";
@@ -138,6 +139,7 @@ async function startDM(userId,name){
  await openConversation(data,userId,name);
 }
 async function openConversation(conversationId,otherId,name){
+ if(el("afroDmDeleteConversation"))el("afroDmDeleteConversation").hidden=false;
  if(S.dmChannel){db.removeChannel(S.dmChannel);S.dmChannel=null;}
  S.dmConversation=conversationId;S.dmOther=otherId;
  const receipt=await db.from("afro_my_conversations").select("other_last_read_at").eq("id",conversationId).maybeSingle();S.dmOtherLastReadAt=receipt.data?.other_last_read_at||null;
@@ -165,14 +167,15 @@ function renderDMMessage(m){
  else content=esc(m.body||"");
  const parent=m.reply_to_id?S.dmMessageMap?.[m.reply_to_id]:null;
  const quote=parent?'<div class="afro-dm-quoted">↪ '+esc(parent.body|| (parent.message_type==="image"?"Photo":parent.message_type==="audio"?"Note vocale":"Message"))+'</div>':"";
+ const isText=m.message_type==="text";
  const read=mine&&S.dmOtherLastReadAt&&new Date(S.dmOtherLastReadAt)>=new Date(m.created_at);
  const ticks=mine?'<span class="afro-dm-ticks'+(read?" read":"")+'>✓✓</span>':"";
  const reactions=(S.dmReactions?.[m.id]||[]).map(x=>'<span class="afro-dm-reaction">'+esc(x.emoji)+'</span>').join("");
- return '<div class="afro-dm-row-message'+(mine?" mine":"") +'" data-dm-message="'+esc(m.id)+'"><div class="afro-dm-bubble'+(mine?" mine":"") +'">'+quote+content+(m.body&&["image","video","audio"].includes(m.message_type)?'<div class="afro-dm-caption">'+esc(m.body)+'</div>':"")+'<small class="afro-dm-time">'+new Date(m.created_at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+" "+ticks+'</small></div><div class="afro-dm-message-tools"><button data-dm-reply="'+esc(m.id)+'">↩</button><button data-dm-react="'+esc(m.id)+'">☺</button>'+reactions+'</div><div class="afro-dm-reaction-picker" data-dm-picker="'+esc(m.id)+'" hidden>'+["❤️","😂","😮","😢","👍","🔥"].map(e=>'<button data-dm-emoji="'+e+'" data-dm-message-id="'+esc(m.id)+'">'+e+'</button>').join("")+'</div></div>';
+ return '<div class="afro-dm-row-message'+(mine?" mine":"") +'" data-dm-message="'+esc(m.id)+'"><div class="afro-dm-bubble'+(mine?" mine":"")+(isText?" text-only":"") +'">'+quote+content+(m.body&&["image","video","audio"].includes(m.message_type)?'<div class="afro-dm-caption">'+esc(m.body)+'</div>':"")+'<small class="afro-dm-time">'+new Date(m.created_at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+(m.edited_at?" · modifié":"")+" "+ticks+'</small></div><div class="afro-dm-message-tools"><button data-dm-reply="'+esc(m.id)+'">↩</button><button data-dm-react="'+esc(m.id)+'">☺</button>'+(mine&&isText?'<button data-dm-edit="'+esc(m.id)+'" aria-label="Modifier">Modifier</button>':"")+(mine?'<button data-dm-delete-message="'+esc(m.id)+'" aria-label="Supprimer">Supprimer</button>':"")+reactions+'</div><div class="afro-dm-reaction-picker" data-dm-picker="'+esc(m.id)+'" hidden>'+["❤️","😂","😮","😢","👍","🔥"].map(e=>'<button data-dm-emoji="'+e+'" data-dm-message-id="'+esc(m.id)+'">'+e+'</button>').join("")+'</div></div>';
 }
 async function loadDMMessages(){
  const box=el("afroDmMessages");if(!box||!S.dmConversation)return;
- const {data,error}=await db.from("direct_messages").select("id,sender_id,body,shared_post_id,shared_live_session_id,message_type,media_path,media_mime,duration_seconds,reply_to_id,created_at").eq("conversation_id",S.dmConversation).order("created_at",{ascending:true}).limit(250);
+ const {data,error}=await db.from("direct_messages").select("id,sender_id,body,shared_post_id,shared_live_session_id,message_type,media_path,media_mime,duration_seconds,reply_to_id,created_at,edited_at").eq("conversation_id",S.dmConversation).order("created_at",{ascending:true}).limit(250);
  if(error){box.innerHTML='<div class="afro-social-empty">'+esc(error.message)+'</div>';return;}
  S.dmMessageMap=Object.fromEntries((data||[]).map(m=>[m.id,m]));S.dmReactions={};
  const ids=(data||[]).map(m=>m.id);if(ids.length){const rr=await db.from("direct_message_reactions").select("message_id,user_id,emoji").in("message_id",ids);if(!rr.error)(rr.data||[]).forEach(x=>(S.dmReactions[x.message_id]??=[]).push(x));}
@@ -292,6 +295,37 @@ function setDMReply(id){const m=S.dmMessageMap?.[id];if(!m)return;S.dmReplyTo=id
 async function reactDMMessage(id,emoji){const old=(S.dmReactions?.[id]||[]).find(x=>x.user_id===currentUser.id);if(old){const d=await db.from("direct_message_reactions").delete().eq("message_id",id).eq("user_id",currentUser.id);if(d.error){say("Réaction impossible : "+d.error.message);return;}if(old.emoji===emoji){await loadDMMessages();return;}}const {error}=await db.from("direct_message_reactions").insert({message_id:id,conversation_id:S.dmConversation,user_id:currentUser.id,emoji});if(error){say("Réaction impossible : "+error.message);return;}await loadDMMessages();}
 function openDMImage(id){const m=S.dmMessageMap?.[id];if(!m?.media_path)return;const url=dmPublicUrl(m.media_path);let modal=el("afroDmImageModal");if(!modal){modal=document.createElement("div");modal.id="afroDmImageModal";modal.className="afro-dm-image-modal";document.body.appendChild(modal);}modal.innerHTML='<button class="afro-dm-modal-close" data-dm-image-close>×</button><img src="'+esc(url)+'" alt="Photo originale"><div class="afro-dm-image-actions"><a href="'+esc(url)+'" download="afro-live-photo">Télécharger</a><button data-dm-image-share="'+esc(id)+'">Partager</button>'+(m.sender_id===currentUser.id?'<button data-dm-image-delete="'+esc(id)+'">Supprimer</button>':"") +'</div>';modal.hidden=false;}
 async function shareDMImage(id){const m=S.dmMessageMap?.[id];if(!m?.media_path)return;const url=dmPublicUrl(m.media_path);try{if(navigator.share){const response=await fetch(url);const blob=await response.blob();const file=new File([blob],"afro-live-photo",{type:blob.type});if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file]});else await navigator.share({url});}else{await navigator.clipboard.writeText(url);say("Lien de la photo copié.");}}catch(e){if(e.name!=="AbortError")say("Partage indisponible.");}}
+async function editDMMessage(id){
+ const m=S.dmMessageMap?.[id];
+ if(!m||m.sender_id!==currentUser.id||m.message_type!=="text")return;
+ const next=prompt("Modifier ton message :",m.body||"");
+ if(next===null)return;
+ if(!next.trim()||next.length>2000){say("Le message doit contenir entre 1 et 2000 caractères.");return;}
+ const {error}=await db.rpc("afro_edit_direct_message",{p_message:id,p_body:next.trim()});
+ if(error){say("Modification impossible : "+error.message);return;}
+ await loadDMMessages();await refreshDMUnread();await appendDMInboxToMessagesPage();say("Message modifié.",true);
+}
+async function deleteDMMessage(id){
+ const m=S.dmMessageMap?.[id];
+ if(!m||m.sender_id!==currentUser.id||!confirm("Supprimer ce message pour toi et l’autre personne ?"))return;
+ const {error}=await db.rpc("afro_delete_direct_message_for_all",{p_message:id});
+ if(error){say("Suppression impossible : "+error.message);return;}
+ if(m.media_path)await db.storage.from("creator-media").remove([m.media_path]);
+ if(el("afroDmImageModal"))el("afroDmImageModal").hidden=true;
+ await loadDMMessages();await refreshDMUnread();await appendDMInboxToMessagesPage();say("Message supprimé chez les deux personnes.",true);
+}
+async function deleteDMConversation(){
+ const id=S.dmConversation;
+ if(!id)return;
+ if(!confirm("Supprimer définitivement cette conversation et tous ses messages chez toi et chez l’autre personne ?"))return;
+ const {error}=await db.rpc("afro_delete_conversation_for_all",{p_conversation:id});
+ if(error){say("Suppression impossible : "+error.message);return;}
+ if(S.dmChannel){db.removeChannel(S.dmChannel);S.dmChannel=null;}
+ S.dmConversation=null;S.dmOther=null;
+ if(el("afroDmDeleteConversation"))el("afroDmDeleteConversation").hidden=true;
+ el("afroDmTitle").textContent="Messages";el("afroDmBody").className="afro-dm-list";
+ await renderInbox();await refreshDMUnread();await appendDMInboxToMessagesPage();say("Conversation supprimée chez les deux personnes.",true);
+}
 async function deleteDMImage(id){const m=S.dmMessageMap?.[id];if(!m||m.sender_id!==currentUser.id||!confirm("Supprimer cette photo pour tous les participants ?"))return;const {error}=await db.from("direct_messages").delete().eq("id",id);if(error){say("Suppression impossible : "+error.message);return;}if(m.media_path)await db.storage.from("creator-media").remove([m.media_path]);el("afroDmImageModal").hidden=true;await loadDMMessages();}
 async function refreshSaved(){
  if(!signed())return;
@@ -510,7 +544,7 @@ function bind(){
   const t=e.target.closest("button");if(!t)return;
   if(t.matches("[data-afro-open-dm]")){openDM();return;}
   if(t.matches("[data-afro-open-saved]")){openSaved();return;}
-  if(t.matches("[data-dm-close]")){if(S.dmConversation){if(S.dmChannel){db.removeChannel(S.dmChannel);S.dmChannel=null;}S.dmConversation=null;S.dmOther=null;el("afroDmTitle").textContent="Messages";el("afroDmBody").className="afro-dm-list";renderInbox();}else closeDM();return;}
+  if(t.matches("[data-dm-close]")){if(S.dmConversation){if(S.dmChannel){db.removeChannel(S.dmChannel);S.dmChannel=null;}S.dmConversation=null;S.dmOther=null;if(el("afroDmDeleteConversation"))el("afroDmDeleteConversation").hidden=true;el("afroDmTitle").textContent="Messages";el("afroDmBody").className="afro-dm-list";renderInbox();}else closeDM();return;}
   if(t.matches("[data-dm-new]")){showNewDM();return;}
   if(t.matches("[data-dm-photo]")){el("afroDmFile")?.click();return;}
   if(t.matches("[data-dm-cancel-file]")){S.dmPendingFile=null;S.dmPendingType=null;const p=el("afroDmAttachmentPreview");if(p){p.hidden=true;p.innerHTML="";}return;}
@@ -519,6 +553,9 @@ function bind(){
   if(t.matches("[data-dm-image-close]")){el("afroDmImageModal").hidden=true;return;}
   if(t.matches("[data-dm-image-share]")){shareDMImage(t.dataset.dmImageShare);return;}
   if(t.matches("[data-dm-image-delete]")){deleteDMImage(t.dataset.dmImageDelete);return;}
+  if(t.matches("[data-dm-edit]")){editDMMessage(t.dataset.dmEdit);return;}
+  if(t.matches("[data-dm-delete-message]")){deleteDMMessage(t.dataset.dmDeleteMessage);return;}
+  if(t.matches("[data-dm-delete-conversation]")){deleteDMConversation();return;}
   if(t.matches("[data-dm-reply]")){setDMReply(t.dataset.dmReply);return;}
   if(t.matches("[data-dm-react]")){const p=document.querySelector('[data-dm-picker="'+t.dataset.dmReact+'"]');if(p)p.hidden=!p.hidden;return;}
   if(t.matches("[data-dm-emoji]")){reactDMMessage(t.dataset.dmMessageId,t.dataset.dmEmoji);return;}
