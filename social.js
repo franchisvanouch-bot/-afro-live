@@ -333,7 +333,7 @@ async
 function hideDMContextMenu(){el("afroDmContextBackdrop")?.remove();el("afroDmContextMenu")?.remove();}
 function showDMContextMenu(id,x,y){
  const m=S.dmMessageMap?.[id];if(!m)return;hideDMContextMenu();
- const mine=m.sender_id===currentUser.id,back=document.createElement("div");back.id="afroDmContextBackdrop";back.className="afro-dm-context-backdrop";document.body.appendChild(back);
+ const mine=m.sender_id===currentUser.id,back=document.createElement("div");back.id="afroDmContextBackdrop";back.className="afro-dm-context-backdrop";back.addEventListener("click",hideDMContextMenu);document.body.appendChild(back);
  const menu=document.createElement("div");menu.id="afroDmContextMenu";menu.className="afro-dm-context-menu";
  menu.innerHTML='<div class="afro-dm-context-reactions">'+["❤️","😂","😭","👍","😡","🤔","😮"].map(e=>'<button data-dm-context-emoji="'+e+'" data-dm-context-id="'+esc(id)+'">'+e+'</button>').join("")+'</div><button data-dm-context-reply="'+esc(id)+'"><span>↶</span> Répondre</button><button data-dm-context-forward="'+esc(id)+'"><span>➦</span> Transférer</button><button data-dm-context-copy="'+esc(id)+'"><span>▢</span> Copier</button><button data-dm-context-translate="'+esc(id)+'"><span>文A</span> Traduire</button><button data-dm-context-style="'+esc(id)+'"><span>◉</span> Style de bulle</button><button data-dm-context-hide="'+esc(id)+'"><span>♜</span> Supprimer pour moi</button>'+(mine?'<button class="danger" data-dm-context-delete="'+esc(id)+'"><span>⟲</span> Retirer le message</button>':"")+(mine&&m.message_type==="text"?'<button data-dm-context-edit="'+esc(id)+'"><span>✎</span> Modifier</button>':"");
  document.body.appendChild(menu);
