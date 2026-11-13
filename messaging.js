@@ -60,7 +60,7 @@ function ensure(){
  <main id="afroV2Body" class="v2-list"><div class="v2-empty">Tes conversations apparaîtront ici.</div></main>`;
  document.body.appendChild(root);root.addEventListener("click",click);root.addEventListener("keydown",key);
  $("afroV2SearchInput").addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchUsers,250)});
- $("afroV2File").addEventListener("change",async e=>{const f=e.target.files?.[0];e.target.value="";if(!f)return;const type=f.type.startsWith("image/")?"image":f.type.startsWith("video/")?"video":null;if(!type){say("Choisis une photo ou une vidéo.");return;}await uploadMedia(f,type);});
+ root.addEventListener("change",async e=>{if(e.target?.id!=="afroV2File")return;const f=e.target.files?.[0];e.target.value="";if(!f)return;const type=f.type.startsWith("image/")?"image":f.type.startsWith("video/")?"video":null;if(!type){say("Choisis une photo ou une vidéo.");return;}await uploadMedia(f,type);});
 
  return root;
 }
