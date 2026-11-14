@@ -237,8 +237,12 @@ function css(){
  .mx-pc img,.mx-pc video{width:100%;height:100%;object-fit:cover;display:block}
  .mx-pc-who{position:absolute;left:10px;bottom:10px;color:#fff;font-weight:700;font-size:14px;text-shadow:0 1px 4px #000}
  .mx-pc-play{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:40px;text-shadow:0 2px 8px #000;opacity:.9;pointer-events:none}
- .mx-imgview{position:fixed;inset:0;z-index:2147483300;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center}
+ .mx-imgview{position:fixed;inset:0;z-index:2147483300;background:rgba(0,0,0,.96);display:flex;align-items:center;justify-content:center}
  .mx-imgview img,.mx-imgview video{max-width:100vw;max-height:100vh;object-fit:contain}
+ .mx-imgview-tools{position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:14px;display:flex;gap:10px;z-index:2}
+ .mx-imgview-tools button{width:44px;height:44px;border:1px solid rgba(255,255,255,.22);border-radius:50%;background:rgba(25,25,25,.72);color:#fff;font-size:24px;display:grid;place-items:center}
+ .mx-imgview-tools button:active{background:#ff7900}
+ .mx-imgview-tools .mx-img-close{font-size:30px}
  `;
  document.head.appendChild(s);
 }
@@ -440,9 +444,9 @@ function ensureChat(){
  });
  th.addEventListener("click",e=>{
   const img=e.target.closest("[data-mx-img]");
-  if(img)viewMedia("image",img.dataset.mxImg);
+  if(img)viewMedia("image",img.dataset.mxImg,img.closest(".mx-line")?.dataset.id);
   const vid=e.target.closest("[data-mx-vid]");
-  if(vid)viewMedia("video",vid.dataset.mxVid);
+  if(vid)viewMedia("video",vid.dataset.mxVid,vid.closest(".mx-line")?.dataset.id);
   const pc=e.target.closest("[data-mx-post]");
   if(pc)openSharedPost(pc.dataset.mxPost,pc.dataset.creator);
  });
@@ -452,12 +456,38 @@ function syncComposer(){
  $("mxSend").hidden=!has;
  $("mxMic").hidden=has;$("mxGal").hidden=has;$("mxCam").hidden=has;
 }
-function viewMedia(kind,url){
- const v=document.createElement("div");
- v.className="mx-imgview";
- v.innerHTML=kind==="video"?`<video src="${esc(url)}" controls autoplay playsinline></video>`:kind==="audio"?`<audio src="${esc(url)}" controls autoplay style="width:min(90vw,360px)"></audio>`:`<img src="${esc(url)}" alt="">`;
- v.addEventListener("click",e=>{if(e.target===v)v.remove()});
- document.body.appendChild(v);
+function viewMedia(kind,url,messageId){
+ const v=document.createElement("div");v.className="mx-imgview";
+ const media=kind==="video"?`<video src="${esc(url)}" controls autoplay playsinline></video>`:kind==="audio"?`<audio src="${esc(url)}" controls autoplay style="width:min(90vw,360px)"></audio>`:`<img src="${esc(url)}" alt="">`;
+ v.innerHTML=`${media}<div class="mx-imgview-tools"><button type="button" class="mx-img-close" data-img-close aria-label="Fermer">×</button>${kind==="image"?'<button type="button" data-img-options aria-label="Options de la photo">⋮</button>':""}</div>`;
+ const close=()=>{const video=v.querySelector("video");if(video)video.pause();v.remove()};
+ v.querySelector("[data-img-close]").addEventListener("click",close);
+ v.querySelector("[data-img-options]")?.addEventListener("click",()=>imageMenu(messageId,url,close));
+ v.addEventListener("click",e=>{if(e.target===v)close()});document.body.appendChild(v);
+}
+async function imageMenu(messageId,url,closeViewer){
+ const m=S.msgs.find(x=>x.id===messageId);if(!m)return say("Cette photo n'est plus disponible.");
+ const mine=m.sender_id===me();
+ const options=item("save",messageId,"ti-download","Enregistrer la photo")+(mine?item("delete",messageId,"ti-trash","Supprimer la photo","danger"):item("report",messageId,"ti-flag","Signaler la photo","danger"));
+ sheet(options,async(action)=>{
+  if(action==="save"){
+   try{const response=await fetch(url);if(!response.ok)throw new Error("Téléchargement impossible");
+    const blob=await response.blob(),file=new File([blob],"afro-live-photo.jpg",{type:blob.type||"image/jpeg"});
+    if(navigator.canShare?.({files:[file]})&&navigator.share){await navigator.share({files:[file],title:"Photo AFRO LIVE"});return}
+    const objectUrl=URL.createObjectURL(blob),a=document.createElement("a");a.href=objectUrl;a.download="afro-live-photo.jpg";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),1500);say("Photo enregistrée.",true);
+   }catch(e){if(e?.name!=="AbortError")say("Impossible d'enregistrer la photo : "+(e.message||"réessaie"))}return;
+  }
+  if(action==="delete"){
+   if(!confirm("Supprimer cette photo pour tout le monde ?"))return;
+   const r=await db.rpc("msg_delete",{p_message:messageId,p_for_all:true});if(r.error)return say(frErr(r.error));
+   closeViewer();await fetchAll();say("Photo supprimée.",true);return;
+  }
+  if(action==="report"){
+   const reason=prompt("Pourquoi signales-tu cette photo ? (spam, harassment, hate, nudity, violence, scam, other)","other");if(!reason)return;
+   const {error}=await db.from("social_reports").insert({reporter_id:me(),reported_user_id:m.sender_id,reason:reason.toLowerCase().trim(),status:"pending",details:"Photo dans la messagerie · message "+messageId});
+   if(error)return say(error.message);say("Signalement envoyé.",true);
+  }
+ });
 }
 
 /* ---------- APPLIQUER LES RÉGLAGES DE LA CONVERSATION ---------- */
