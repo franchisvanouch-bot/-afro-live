@@ -2484,7 +2484,8 @@ async function hvmAction(action){
  });
  if(!video||document.hidden)return;
  video.muted=homeMuted;
- if(video.preload==="none"){video.preload="auto";if(video.readyState===0)video.load()}
+ video.playbackRate=hvmSpeed;
+ if(video.preload==="none"{video.preload="auto";if(video.readyState===0)video.load()}
  const attempt=video.play();
  if(attempt&&typeof attempt.catch==="function"){
   attempt.catch(()=>{
@@ -4642,6 +4643,7 @@ $("homeFeed").addEventListener("timeupdate",e=>{
   if(e.target.closest(".vseek,.vplay-toggle"))e.stopPropagation();
  });
 $("homeFeed").addEventListener("click",e=>{
+ if(hvmLongPressed){hvmLongPressed=false;e.preventDefault();e.stopPropagation();return}
  const btn=e.target.closest("[data-action]");
  if(btn){
   const action=btn.dataset.action;
