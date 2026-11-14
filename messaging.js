@@ -1,5 +1,5 @@
 /* =========================================================
-   AFRO LIVE — messaging.js (v5)
+   AFRO LIVE — messaging.js (v6 : partage de publications)
    Chat clair, médias, vocal, réponse par glissement,
    page d'infos complète : fonds, bulles, sonneries, groupes,
    recherche, médias partagés, épingle, sourdines.
@@ -8,8 +8,8 @@
    ========================================================= */
 (()=>{
 "use strict";
-if(window.__afroMsgV5)return;
-window.__afroMsgV5=true;
+if(window.__afroMsgV6)return;
+window.__afroMsgV6=true;
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -232,6 +232,11 @@ function css(){
  .mx-item{display:flex;align-items:center;gap:14px;width:100%;border:0;background:none;padding:14px 18px;font-size:15px;color:#111;text-align:left;border-top:1px solid #f4f4f6}
  .mx-item i{width:20px;text-align:center;font-size:19px;color:#444}
  .mx-item.danger,.mx-item.danger i{color:#e5484d}
+ .mx-postcard{padding:4px;background:#eef0f4}
+ .mx-pc{position:relative;width:220px;height:300px;border-radius:16px;overflow:hidden;background:#000}
+ .mx-pc img,.mx-pc video{width:100%;height:100%;object-fit:cover;display:block}
+ .mx-pc-who{position:absolute;left:10px;bottom:10px;color:#fff;font-weight:700;font-size:14px;text-shadow:0 1px 4px #000}
+ .mx-pc-play{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:40px;text-shadow:0 2px 8px #000;opacity:.9;pointer-events:none}
  .mx-imgview{position:fixed;inset:0;z-index:2147483300;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center}
  .mx-imgview img,.mx-imgview video{max-width:100vw;max-height:100vh;object-fit:contain}
  `;
@@ -438,6 +443,8 @@ function ensureChat(){
   if(img)viewMedia("image",img.dataset.mxImg);
   const vid=e.target.closest("[data-mx-vid]");
   if(vid)viewMedia("video",vid.dataset.mxVid);
+  const pc=e.target.closest("[data-mx-post]");
+  if(pc)openSharedPost(pc.dataset.mxPost,pc.dataset.creator);
  });
 }
 function syncComposer(){
@@ -505,13 +512,25 @@ async function fetchAll(){
  const convId=S.conv;
  if(!convId)return;
  const [mRes,memRes]=await Promise.all([
-  db.from("msg_messages").select("id,sender_id,body,reply_to,created_at,edited_at,deleted_for_all,message_type,media_path,media_duration")
+  db.from("msg_messages").select("id,sender_id,body,reply_to,created_at,edited_at,deleted_for_all,message_type,media_path,media_duration,shared_post_id")
    .eq("conversation_id",convId).order("created_at",{ascending:true}).limit(200),
   db.from("msg_members").select("user_id,last_read_at").eq("conversation_id",convId)
  ]);
  if(convId!==S.conv)return;
  if(mRes.error){$("mxThread").innerHTML=`<div class="mx-empty">${esc(frErr(mRes.error))}</div>`;return}
  S.msgs=mRes.data||[];
+ S.posts={};S.postUsers={};
+ const postIds=[...new Set(S.msgs.map(m=>m.shared_post_id).filter(Boolean))];
+ if(postIds.length){
+  const {data:ps}=await db.from("posts").select("id,kind,media_path,caption,creator_id").in("id",postIds);
+  (ps||[]).forEach(p=>S.posts[p.id]=p);
+  const creators=[...new Set((ps||[]).map(p=>p.creator_id))];
+  if(creators.length){
+   const {data:pr}=await db.from("profiles").select("id,username,display_name").in("id",creators);
+   (pr||[]).forEach(p=>S.postUsers[p.id]=p);
+  }
+ }
+ if(convId!==S.conv)return;
  S.reads=Object.fromEntries((memRes.data||[]).map(r=>[r.user_id,r.last_read_at]));
  S.reacts=new Map();
  const ids=S.msgs.map(m=>m.id);
@@ -554,6 +573,7 @@ function bodyOf(m){
  if(m.message_type==="image")return "📷 Photo";
  if(m.message_type==="video")return "🎬 Vidéo";
  if(m.message_type==="audio")return "🎤 Vocal";
+ if(m.message_type==="post")return "🎬 Publication";
  return m.body||"";
 }
 function replyHTML(m){
@@ -563,6 +583,14 @@ function replyHTML(m){
 }
 function contentHTML(m){
  if(m.deleted_for_all)return `<div class="mx-bub del">Message supprimé</div>`;
+ if(m.message_type==="post"){
+  const p=S.posts[m.shared_post_id];
+  if(!p)return `<div class="mx-bub del">Publication indisponible</div>`;
+  const url=mediaUrl(p.media_path);
+  const thumb=p.kind==="video"?`<video src="${esc(url)}" muted preload="metadata"></video>`:`<img src="${esc(url)}" alt="" loading="lazy">`;
+  const who=S.postUsers[p.creator_id]?.username||"";
+  return `<div class="mx-bub media mx-postcard" data-mx-post="${esc(p.id)}" data-creator="${esc(p.creator_id)}">${replyHTML(m)}<div class="mx-pc">${thumb}<span class="mx-pc-who">${esc(who)}</span><span class="mx-pc-play"><i class="ti ti-player-play"></i></span></div>${m.body?`<div class="mx-cap">${esc(m.body)}</div>`:""}</div>`;
+ }
  const isMedia=["image","video","audio"].includes(m.message_type)&&m.media_path;
  const plain=S.plain[m.id]||P(S.conv).plain;
  if(!isMedia)return `<div class="mx-bub${plain?" plain":""}">${replyHTML(m)}${esc(m.body||"")}</div>`;
@@ -723,7 +751,8 @@ function msgMenu(id){
   (canEdit?item("edit",id,"ti-pencil","Modifier"):"")+
   item("hide",id,"ti-trash","Supprimer pour moi","danger")+
   (mine&&!m.deleted_for_all?item("all",id,"ti-trash-x","Supprimer pour tous","danger"):"");
- sheet(emojis+items,msgAction);
+ const extra=(m.message_type==="post"?item("open",id,"ti-player-play","Ouvrir la publication"):"")+(!mine?item("report",id,"ti-flag","Signaler","danger"):"");
+ sheet(emojis+items+extra,msgAction);
 }
 async function msgAction(a,id,emoji){
  if(a==="react"){
@@ -734,6 +763,15 @@ async function msgAction(a,id,emoji){
  const m=S.msgs.find(x=>x.id===id);
  if(!m)return;
  if(a==="reply")return replyTo(id);
+ if(a==="open"){if(m.shared_post_id)return openSharedPost(m.shared_post_id,null);return}
+ if(a==="report"){
+  const reason=prompt("Motif : spam, harassment, hate, nudity, violence, scam, other","other");
+  if(!reason)return;
+  const row={reporter_id:me(),reported_user_id:m.sender_id,reason:reason.toLowerCase().trim(),status:"pending",details:"Message "+id+(m.shared_post_id?" · publication "+m.shared_post_id:"")};
+  if(m.shared_post_id)row.post_id=m.shared_post_id;
+  const {error}=await db.from("social_reports").insert(row);
+  return say(error?error.message:"Signalement envoyé.",!error);
+ }
  if(a==="edit"){S.edit=m;S.reply=null;$("mxInput").value=m.body||"";setBar(m,true);syncComposer();$("mxInput").focus();return}
  if(a==="copy"){try{await navigator.clipboard.writeText(m.body||"");say("Message copié.",true)}catch(_){say("Copie impossible sur cet appareil.")}return}
  if(a==="forward"){
@@ -1058,6 +1096,61 @@ function reset(){
  if($("mxInfo"))$("mxInfo").hidden=true;
  closePage();
 }
+
+/* ---------- PUBLICATION : OUVRIR SUR LE COMPTE DU CRÉATEUR ---------- */
+async function openSharedPost(postId,creatorId){
+ closeChat();
+ if(!creatorId){
+  const {data}=await db.from("posts").select("creator_id").eq("id",postId).maybeSingle();
+  creatorId=data?.creator_id||null;
+ }
+ if(!creatorId)return say("Cette publication n'est plus disponible.");
+ await openProfile(creatorId);
+ const list=(typeof feedSources!=="undefined"&&feedSources.profile)||[];
+ const idx=list.findIndex(p=>p.id===postId);
+ if(idx>=0&&typeof openFeedFrom==="function")openFeedFrom("profile",idx);
+ else say("Publication introuvable sur ce compte.");
+}
+
+/* ---------- ENVOYER UNE PUBLICATION DANS UNE CONVERSATION ---------- */
+async function openSharePicker(postId){
+ if(!currentUser){if(typeof guestToAuth==="function")guestToAuth();return}
+ await loadList();
+ const rows=S.list.filter(c=>!c.archived).map(c=>{
+  const name=c.other_name||c.other_username||"Groupe";
+  const av=c.other_id?avatarHTML(c.other_avatar,name):'<span class="mx-av mx-av-t">👥</span>';
+  return `<button type="button" class="mx-pick" data-send-post="${esc(c.conversation_id)}">${av}<span>${esc(name)}</span><i class="ti ti-send ck"></i></button>`;
+ }).join("")||'<div class="mx-empty">Aucune conversation. Ouvre le profil d\'un créateur pour commencer.</div>';
+ openPage("Envoyer la publication",rows,{
+  bind:(body,pg)=>body.addEventListener("click",async e=>{
+   const b=e.target.closest("[data-send-post]");
+   if(!b)return;
+   const {error}=await db.rpc("msg_send_post",{p_conv:b.dataset.sendPost,p_post:postId,p_body:""});
+   if(error)return say(frErr(error));
+   say("Publication envoyée.",true);
+   pg.hidden=true;
+  })
+ });
+}
+function patchFeed(){
+ if(typeof vitemHTML!=="function"||vitemHTML.__mxPatched)return;
+ const old=vitemHTML;
+ const patched=function(p){
+  const html=old(p);
+  const btn=`<button class="vbtn" data-action="msg-share" data-post="${esc(p.id)}" aria-label="Envoyer en message"><i class="ti ti-send"></i><span class="vcount">Envoyer</span></button>`;
+  return html.includes('class="vbtn vcomments"')?html.replace('<button class="vbtn vcomments"',btn+'<button class="vbtn vcomments"'):html;
+ };
+ patched.__mxPatched=true;
+ vitemHTML=patched;
+}
+document.addEventListener("click",e=>{
+ const b=e.target.closest('[data-action="msg-share"]');
+ if(!b)return;
+ e.preventDefault();
+ e.stopImmediatePropagation();
+ openSharePicker(b.dataset.post);
+},true);
+patchFeed();
 
 window.openAfroCreatorConversation=startWith;
 window.afroLoadMessagesPage=async function(){ensureList();subscribeList();await loadList()};
