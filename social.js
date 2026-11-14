@@ -67,8 +67,46 @@ function ensureOverlays(){
 }
 
 /* ---------- MODÉRATION (admin) ---------- */
+function addTestCreatorButton(){
+ if(typeof currentProfile==="undefined"||currentProfile?.role!=="admin")return;
+ const host=el("admin");
+ if(!host||el("afroCreateTestCreators"))return;
+ const b=document.createElement("button");
+ b.id="afroCreateTestCreators";b.type="button";b.className="soft";
+ b.style.cssText="width:100%;margin:10px 0;border:1px solid #ff8a32";
+ b.textContent="Créer les 50 créateurs de démonstration";
+ b.addEventListener("click",async()=>{
+  if(currentProfile?.role!=="admin"||!signed())return say("Connexion administrateur nécessaire.");
+  if(!confirm("Créer les comptes créateurs de démonstration AFRO LIVE ? Les comptes déjà présents seront ignorés."))return;
+  b.disabled=true;b.textContent="Création des comptes en cours...";
+  const old=el("afroTestCreatorResult");if(old)old.remove();
+  try{
+   const {data,error}=await db.functions.invoke("create-test-creators",{body:{}});
+   if(error)throw error;
+   const result=document.createElement("div");
+   result.id="afroTestCreatorResult";result.className="notice";
+   const count=Number(data?.created_count||0), skipped=Number(data?.skipped_count||0);
+   const errors=Array.isArray(data?.errors)?data.errors:[];
+   result.textContent="Créés : "+count+" · Déjà présents : "+skipped+" · Erreurs : "+errors.length;
+   if(Array.isArray(data?.credentials)&&data.credentials.length){
+    const details=document.createElement("details");
+    const summary=document.createElement("summary");summary.textContent="Afficher les identifiants créés (à conserver en lieu sûr)";
+    const pre=document.createElement("pre");pre.style.cssText="white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px";
+    pre.textContent=data.credentials.map(x=>x.email+" | "+x.password).join("\n");
+    const copy=document.createElement("button");copy.type="button";copy.className="soft";copy.textContent="Copier les identifiants";
+    copy.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(pre.textContent);say("Identifiants copiés.",true)}catch{say("La copie automatique n'est pas disponible.")}});
+    details.append(summary,pre,copy);result.appendChild(details);
+   }
+   if(errors.length){const list=document.createElement("pre");list.style.cssText="white-space:pre-wrap;font-size:11px";list.textContent=errors.map(x=>x.email+": "+x.error).join("\n");result.appendChild(list)}
+   host.prepend(result);say("Création terminée : "+count+" comptes créés.",true);
+  }catch(err){say("Création impossible : "+(err?.message||String(err)))}
+  finally{b.disabled=false;b.textContent="Créer les 50 créateurs de démonstration"}
+ });
+ host.prepend(b);
+}
 function addAdminModeration(){
  if(typeof currentProfile==="undefined"||currentProfile?.role!=="admin")return;
+ addTestCreatorButton();
  const host=el("admin");
  if(!host||el("afroOpenReports"))return;
  const b=document.createElement("button");
