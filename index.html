@@ -1360,6 +1360,16 @@ body.booting>header{visibility:hidden}
   </div>
   <div class="admin-actions"><button id="refreshAdmin">Actualiser les demandes</button></div>
   <div id="adminApplications"><p>Chargement des candidatures...</p></div>
+  <div class="card" id="afroGptCard">
+   <h3><i class="ti ti-sparkles"></i> Assistant GPT AFRO LIVE</h3>
+   <p class="small">Pose tes questions sur les bugs, les textes et les améliorations de l’application.</p>
+   <div id="afroGptMessages" aria-live="polite"><div class="afro-gpt-msg assistant">Bonjour ! Je suis l’assistant GPT d’AFRO LIVE. Quel problème veux-tu examiner ?</div></div>
+   <form id="afroGptForm">
+    <textarea id="afroGptInput" rows="3" maxlength="4000" placeholder="Ex. : Pourquoi les vidéos sont floues ?"></textarea>
+    <button id="afroGptSend" type="submit"><i class="ti ti-send"></i> Envoyer</button>
+   </form>
+   <p class="small" id="afroGptStatus" aria-live="polite">Les réponses utilisent l’API OpenAI et peuvent entraîner des frais.</p>
+  </div>
  </section>
 
  <section id="publicProfile" class="hidden"></section>
@@ -4578,6 +4588,35 @@ $("avatarInput").addEventListener("change",e=>{const f=e.target.files[0];e.targe
 $("startLiveButton").addEventListener("click",startCreatorLive);
 $("openMyProfile").addEventListener("click",()=>{if(currentUser)openProfile(currentUser.id)});
 $("refreshAdmin").addEventListener("click",loadAdminApplications);
+const afroGptHistory=[];
+function addAfroGptMessage(role,content){
+ const box=$("afroGptMessages"),bubble=document.createElement("div");
+ bubble.className="afro-gpt-msg "+role;
+ bubble.textContent=content;
+ box.appendChild(bubble);box.scrollTop=box.scrollHeight;
+}
+$("afroGptForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(currentProfile?.role!=="admin")return;
+ const input=$("afroGptInput"),send=$("afroGptSend"),status=$("afroGptStatus");
+ const message=input.value.trim();if(!message)return;
+ addAfroGptMessage("user",message);
+ input.value="";send.disabled=true;status.textContent="GPT réfléchit...";
+ try{
+  const {data,error}=await db.functions.invoke("afro-gpt-assistant",{
+   body:{message,history:afroGptHistory.slice(-8)}
+  });
+  if(error)throw error;
+  if(data?.error)throw new Error(data.error);
+  const answer=data?.answer||"Je n’ai pas reçu de réponse.";
+  afroGptHistory.push({role:"user",content:message},{role:"assistant",content:answer});
+  addAfroGptMessage("assistant",answer);status.textContent="Réponse reçue.";
+ }catch(err){
+  const msg=err?.message||"Connexion impossible.";
+  addAfroGptMessage("assistant","Erreur : "+msg);
+  status.textContent="Vérifie la connexion et réessaie.";
+ }finally{send.disabled=false;input.focus()}
+});
 $("viewerClose").addEventListener("click",closeViewer);
 $("svClose").addEventListener("click",closeStatusViewer);
 $("svPrev").addEventListener("click",prevStatus);
@@ -4872,3 +4911,16 @@ body:has(#publicProfile:not(.hidden)) #publicProfile{
 <script src="/messaging.js?v=20261114-v9"></script>
 </body>
 </html>
+
+<style id="afro-gpt-assistant-style">
+#afroGptCard{margin-top:22px;border:1px solid rgba(255,145,36,.3)}
+#afroGptCard h3{color:#ff9b35}
+#afroGptMessages{display:flex;flex-direction:column;gap:9px;max-height:42vh;overflow:auto;padding:8px 0}
+.afro-gpt-msg{max-width:94%;padding:11px 13px;border-radius:13px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.45}
+.afro-gpt-msg.assistant{align-self:flex-start;background:#25252a;color:#f4f4f5}
+.afro-gpt-msg.user{align-self:flex-end;background:#71380f;color:#fff}
+#afroGptForm{display:flex;flex-direction:column;gap:8px}
+#afroGptForm textarea{margin:0;resize:vertical}
+#afroGptSend{align-self:flex-end;min-width:120px}
+#afroGptStatus{min-height:18px;margin-top:8px}
+</style>
