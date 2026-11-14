@@ -2266,10 +2266,10 @@ async function loadHomeFeed(){
   splash.appendChild(logo);
   box.replaceChildren(splash);
  }
- const {data,error}=await db.rpc("feed_posts",{p_only_follows:homeFilter==="follows",p_limit:40});
+ const {data,error}=await db.rpc("feed_posts",{p_only_follows:homeFilter==="follows",p_limit:12});
  if(error){box.innerHTML=`<div class="vempty">${escapeHTML(error.message)}</div>`;return}
  let feedData=[...(data||[])];
- const {data:reposts,error:repostError}=await db.from("post_reposts").select("post_id,user_id,created_at").order("created_at",{ascending:false}).limit(100);
+ const {data:reposts,error:repostError}=await db.from("post_reposts").select("post_id,user_id,created_at").order("created_at",{ascending:false}).limit(20);
  if(!repostError&&reposts?.length){
   const visible=reposts.filter(r=>homeFilter!=="follows"||myFollows.has(r.user_id));
   const ids=[...new Set(visible.map(r=>r.post_id))];
