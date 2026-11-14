@@ -2674,7 +2674,7 @@ async function openProfile(id){
  $("livesPage").classList.remove("lfull");
  const profile=$("publicProfile");
  profile.classList.remove("hidden");
- profile.innerHTML="<p class='empty'>Chargement du profil...</p>";
+ if(!profile.innerHTML.trim()){profile.innerHTML="<div class='ig-top'><span class='ig-user'>AFRO LIVE</span></div><div class='pf-head'><div class='avatar' style='width:96px;height:96px;border-radius:50%;background:#202126'></div><div class='pf-stats'><span> </span><span> </span><span> </span></div></div><div class='pf-info'><div style='height:14px;width:42%;border-radius:8px;background:#202126'></div><div style='height:10px;width:68%;margin-top:10px;border-radius:8px;background:#18181b'></div></div><div class='tiles ig-grid'><div class='tile' style='background:#151518'></div><div class='tile' style='background:#151518'></div><div class='tile' style='background:#151518'></div><div class='tile' style='background:#151518'></div><div class='tile' style='background:#151518'></div><div class='tile' style='background:#151518'></div></div>";}
  const {data,error}=await db.rpc("public_profile",{p_id:id});
  const p=data?.[0];
  if(error||!p){
