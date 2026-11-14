@@ -1,5 +1,5 @@
 /* =========================================================
-   AFRO LIVE — messaging.js (v6 : partage de publications)
+   AFRO LIVE — messaging.js (v7 : feuille d'envoi)
    Chat clair, médias, vocal, réponse par glissement,
    page d'infos complète : fonds, bulles, sonneries, groupes,
    recherche, médias partagés, épingle, sourdines.
@@ -8,8 +8,8 @@
    ========================================================= */
 (()=>{
 "use strict";
-if(window.__afroMsgV6)return;
-window.__afroMsgV6=true;
+if(window.__afroMsgV7)return;
+window.__afroMsgV7=true;
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1113,31 +1113,105 @@ async function openSharedPost(postId,creatorId){
 }
 
 /* ---------- ENVOYER UNE PUBLICATION DANS UNE CONVERSATION ---------- */
+const SHARE_CSS=`
+.mx-share-bg{position:fixed;inset:0;z-index:2147483250;background:rgba(0,0,0,.45);display:flex;align-items:flex-end}
+.mx-share{width:100%;max-height:86dvh;overflow-y:auto;background:#fff;color:#111;border-radius:22px 22px 0 0;padding:14px 0 calc(18px + env(safe-area-inset-bottom))}
+.mx-share-top{display:flex;align-items:center;justify-content:space-between;padding:0 16px 12px}
+.mx-share-top b{font-size:17px}
+.mx-share-x,.mx-share-ic{width:40px;height:40px;border-radius:50%;border:0;background:#f0f1f4;display:grid;place-items:center;font-size:20px;color:#111}
+.mx-share-q{display:block;box-sizing:border-box;width:calc(100% - 32px);margin:0 16px 14px;border:0;border-radius:14px;background:#f0f1f4;padding:11px 14px;font-size:16px;color:#111}
+.mx-share-people{display:flex;gap:14px;overflow-x:auto;padding:0 16px 14px;scrollbar-width:none}
+.mx-share-p{flex:0 0 74px;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;color:#111}
+.mx-share-av{width:66px;height:66px;border-radius:50%;object-fit:cover;background:#e5e5ea}
+.mx-share-p small{font-size:12px;max-width:74px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mx-share-acts{display:flex;gap:14px;overflow-x:auto;padding:14px 16px;border-top:1px solid #eee;scrollbar-width:none}
+.mx-share-acts button{flex:0 0 78px;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;color:#111;text-align:center}
+.mx-share-acts button span{width:58px;height:58px;border-radius:50%;background:#f0f1f4;display:grid;place-items:center;font-size:24px;color:#111}
+`;
+function closeShareSheet(){const el=$("mxShare");if(el)el.remove()}
+
 async function openSharePicker(postId){
  if(!currentUser){if(typeof guestToAuth==="function")guestToAuth();return}
+ const btn=document.querySelector('.vitem [data-action="msg-share"][data-post="'+CSS.escape(postId)+'"]');
+ const post={id:postId,username:btn?.dataset.username||"",caption:btn?.dataset.caption||""};
+ closeShareSheet();
+ if(!$("mxShareCss")){const st=document.createElement("style");st.id="mxShareCss";st.textContent=SHARE_CSS;document.head.appendChild(st)}
  await loadList();
- const rows=S.list.filter(c=>!c.archived).map(c=>{
-  const name=c.other_name||c.other_username||"Groupe";
-  const av=c.other_id?avatarHTML(c.other_avatar,name):'<span class="mx-av mx-av-t">👥</span>';
-  return `<button type="button" class="mx-pick" data-send-post="${esc(c.conversation_id)}">${av}<span>${esc(name)}</span><i class="ti ti-send ck"></i></button>`;
- }).join("")||'<div class="mx-empty">Aucune conversation. Ouvre le profil d\'un créateur pour commencer.</div>';
- openPage("Envoyer la publication",rows,{
-  bind:(body,pg)=>body.addEventListener("click",async e=>{
-   const b=e.target.closest("[data-send-post]");
-   if(!b)return;
-   const {error}=await db.rpc("msg_send_post",{p_conv:b.dataset.sendPost,p_post:postId,p_body:""});
-   if(error)return say(frErr(error));
-   say("Publication envoyée.",true);
-   pg.hidden=true;
-  })
+ const direct=S.list.filter(c=>!c.archived&&c.other_id).map(c=>({key:"c:"+c.other_id,id:c.other_id,conv:c.conversation_id,name:c.other_name||c.other_username||"Membre",avatar:c.other_avatar}));
+ const followIds=[...(typeof myFollows!=="undefined"?myFollows:[])].filter(id=>id!==me()&&!direct.some(d=>d.id===id)).slice(0,40);
+ let extra=[];
+ if(followIds.length){
+  const {data}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",followIds);
+  extra=(data||[]).map(p=>({key:"p:"+p.id,id:p.id,conv:null,name:p.display_name||p.username,avatar:p.avatar_url}));
+ }
+ const contacts=[...direct,...extra];
+ const wrap=document.createElement("div");
+ wrap.id="mxShare";wrap.className="mx-share-bg";
+ const actA=[["repub","ti-repeat","Republier","#ffd21f"],["copy","ti-link","Copier le lien","#2f6bff"],["wa","ti-brand-whatsapp","WhatsApp","#25d366"],["wab","ti-brand-whatsapp","WA Business","#25d366"],["status","ti-brand-whatsapp","Status","#25d366"],["snap","ti-brand-snapchat","Snapchat","#fffc00"]];
+ const actB=[["report","ti-alert-triangle","Signaler"],["hide","ti-heart-broken","Pas intéressé(e)"],["promo","ti-flame","Promouvoir"],["group","ti-users","Créer un groupe"],["duo","ti-layout-2","Duo"],["collage","ti-layout-grid","Collage"]];
+ wrap.innerHTML=`<div class="mx-share">
+  <div class="mx-share-top"><span class="mx-share-ic"><i class="ti ti-search"></i></span><b>Envoyer à</b><button type="button" class="mx-share-x" data-x aria-label="Fermer"><i class="ti ti-x"></i></button></div>
+  <input class="mx-share-q" id="mxShareQ" placeholder="Rechercher" autocomplete="off">
+  <div class="mx-share-people" id="mxSharePeople"></div>
+  <div class="mx-share-acts">${actA.map(([k,i,l,c])=>`<button type="button" data-act="${k}"><span style="background:${c};color:${k==="snap"?"#000":"#fff"}"><i class="ti ${i}"></i></span>${l}</button>`).join("")}</div>
+  <div class="mx-share-acts">${actB.map(([k,i,l])=>`<button type="button" data-act="${k}"><span><i class="ti ${i}"></i></span>${l}</button>`).join("")}</div>
+ </div>`;
+ document.body.appendChild(wrap);
+ const renderPeople=q=>{
+  const list=contacts.filter(c=>!q||c.name.toLowerCase().includes(q));
+  $("mxSharePeople").innerHTML=list.length
+   ?list.map(c=>`<button type="button" class="mx-share-p" data-person="${esc(c.key)}">${avatarHTML(c.avatar,c.name,"mx-share-av")}<small>${esc(c.name)}</small></button>`).join("")
+   :'<div class="mx-empty" style="padding:10px">Personne trouvée</div>';
+ };
+ renderPeople("");
+ $("mxShareQ").addEventListener("input",e=>renderPeople(e.target.value.trim().toLowerCase()));
+ wrap.addEventListener("click",async e=>{
+  if(e.target===wrap||e.target.closest("[data-x]")){closeShareSheet();return}
+  const pb=e.target.closest("[data-person]");
+  if(pb){const c=contacts.find(x=>x.key===pb.dataset.person);if(c)await sendPostTo(c,post);return}
+  const ab=e.target.closest("[data-act]");
+  if(ab)await shareAction(ab.dataset.act,post);
  });
+}
+async function sendPostTo(c,post){
+ let conv=c.conv;
+ if(!conv){
+  const {data,error}=await db.rpc("msg_start_conversation",{p_other:c.id});
+  if(error)return say(frErr(error));
+  conv=data;
+ }
+ const {error}=await db.rpc("msg_send_post",{p_conv:conv,p_post:post.id,p_body:""});
+ if(error)return say(frErr(error));
+ say("Publication envoyée à "+c.name+".",true);
+ closeShareSheet();
+}
+async function shareAction(act,post){
+ const link=post.username?creatorLink(post.username):location.href;
+ const text=(post.username?"Regarde la publication de @"+post.username+" sur AFRO LIVE":"AFRO LIVE")+(post.caption?" : "+post.caption:"");
+ closeShareSheet();
+ if(act==="copy"){try{await navigator.clipboard.writeText(link);say("Lien copié.",true)}catch(_){say("Copie impossible.")}return}
+ if(act==="wa"||act==="wab"||act==="status"){window.open("https://wa.me/?text="+encodeURIComponent(text+" "+link),"_blank","noopener");return}
+ if(act==="snap"){
+  if(navigator.share){try{await navigator.share({title:"AFRO LIVE",text,url:link})}catch(_){}}
+  else{try{await navigator.clipboard.writeText(link);say("Lien copié pour Snapchat.",true)}catch(_){}}
+  return;
+ }
+ if(act==="repub"){
+  const rb=document.querySelector('.vbtn[data-action="repost"][data-post="'+CSS.escape(post.id)+'"]');
+  if(rb&&typeof toggleRepost==="function")return toggleRepost(rb);
+  return say("Republication indisponible.");
+ }
+ if(act==="report"){if(typeof window.afroReportProfile==="function")return window.afroReportProfile({post_id:post.id});return}
+ if(act==="hide"){document.querySelector('.vitem[data-post="'+CSS.escape(post.id)+'"]')?.remove();return say("Publication masquée.",true)}
+ if(act==="group")return say("Pour créer un groupe, ouvre Messages puis « Nouveau ».");
+ say("Bientôt disponible.");
 }
 function patchFeed(){
  if(typeof vitemHTML!=="function"||vitemHTML.__mxPatched)return;
  const old=vitemHTML;
  const patched=function(p){
   const html=old(p);
-  const btn=`<button class="vbtn" data-action="msg-share" data-post="${esc(p.id)}" aria-label="Envoyer en message"><i class="ti ti-send"></i><span class="vcount">Envoyer</span></button>`;
+  const btn=`<button class="vbtn" data-action="msg-share" data-post="${esc(p.id)}" data-creator="${esc(p.creator_id||"")}" data-username="${esc(p.username||"")}" data-caption="${esc(p.caption||"")}" aria-label="Envoyer en message"><i class="ti ti-send"></i><span class="vcount">Envoyer</span></button>`;
   return html.includes('class="vbtn vcomments"')?html.replace('<button class="vbtn vcomments"',btn+'<button class="vbtn vcomments"'):html;
  };
  patched.__mxPatched=true;
