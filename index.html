@@ -820,6 +820,27 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 #discoverPage .vbtn:focus-visible{outline:0!important;box-shadow:none!important}
 #discoverPage .vbtn i{font-size:27px}
 #discoverPage .vbtn.on i{color:#ff7900}
+#discoverPage .vplayback{
+ position:absolute;left:12px;right:76px;bottom:calc(7px + env(safe-area-inset-bottom));
+ z-index:7;display:flex;align-items:center;gap:10px;padding:4px 0;color:#fff
+}
+#discoverPage .vplay-toggle{
+ flex:0 0 30px;width:30px;height:30px;padding:0;border:0;background:transparent;
+ color:#fff;display:flex;align-items:center;justify-content:center;font-size:21px;text-shadow:0 2px 6px #000
+}
+#discoverPage .vseek{
+ flex:1;min-width:0;height:18px;margin:0;padding:0;appearance:none;-webkit-appearance:none;
+ background:transparent;cursor:pointer;touch-action:pan-x
+}
+#discoverPage .vseek::-webkit-slider-runnable-track{
+ height:3px;border-radius:4px;background:linear-gradient(to right,#fff var(--progress,0%),rgba(255,255,255,.42) var(--progress,0%))
+}
+#discoverPage .vseek::-moz-range-track{height:3px;border-radius:4px;background:rgba(255,255,255,.42)}
+#discoverPage .vseek::-moz-range-progress{height:3px;border-radius:4px;background:#fff}
+#discoverPage .vseek::-webkit-slider-thumb{
+ -webkit-appearance:none;width:10px;height:10px;margin-top:-3.5px;border-radius:50%;background:#fff;box-shadow:0 1px 5px #000
+}
+#discoverPage .vseek::-moz-range-thumb{width:10px;height:10px;border:0;border-radius:50%;background:#fff}
 #discoverPage .vmeta{
  left:14px;right:78px;bottom:calc(28px + env(safe-area-inset-bottom));
  padding:14px 15px;border-radius:18px;
@@ -2329,6 +2350,7 @@ function vitemHTML(p){
    <button class="vbtn${p.reposted?" on":""}" data-action="repost" data-post="${escapeHTML(p.id)}" data-reposted="${p.reposted?1:0}" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">${p.reposted?"Republié":"Republier"}</span></button>
    <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}<span class="vcount">Son</span></button>
   </div>
+  ${p.kind==="video"?`<div class="vplayback" data-playback><button class="vplay-toggle" type="button" data-action="playpause" aria-label="Pause"><i class="ti ti-player-pause-filled" aria-hidden="true"></i></button><input class="vseek" type="range" min="0" max="100" step="0.1" value="0" aria-label="Position de la vidéo"></div>`:""}
   <div class="vmeta">
    ${p.is_repost?`<div class="v-repost-note"><i class="ti ti-repeat"></i> ${escapeHTML(p.reposted_by_name||"")} a republié</div>`:""}
    <b>@${escapeHTML(p.username||"")}</b>${live?' <span class="tag-live">EN DIRECT</span>':""}
@@ -2367,6 +2389,21 @@ function activateHomeVideo(item,fromGesture=false){
   });
  }
 }
+function updateHomePlayback(item){
+  if(!item)return;
+  const video=item.querySelector("video"),controls=item.querySelector("[data-playback]");
+  if(!video||!controls)return;
+  const toggle=controls.querySelector(".vplay-toggle"),seek=controls.querySelector(".vseek");
+  if(toggle){
+   toggle.innerHTML=video.paused?'<i class="ti ti-player-play-filled" aria-hidden="true"></i>':'<i class="ti ti-player-pause-filled" aria-hidden="true"></i>';
+   toggle.setAttribute("aria-label",video.paused?"Lecture":"Pause");
+  }
+  if(seek&&Number.isFinite(video.duration)&&video.duration>0){
+   const value=Math.max(0,Math.min(100,video.currentTime/video.duration*100));
+   if(document.activeElement!==seek)seek.value=String(value);
+   seek.style.setProperty("--progress",value+"%");
+  }
+ }
 function observeHomeVideos(){
  const feed=$("homeFeed");
  homeObserver?.disconnect();
@@ -2564,7 +2601,7 @@ function openFeedFrom(key,index){
    if(v){v.muted=!v.muted;soundBtn.innerHTML=`<i class="ti ${v.muted?"ti-volume-off":"ti-volume"}" aria-hidden="true"></i>`}
    return;
   }
-  if(v&&e.target.tagName==="VIDEO"){v.paused?v.play().catch(()=>{}):v.pause()}
+  if(v&&e.target.tagName==="VIDEO"){v.paused?v.play().catch(()=>{}):v.pause();updateHomePlayback(e.target.closest(".vitem"))}
  });
  feedObserver?.disconnect();
  feedObserver=new IntersectionObserver(entries=>entries.forEach(e=>{
@@ -4477,11 +4514,39 @@ if(homeFeedSwipe&&!homeFeedSwipe.__afroTouchSwipe){
  homeFeedSwipe.addEventListener("touchcancel",()=>{swipeStart=null;},{passive:true});
  homeFeedSwipe.__afroTouchSwipe=true;
 }
+$("homeFeed").addEventListener("timeupdate",e=>{
+  if(e.target.matches(".vmedia"))updateHomePlayback(e.target.closest(".vitem"));
+ });
+ $("homeFeed").addEventListener("loadedmetadata",e=>{
+  if(e.target.matches(".vmedia"))updateHomePlayback(e.target.closest(".vitem"));
+ });
+ $("homeFeed").addEventListener("play",e=>{
+  if(e.target.matches(".vmedia"))updateHomePlayback(e.target.closest(".vitem"));
+ },true);
+ $("homeFeed").addEventListener("pause",e=>{
+  if(e.target.matches(".vmedia"))updateHomePlayback(e.target.closest(".vitem"));
+ },true);
+ $("homeFeed").addEventListener("input",e=>{
+  const seek=e.target.closest(".vseek");if(!seek)return;
+  const video=seek.closest(".vitem")?.querySelector("video");
+  if(!video||!Number.isFinite(video.duration))return;
+  const value=Math.max(0,Math.min(100,Number(seek.value)||0));
+  video.currentTime=video.duration*value/100;
+  seek.style.setProperty("--progress",value+"%");
+ });
+ $("homeFeed").addEventListener("pointerdown",e=>{
+  if(e.target.closest(".vseek,.vplay-toggle"))e.stopPropagation();
+ });
 $("homeFeed").addEventListener("click",e=>{
  const btn=e.target.closest("[data-action]");
  if(btn){
   const action=btn.dataset.action;
   if(action==="profile"){openProfile(btn.dataset.creator);return}
+   if(action==="playpause"){
+    const item=btn.closest(".vitem"),video=item?.querySelector("video");
+    if(video){if(video.paused)video.play().catch(()=>{});else video.pause();updateHomePlayback(item)}
+    return;
+   }
   if(action==="follow"){toggleFollow(btn.dataset.creator);return}
   if(action==="notify"){toggleNotify(btn.dataset.creator);return}
   if(action==="like"){toggleLike(btn);return}
