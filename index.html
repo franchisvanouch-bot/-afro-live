@@ -1563,7 +1563,7 @@ let liveCreatorIds=new Set();
 let statusByCreator=new Map();
 const feedSources={};
 let feedObserver=null,homeObserver=null,bellTimer=null,moreTarget=null;
-let homeFilter="pour-toi",homeMuted=true;
+let homeFilter="pour-toi",homeMuted=false;
 let composerMode="post";
 let sv={group:null,index:0,timer:null};
 let installPrompt=null;
@@ -2258,15 +2258,7 @@ async function loadHomeFeed(){
  const box=$("homeFeed");
  const hadFeed=!!box.querySelector(".vitem");
  const previousScroll=box.scrollTop;
- if(!hadFeed){
-  const splash=document.createElement("div");
-  splash.className="home-feed-loading";
-  const logo=document.createElement("img");
-  logo.alt="AFRO LIVE";
-  logo.src=document.querySelector("header .logo img")?.src||"";
-  splash.appendChild(logo);
-  box.replaceChildren(splash);
- }
+ if(!hadFeed)box.replaceChildren();
  const {data,error}=await db.rpc("feed_posts",{p_only_follows:homeFilter==="follows",p_limit:12});
  if(error){box.innerHTML=`<div class="vempty">${escapeHTML(error.message)}</div>`;return}
  let feedData=[...(data||[])];
@@ -2352,22 +2344,39 @@ async function toggleRepost(btn){
  btn.disabled=false;delete btn.dataset.busy;
  message(was?"Republication annulée.":"Publication republiée dans ton fil.",true);
 }
+function activateHomeVideo(item,fromGesture=false){
+ const video=item?.querySelector("video");
+ document.querySelectorAll("#homeFeed video").forEach(other=>{
+  if(other!==video){other.pause();other.muted=true}
+ });
+ if(!video||document.hidden)return;
+ video.muted=homeMuted;
+ if(video.preload==="none"){video.preload="auto";if(video.readyState===0)video.load()}
+ const attempt=video.play();
+ if(attempt&&typeof attempt.catch==="function"){
+  attempt.catch(()=>{
+   if(homeMuted||!fromGesture){video.muted=true;video.play().catch(()=>{})}
+  });
+ }
+}
 function observeHomeVideos(){
  const feed=$("homeFeed");
  homeObserver?.disconnect();
- homeObserver=new IntersectionObserver(entries=>entries.forEach(e=>{
-  const v=e.target.querySelector("video");if(!v)return;
-  v.muted=homeMuted;
-  if(e.isIntersecting){
-   if(v.preload==="none"&&v.readyState===0){v.preload="metadata";v.load()}
-   if(e.intersectionRatio>=0.6)v.play().catch(()=>{});else v.pause();
-  }else{v.pause();v.preload="none"}
- }),{root:feed,rootMargin:"100% 0px",threshold:[0,0.6]});
+ homeObserver=new IntersectionObserver(entries=>{
+  const visible=entries.filter(e=>e.isIntersecting&&e.intersectionRatio>=0.6)
+   .sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+  if(visible)activateHomeVideo(visible.target,false);
+  entries.forEach(e=>{
+   const v=e.target.querySelector("video");if(!v)return;
+   if(!e.isIntersecting||e.intersectionRatio<0.6){v.pause();v.muted=true}
+   else if(v.preload==="none"){v.preload="auto";if(v.readyState===0)v.load()}
+  });
+ },{root:feed,rootMargin:"0px",threshold:[0,0.6,0.85]});
  feed.querySelectorAll(".vitem").forEach(el=>homeObserver.observe(el));
 }
 function pauseHomeFeed(){
  homeObserver?.disconnect();homeObserver=null;
- document.querySelectorAll("#homeFeed video").forEach(v=>v.pause());
+ document.querySelectorAll("#homeFeed video").forEach(v=>{v.pause();v.muted=true});
 }
 function setLikeUI(btn,on,n){
  btn.classList.toggle("on",on);
@@ -3364,7 +3373,13 @@ function cleanLiveInterface(stage){
 
 /* Retour de l'appli au premier plan : relancer la vidéo (évite l'écran noir) */
 document.addEventListener("visibilitychange",()=>{
- if(document.hidden)return;
+ if(document.hidden){pauseHomeFeed();return;}
+ if(!$("discoverPage").classList.contains("hidden")){
+  const current=[...document.querySelectorAll("#homeFeed .vitem")].find(el=>{
+   const r=el.getBoundingClientRect();return r.top<=innerHeight*.35&&r.bottom>=innerHeight*.65;
+  });
+  if(current)activateHomeVideo(current,false);
+ }
  if(liveRoom)liveRoom.startAudio?.().catch(()=>{});
  refreshLiveIds();
  if(!$("livesPage").classList.contains("hidden"))loadLives();
@@ -4439,11 +4454,12 @@ if(homeFeedSwipe&&!homeFeedSwipe.__afroTouchSwipe){
   const dy=e.changedTouches[0].clientY-swipeStart.y;
   const current=swipeStart.el;
   const id=swipeStart.id;swipeStart=null;
-  if(Math.abs(dy)>=30&&Math.abs(dy)>Math.abs(dx)*1.15){
+  if(Math.abs(dy)>=14&&Math.abs(dy)>Math.abs(dx)*1.05){
    const target=dy<0?current.nextElementSibling:current.previousElementSibling;
    if(target&&target.classList.contains("vitem")){
     e.preventDefault();
     homeFeedSwipe.style.scrollBehavior="auto";
+    activateHomeVideo(target,true);
     homeFeedSwipe.scrollTop=target.offsetTop;
    }
    return;
@@ -4466,7 +4482,9 @@ $("homeFeed").addEventListener("click",e=>{
   if(action==="repost"){toggleRepost(btn);return}
   if(action==="sound"){
    homeMuted=!homeMuted;
-   document.querySelectorAll("#homeFeed video").forEach(v=>v.muted=homeMuted);
+   const active=[...document.querySelectorAll("#homeFeed video")].find(v=>v.closest(".vitem")?.getBoundingClientRect().top>=-20&&v.closest(".vitem")?.getBoundingClientRect().top<innerHeight*.5);
+   document.querySelectorAll("#homeFeed video").forEach(v=>{v.muted=homeMuted;if(v!==active&& !homeMuted){v.pause();v.muted=true}});
+   if(active&&!homeMuted){active.muted=false;active.play().catch(()=>{active.muted=true})}
    document.querySelectorAll('[data-action="sound"]').forEach(b=>b.innerHTML=`<i class="ti ${homeMuted?"ti-volume-off":"ti-volume"}" aria-hidden="true"></i><span class="vcount">Son</span>`);
    return;
   }
@@ -4476,6 +4494,7 @@ $("homeFeed").addEventListener("click",e=>{
 });
 
 /* SESSION */
+window.addEventListener("pagehide",pauseHomeFeed);
 subscribeToLiveChanges();
 const splashLogo=document.querySelector("header .logo img");
 if(splashLogo&&$("appSplashLogo"))$("appSplashLogo").src=splashLogo.src;
