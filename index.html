@@ -821,9 +821,12 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 #discoverPage .vbtn i{font-size:27px}
 #discoverPage .vbtn.on i{color:#ff7900}
 #discoverPage .vplayback{
- position:fixed;left:22px;right:22px;bottom:calc(50px + env(safe-area-inset-bottom));
+ position:fixed;left:22px;right:22px;bottom:calc(58px + env(safe-area-inset-bottom));
  z-index:70;display:flex;align-items:center;gap:0;padding:4px 0;color:#fff;
- pointer-events:auto
+ opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s ease,visibility .16s ease
+}
+#discoverPage .vitem.is-paused .vplayback{
+ opacity:1;visibility:visible;pointer-events:auto
 }
 #discoverPage .vplay-toggle{display:none!important}
 #discoverPage .vplayback .vseek{width:100%!important;flex:1 1 100%!important}
@@ -2503,6 +2506,7 @@ function updateHomePlayback(item){
   if(!item)return;
   const video=item.querySelector("video"),controls=item.querySelector("[data-playback]");
   if(!video||!controls)return;
+  item.classList.toggle("is-paused",video.paused);
   const toggle=controls.querySelector(".vplay-toggle"),seek=controls.querySelector(".vseek");
   if(toggle){
    toggle.innerHTML=video.paused?'<i class="ti ti-player-play-filled" aria-hidden="true"></i>':'<i class="ti ti-player-pause-filled" aria-hidden="true"></i>';
