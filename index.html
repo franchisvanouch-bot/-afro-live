@@ -3490,13 +3490,14 @@ function openLivePollComposer(){
  const heading=document.createElement("h3");heading.textContent="Créer un sondage";
  const question=document.createElement("input");question.type="text";question.maxLength=180;question.placeholder="Pose ta question…";question.setAttribute("aria-label","Question du sondage");
  const options=document.createElement("div");options.className="af-poll-choice-fields";
+ const add=document.createElement("button");add.type="button";add.className="soft";add.textContent="+ Ajouter une réponse";
  const addChoice=()=>{
   if(options.children.length>=4)return;
   const field=document.createElement("input");field.type="text";field.maxLength=60;field.placeholder="Réponse "+(options.children.length+1);field.setAttribute("aria-label",field.placeholder);options.appendChild(field);
   add.disabled=options.children.length>=4;
  };
+ add.addEventListener("click",addChoice);
  addChoice();addChoice();
- const add=document.createElement("button");add.type="button";add.className="soft";add.textContent="+ Ajouter une réponse";add.addEventListener("click",addChoice);
  const actions=document.createElement("div");actions.className="af-poll-actions";
  const cancel=document.createElement("button");cancel.type="button";cancel.className="soft";cancel.textContent="Annuler";cancel.addEventListener("click",()=>backdrop.remove());
  const save=document.createElement("button");save.type="button";save.textContent="Lancer le sondage";
