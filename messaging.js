@@ -288,6 +288,7 @@ function ensureList(){
  const host=$("notifsList");
  if(!host||$("mxRows"))return;
  host.innerHTML=`<div class="mx-page">
+  ${window.afroPushSetupMarkup?window.afroPushSetupMarkup():""}
   <div class="mx-top">Messages</div>
   <div class="mx-search">
    <input id="mxSearch" type="search" placeholder="Rechercher une conversation" autocomplete="off">
