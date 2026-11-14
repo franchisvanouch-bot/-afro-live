@@ -543,7 +543,7 @@ button{transition:transform .18s ease,filter .18s ease,background .18s ease,box-
 button:active{transform:scale(.94);filter:brightness(1.12)}
 button:focus-visible{outline:2px solid var(--af-gold);outline-offset:3px}
 #discoverPage.homefeed{background:#050505}
-.vfeed{scroll-behavior:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.vfeed{scroll-behavior:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-x}
 .vitem{scroll-snap-align:start;scroll-snap-stop:always}
 .vitem{background:#050505;contain:layout paint style}
 .vmedia{will-change:transform;transition:filter .35s ease}
@@ -2355,7 +2355,8 @@ function activateHomeVideo(item,fromGesture=false){
  const attempt=video.play();
  if(attempt&&typeof attempt.catch==="function"){
   attempt.catch(()=>{
-   if(homeMuted||!fromGesture){video.muted=true;video.play().catch(()=>{})}
+   video.muted=true;
+   video.play().catch(()=>{});
   });
  }
 }
