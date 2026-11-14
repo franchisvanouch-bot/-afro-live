@@ -2406,7 +2406,7 @@ function vitemHTML(p){
    </button>
    <button class="vbtn vcomments" data-action="comments" data-post="${escapeHTML(p.id)}" aria-label="Commentaires"><i class="ti ti-message-circle" aria-hidden="true"></i><span class="vcount">${fmtCount(Number(p.comment_count)||0)}</span></button>
    
-   <button class="vbtn${p.reposted?" on":""}" data-action="repost" data-post="${escapeHTML(p.id)}" data-reposted="${p.reposted?1:0}" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">${fmtCount(Number(p.repost_count)||0)}</span></button>
+   <button class="vbtn${p.reposted?" on":""}" data-action="repost" data-post="${escapeHTML(p.id)}" data-reposted="${p.reposted?1:0}" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount" data-n="${Number(p.repost_count)||0}">${fmtCount(Number(p.repost_count)||0)}</span></button>
    <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}</button>
   </div>
   ${p.kind==="video"?`<div class="vplayback" data-playback><button class="vplay-toggle" type="button" data-action="playpause" aria-label="Pause"><i class="ti ti-player-pause-filled" aria-hidden="true"></i></button><input class="vseek" type="range" min="0" max="100" step="0.1" value="0" aria-label="Position de la vidéo"></div>`:""}
