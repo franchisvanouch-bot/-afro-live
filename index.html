@@ -1609,7 +1609,7 @@ async function enablePushNotifications(){
   },{onConflict:"user_id,endpoint"});
   if(error)throw error;
   const button=$("enablePushNotifications");
-  if(button)button.textContent="Notifications activées sur cet appareil";
+  if(button){button.setAttribute("aria-label","Notifications activées");button.setAttribute("title","Notifications activées");button.classList.add("is-enabled");}
   message("Notifications de messages activées sur cet appareil.",true);
  }catch(error){
   console.error("AFRO LIVE push subscription error",error);
@@ -1619,10 +1619,13 @@ async function enablePushNotifications(){
 function pushSetupMarkup(){
  const supported=("serviceWorker" in navigator)&&("PushManager" in window)&&("Notification" in window);
  const permission=("Notification" in window)?Notification.permission:"unsupported";
- const label=permission==="granted"?"Activer les notifications sur cet appareil":permission==="denied"?"Notifications bloquées : vérifie les réglages iPhone":"Activer les notifications de messages";
- return `<div style="padding:12px 14px 14px;border-bottom:1px solid #262629">
-  <button class="ami-btn primary" id="enablePushNotifications" type="button" ${supported?"":"disabled"}>${label}</button>
-  <div class="small" style="margin-top:7px;color:var(--muted)">Reçois le nom et le contenu des nouveaux messages, même quand AFRO LIVE est fermé.</div>
+ const enabled=permission==="granted";
+ const blocked=permission==="denied";
+ const label=enabled?"Notifications activées":blocked?"Notifications bloquées dans les réglages":"Activer les notifications de messages";
+ return `<div style="display:flex;justify-content:flex-end;align-items:center;padding:6px 14px;border-bottom:1px solid #262629">
+  <button class="pf-icon" id="enablePushNotifications" type="button" aria-label="${label}" title="${label}" ${supported?"":"disabled"} style="width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:${enabled?"#22c55e":"#fff"};font-size:23px;cursor:pointer">
+   <i class="ti ti-bell" aria-hidden="true"></i>
+  </button>
  </div>`;
 }
 
