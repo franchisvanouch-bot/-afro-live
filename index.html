@@ -2267,7 +2267,7 @@ function vitemHTML(p){
     <span class="vcount" data-n="${count}">${fmtCount(count)}</span>
    </button>
    <button class="vbtn vcomments" data-action="comments" data-post="${escapeHTML(p.id)}" aria-label="Commentaires"><i class="ti ti-message-circle" aria-hidden="true"></i><span class="vcount">${fmtCount(Number(p.comment_count)||0)}</span></button>
-   <button class="vbtn" data-action="share" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Partager"><i class="ti ti-share-3" aria-hidden="true"></i><span class="vcount">Partager</span></button>
+   
    <button class="vbtn${p.reposted?" on":""}" data-action="repost" data-post="${escapeHTML(p.id)}" data-reposted="${p.reposted?1:0}" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">${p.reposted?"Republié":"Republier"}</span></button>
    <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}<span class="vcount">Son</span></button>
   </div>
@@ -2460,7 +2460,7 @@ function openFeedFrom(key,index){
    <div class="feed-engagement">
     <button class="feed-action feed-like" type="button" data-action="like" data-post="${escapeHTML(p.id||"")}" data-liked="0" aria-label="J'aime"><i class="ti ti-heart" aria-hidden="true"></i><span class="vcount" data-n="0">0</span></button>
     <button class="feed-action" type="button" data-action="comments" data-post="${escapeHTML(p.id||"")}" aria-label="Commentaires"><i class="ti ti-message-circle" aria-hidden="true"></i><span class="vcount">0</span></button>
-    <button class="feed-action" type="button" data-action="share" data-creator="${escapeHTML(p.creator_id||"")}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Partager"><i class="ti ti-share-3" aria-hidden="true"></i><span class="vcount">Partager</span></button>
+    
    </div>
    <div class="feed-meta">
     <b>@${escapeHTML(p.username||"")}</b>
@@ -4546,6 +4546,6 @@ body:has(#publicProfile:not(.hidden)) #publicProfile{
 @media(max-width:360px){#publicProfile .ig-public-actions{gap:5px!important}#publicProfile .ig-public-actions .ig-btn{font-size:10px!important;padding:10px 2px!important}}
 </style>
 <script src="/social.js?v=20261113-messaging-v3-dm-route"></script>
-<script src="/messaging.js?v=20261114-v5"></script>
+<script src="/messaging.js?v=20261114-v6"></script>
 </body>
 </html>
