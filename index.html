@@ -1609,7 +1609,7 @@ async function enablePushNotifications(){
   },{onConflict:"user_id,endpoint"});
   if(error)throw error;
   const button=$("enablePushNotifications");
-  if(button){button.setAttribute("aria-label","Notifications activées");button.setAttribute("title","Notifications activées");button.classList.add("is-enabled");button.style.color="#22c55e";}
+  if(button){button.setAttribute("aria-label","Notifications activées");button.setAttribute("title","Notifications activées");button.classList.add("is-enabled");button.style.color="#16a34a";button.style.background="#dcfce7";button.style.borderRadius="50%";}
   message("Notifications de messages activées sur cet appareil.",true);
  }catch(error){
   console.error("AFRO LIVE push subscription error",error);
@@ -1623,7 +1623,7 @@ function pushSetupMarkup(){
  const blocked=permission==="denied";
  const label=enabled?"Notifications activées":blocked?"Notifications bloquées dans les réglages":"Activer les notifications de messages";
  return `<div style="display:flex;justify-content:flex-end;align-items:center;padding:6px 14px;border-bottom:1px solid #262629">
-  <button class="pf-icon" id="enablePushNotifications" type="button" aria-label="${label}" title="${label}" ${supported?"":"disabled"} style="width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:${enabled?"#22c55e":"#000"};font-size:23px;cursor:pointer">
+  <button class="pf-icon" id="enablePushNotifications" type="button" aria-label="${label}" title="${label}" ${supported?"":"disabled"} style="width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:${enabled?"#dcfce7":"#f3f4f6"};color:${enabled?"#16a34a":"#000"};font-size:23px;cursor:pointer">
    <i class="ti ti-bell" aria-hidden="true"></i>
   </button>
  </div>`;
