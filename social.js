@@ -104,9 +104,46 @@ function addTestCreatorButton(){
  });
  host.prepend(b);
 }
+function addTestSpectatorButton(){
+ if(typeof currentProfile==="undefined"||currentProfile?.role!=="admin")return;
+ const host=el("admin");
+ if(!host||el("afroCreateTestSpectators"))return;
+ const b=document.createElement("button");
+ b.id="afroCreateTestSpectators";b.type="button";b.className="soft";
+ b.style.cssText="width:100%;margin:10px 0;border:1px solid #ff8a32";
+ b.textContent="Créer 1 000 spectateurs de démonstration";
+ b.addEventListener("click",async()=>{
+  if(currentProfile?.role!=="admin"||!signed())return say("Connexion administrateur nécessaire.");
+  if(!confirm("Créer jusqu'à 1 000 comptes spectateurs de démonstration, puis répartir abonnements, likes et commentaires ? Les comptes existants seront conservés."))return;
+  b.disabled=true;b.textContent="Création et remplissage en cours…";
+  const old=el("afroTestSpectatorResult");if(old)old.remove();
+  try{
+   const {data,error}=await db.functions.invoke("create-test-spectators",{body:{}});
+   if(error)throw error;
+   const result=document.createElement("div");result.id="afroTestSpectatorResult";result.className="notice";
+   result.textContent="Comptes créés : "+Number(data?.created_count||0)
+    +" · Audience test : "+Number(data?.audience_count||0)
+    +" · Abonnements test : "+Number(data?.follows_inserted_or_existing||0)
+    +" · Likes test : "+Number(data?.likes_inserted_or_existing||0)
+    +" · Commentaires créés : "+Number(data?.comments_created||0)
+    +" · Erreurs : "+(Array.isArray(data?.errors)?data.errors.length:0);
+   if(Array.isArray(data?.errors)&&data.errors.length){
+    const details=document.createElement("details");const summary=document.createElement("summary");
+    summary.textContent="Voir les erreurs";const pre=document.createElement("pre");
+    pre.style.cssText="white-space:pre-wrap;font-size:11px";pre.textContent=data.errors.map(x=>(x.email||x.area||"Erreur")+": "+(x.message||x.error||"Échec")).join("\n");
+    details.append(summary,pre);result.appendChild(details);
+   }
+   host.prepend(result);
+   say("Données de démonstration traitées.",true);
+  }catch(err){say("Création impossible : "+(err?.message||String(err)))}
+  finally{b.disabled=false;b.textContent="Créer 1 000 spectateurs de démonstration"}
+ });
+ host.prepend(b);
+}
 function addAdminModeration(){
  if(typeof currentProfile==="undefined"||currentProfile?.role!=="admin")return;
  addTestCreatorButton();
+ addTestSpectatorButton();
  const host=el("admin");
  if(!host||el("afroOpenReports"))return;
  const b=document.createElement("button");
