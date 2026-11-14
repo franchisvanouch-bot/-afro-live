@@ -543,7 +543,7 @@ button{transition:transform .18s ease,filter .18s ease,background .18s ease,box-
 button:active{transform:scale(.94);filter:brightness(1.12)}
 button:focus-visible{outline:2px solid var(--af-gold);outline-offset:3px}
 #discoverPage.homefeed{background:#050505}
-.vfeed{scroll-behavior:smooth;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.vfeed{scroll-behavior:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 .vitem{scroll-snap-align:start;scroll-snap-stop:always}
 .vitem{background:#050505;contain:layout paint style}
 .vmedia{will-change:transform;transition:filter .35s ease}
@@ -4443,7 +4443,8 @@ if(homeFeedSwipe&&!homeFeedSwipe.__afroTouchSwipe){
    const target=dy<0?current.nextElementSibling:current.previousElementSibling;
    if(target&&target.classList.contains("vitem")){
     e.preventDefault();
-    homeFeedSwipe.scrollTo({top:target.offsetTop,behavior:"smooth"});
+    homeFeedSwipe.style.scrollBehavior="auto";
+    homeFeedSwipe.scrollTop=target.offsetTop;
    }
    return;
   }
