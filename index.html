@@ -543,7 +543,8 @@ button{transition:transform .18s ease,filter .18s ease,background .18s ease,box-
 button:active{transform:scale(.94);filter:brightness(1.12)}
 button:focus-visible{outline:2px solid var(--af-gold);outline-offset:3px}
 #discoverPage.homefeed{background:#050505}
-.vfeed{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.vfeed{scroll-behavior:auto;scroll-snap-type:y proximity;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.vitem{scroll-snap-stop:normal}
 .vitem{background:#050505;contain:layout paint style}
 .vmedia{will-change:transform;transition:filter .35s ease}
 .vitem::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.36),transparent 19%,transparent 54%,rgba(0,0,0,.16) 72%,rgba(0,0,0,.66));}
