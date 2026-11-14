@@ -4684,15 +4684,26 @@ $("homeFeed").addEventListener("click",e=>{
 // Appui long sur une vidéo : ouvrir le panneau d'options
 const hvmFeed=$("homeFeed");
 if(hvmFeed&&!hvmFeed.__hvmBound){
+ let hvmHoldX=0,hvmHoldY=0,hvmSeekVideo=null,hvmSeekTime=0;
  hvmFeed.addEventListener("pointerdown",e=>{
   if(e.pointerType==="mouse"&&e.button!==0)return;
-  if(e.target.closest("button,input,a"))return;
+  if(e.target.closest("button,a"))return;
   const item=e.target.closest(".vitem");if(!item)return;
+  const seek=e.target.closest(".vseek");
+  if(e.target.closest("input")&&!seek)return;
   hvmLongPressed=false;clearTimeout(hvmHoldTimer);
-  hvmHoldTimer=setTimeout(()=>{hvmLongPressed=true;openHomeVideoMenu(item)},480);
+  hvmHoldX=e.clientX;hvmHoldY=e.clientY;hvmSeekVideo=seek?item.querySelector("video"):null;
+  hvmSeekTime=hvmSeekVideo?.currentTime||0;
+  hvmHoldTimer=setTimeout(()=>{
+   hvmLongPressed=true;
+   if(hvmSeekVideo&&Number.isFinite(hvmSeekTime))hvmSeekVideo.currentTime=hvmSeekTime;
+   openHomeVideoMenu(item);
+  },480);
  },{passive:true});
- const cancelHold=()=>clearTimeout(hvmHoldTimer);
- hvmFeed.addEventListener("pointermove",cancelHold,{passive:true});
+ const cancelHold=()=>{clearTimeout(hvmHoldTimer);hvmSeekVideo=null};
+ hvmFeed.addEventListener("pointermove",e=>{
+  if(Math.abs(e.clientX-hvmHoldX)>12||Math.abs(e.clientY-hvmHoldY)>12)cancelHold();
+ },{passive:true});
  hvmFeed.addEventListener("pointerup",cancelHold,{passive:true});
  hvmFeed.addEventListener("pointercancel",cancelHold,{passive:true});
  hvmFeed.addEventListener("contextmenu",e=>{if(e.target.closest(".vitem")){e.preventDefault();const item=e.target.closest(".vitem");openHomeVideoMenu(item)}});
