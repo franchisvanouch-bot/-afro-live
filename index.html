@@ -152,6 +152,14 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .c-tabs{display:flex;justify-content:space-around;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:10px -16px 14px}
 .c-tabs button{flex:1;background:none;border-radius:0;padding:13px 0;color:var(--muted);font-size:20px}
 .c-tabs button.active{color:var(--text);box-shadow:inset 0 -2px 0 var(--text)}
+.creator-analytics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
+.creator-analytics-card{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:13px;min-width:0}
+.creator-analytics-card strong{display:block;font-size:21px;margin-top:5px;overflow-wrap:anywhere}
+.creator-analytics-card span{font-size:12px;color:var(--muted)}
+.creator-analytics-post{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.creator-analytics-post:last-child{border-bottom:0}
+.creator-analytics-thumb{width:54px;height:68px;flex:0 0 54px;border-radius:8px;overflow:hidden;background:var(--surface2)}
+.creator-analytics-thumb img,.creator-analytics-thumb video{width:100%;height:100%;object-fit:cover}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
 .tile{position:relative;aspect-ratio:3/4;padding:0;border-radius:0;background:var(--surface2);overflow:hidden}
 .tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
@@ -1287,6 +1295,7 @@ body.booting>header{visibility:hidden}
    <button data-tab="statuts" onclick="creatorPage('statuts')" aria-label="Statuts"><i class="ti ti-circle-dashed" aria-hidden="true"></i></button>
    <button data-tab="live" onclick="creatorPage('live')" aria-label="Directs"><i class="ti ti-broadcast" aria-hidden="true"></i></button>
    <button data-tab="subscribers" onclick="creatorPage('subscribers')" aria-label="Abonnés"><i class="ti ti-users" aria-hidden="true"></i></button>
+   <button data-tab="analytics" onclick="creatorPage('analytics')" aria-label="Statistiques"><i class="ti ti-chart-bar" aria-hidden="true"></i></button>
    <button data-tab="earnings" onclick="creatorPage('earnings')" aria-label="Tarif et revenus"><i class="ti ti-coin" aria-hidden="true"></i></button>
   </div>
 
@@ -1327,6 +1336,19 @@ body.booting>header{visibility:hidden}
   <div id="creatorSubscribers" class="hidden">
    <p class="small">Cette liste est privée : seul toi peux la voir.</p>
    <div id="subscriberList"></div>
+  </div>
+
+  <div id="creatorAnalytics" class="hidden">
+   <div class="card">
+    <h3>Statistiques de ton compte</h3>
+    <p class="small">Les chiffres sont calculés à partir des publications et interactions enregistrées dans AFRO LIVE.</p>
+    <div id="creatorAnalyticsSummary"><p class="small">Chargement des statistiques...</p></div>
+   </div>
+   <div class="card">
+    <h3>Tes publications récentes</h3>
+    <div id="creatorAnalyticsPosts"><p class="small">Chargement...</p></div>
+   </div>
+   <button class="soft" type="button" onclick="loadCreatorAnalytics()" style="width:100%"><i class="ti ti-refresh"></i> Actualiser les statistiques</button>
   </div>
 
   <div id="creatorEarnings" class="hidden">
@@ -3880,7 +3902,7 @@ async function stopCreatorLive(){
 }
 
 /* ESPACE CRÉATEUR */
-const CREATOR_PAGES=["posts","statuts","live","subscribers","earnings"];
+const CREATOR_PAGES=["posts","statuts","live","subscribers","analytics","earnings"];
 function creatorPage(page){
  closeOtherSheets();
  CREATOR_PAGES.forEach(n=>$("creator"+cap(n)).classList.toggle("hidden",n!==page));
@@ -3888,6 +3910,7 @@ function creatorPage(page){
  if(page==="posts")loadCreatorPosts();
  if(page==="statuts")loadMyStatuses();
  if(page==="subscribers")loadCreatorFollowers();
+ if(page==="analytics")loadCreatorAnalytics();
  if(page==="earnings")loadCreatorEarnings();
 }
 async function loadCreator(){
@@ -4480,6 +4503,62 @@ async function publishFromComposer(){
 }
 
 /* PUBLICATIONS DU CRÉATEUR */
+async function loadCreatorAnalytics(){
+ if(!currentUser?.id)return;
+ const summary=$("creatorAnalyticsSummary"),postsBox=$("creatorAnalyticsPosts");
+ if(!summary||!postsBox)return;
+ summary.innerHTML="<p class='small'>Chargement des statistiques...</p>";
+ postsBox.innerHTML="<p class='small'>Chargement...</p>";
+ const since=new Date(Date.now()-30*24*60*60*1000).toISOString();
+ const [postsResult,followersResult,newFollowersResult]=await Promise.all([
+  db.from("posts").select("id,kind,media_path,caption,created_at").eq("creator_id",currentUser.id).order("created_at",{ascending:false}).limit(1000),
+  db.from("follows").select("creator_id",{count:"exact",head:true}).eq("creator_id",currentUser.id),
+  db.from("follows").select("creator_id",{count:"exact",head:true}).eq("creator_id",currentUser.id).gte("created_at",since)
+ ]);
+ if(postsResult.error){summary.innerHTML="<p class='small'>Statistiques indisponibles : "+escapeHTML(postsResult.error.message)+"</p>";postsBox.innerHTML="";return}
+ const posts=postsResult.data||[],ids=posts.map(p=>p.id);
+ let likes=0,comments=0,reposts=0;
+ if(ids.length){
+  const [l,c,r]=await Promise.all([
+   db.from("post_likes").select("post_id",{count:"exact",head:true}).in("post_id",ids),
+   db.from("post_comments").select("post_id",{count:"exact",head:true}).in("post_id",ids),
+   db.from("post_reposts").select("post_id",{count:"exact",head:true}).in("post_id",ids)
+  ]);
+  if(l.error||c.error||r.error){
+   const err=l.error||c.error||r.error;
+   summary.innerHTML="<p class='small'>Impossible de calculer toutes les interactions : "+escapeHTML(err.message)+"</p>";
+   postsBox.innerHTML="";return;
+  }
+  likes=l.count||0;comments=c.count||0;reposts=r.count||0;
+ }
+ const fmt=n=>Number(n||0).toLocaleString("fr-FR");
+ summary.innerHTML=`<div class="creator-analytics-grid">
+  <div class="creator-analytics-card"><span>Publications</span><strong>${fmt(posts.length)}</strong></div>
+  <div class="creator-analytics-card"><span>Abonnés au total</span><strong>${fmt(followersResult.count||0)}</strong></div>
+  <div class="creator-analytics-card"><span>Nouveaux abonnés · 30 jours</span><strong>${fmt(newFollowersResult.count||0)}</strong></div>
+  <div class="creator-analytics-card"><span>J'aime reçus</span><strong>${fmt(likes)}</strong></div>
+  <div class="creator-analytics-card"><span>Commentaires reçus</span><strong>${fmt(comments)}</strong></div>
+  <div class="creator-analytics-card"><span>Republications</span><strong>${fmt(reposts)}</strong></div>
+ </div><p class="small">Interactions comptabilisées sur toutes les publications chargées. Les vues ne sont pas affichées car AFRO LIVE n'enregistre pas encore de compteur de vues fiable.</p>`;
+ if(!posts.length){postsBox.innerHTML="<p class='small'>Tu n'as pas encore publié de contenu.</p>";return}
+ const recent=posts.slice(0,5);
+ const engagement=await Promise.all(recent.map(async p=>{
+  const [l,c,r]=await Promise.all([
+   db.from("post_likes").select("post_id",{count:"exact",head:true}).eq("post_id",p.id),
+   db.from("post_comments").select("id",{count:"exact",head:true}).eq("post_id",p.id),
+   db.from("post_reposts").select("id",{count:"exact",head:true}).eq("post_id",p.id)
+  ]);
+  return {post:p,likes:l.count||0,comments:c.count||0,reposts:r.count||0};
+ }));
+ postsBox.innerHTML=engagement.map(x=>`<div class="creator-analytics-post">
+  <div class="creator-analytics-thumb">${thumbHTML(x.post)}</div>
+  <div style="flex:1;min-width:0">
+   <strong style="font-size:13px">${x.post.kind==="video"?"Vidéo":"Photo"} · ${new Date(x.post.created_at).toLocaleDateString("fr-FR")}</strong>
+   <div class="small">${escapeHTML((x.post.caption||"Sans légende").slice(0,70))}</div>
+   <div class="small"><i class="ti ti-heart"></i> ${fmt(x.likes)} · <i class="ti ti-message-circle"></i> ${fmt(x.comments)} · <i class="ti ti-repeat"></i> ${fmt(x.reposts)}</div>
+  </div>
+ </div>`).join("");
+}
 async function loadCreatorPosts(){
  const grid=$("creatorPostGrid");
  const {data,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id").eq("creator_id",currentUser.id).order("created_at",{ascending:false});
