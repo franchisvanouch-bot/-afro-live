@@ -4515,7 +4515,11 @@ async function loadCreatorAnalytics(){
   db.from("follows").select("creator_id",{count:"exact",head:true}).eq("creator_id",currentUser.id),
   db.from("follows").select("creator_id",{count:"exact",head:true}).eq("creator_id",currentUser.id).gte("created_at",since)
  ]);
- if(postsResult.error){summary.innerHTML="<p class='small'>Statistiques indisponibles : "+escapeHTML(postsResult.error.message)+"</p>";postsBox.innerHTML="";return}
+ if(postsResult.error||followersResult.error||newFollowersResult.error){
+  const err=postsResult.error||followersResult.error||newFollowersResult.error;
+  summary.innerHTML="<p class='small'>Statistiques indisponibles : "+escapeHTML(err.message)+"</p>";
+  postsBox.innerHTML="";return;
+ }
  const posts=postsResult.data||[],ids=posts.map(p=>p.id);
  let likes=0,comments=0,reposts=0;
  if(ids.length){
