@@ -155,6 +155,10 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
 .tile{position:relative;aspect-ratio:3/4;padding:0;border-radius:0;background:var(--surface2);overflow:hidden}
 .tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.trend-tile:after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.82));pointer-events:none}
+.trend-rank{position:absolute;z-index:1;top:7px;left:7px;padding:4px 7px;border-radius:7px;background:rgba(255,106,0,.95);color:#fff;font-size:11px;font-weight:900}
+.trend-stats{position:absolute;z-index:1;left:7px;right:5px;bottom:7px;color:#fff;font-size:10px;font-weight:800;text-align:left;line-height:1.3}
+.trend-owner{position:absolute;z-index:1;left:7px;right:5px;bottom:23px;color:#fff;font-size:10px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile-icon{position:absolute;left:6px;bottom:5px;color:#fff;font-size:12px;text-shadow:0 1px 3px #000}
 .row-item{display:flex;gap:12px;align-items:center;background:var(--surface);border-radius:12px;padding:8px;margin:8px 0}
 .row-thumb{width:56px;height:70px;border-radius:8px;overflow:hidden;background:var(--surface2);flex:0 0 auto}
@@ -1180,6 +1184,7 @@ body.booting>header{visibility:hidden}
     <button class="vtop-btn" type="button" onclick="showPage('creators')">Communauté</button>
     <button class="vtab" data-filter="follows">Suivis</button>
     <button class="vtab active" data-filter="pour-toi">Pour toi</button>
+    <button class="vtab" type="button" onclick="showPage('trends')"><i class="ti ti-chart-line" aria-hidden="true"></i> Tendances</button>
     <button class="vtop-btn" type="button" onclick="showPage('search')" aria-label="Rechercher"><i class="ti ti-search"></i></button>
    </div>
    <button class="vbell" id="bellBtn" hidden aria-label="Notifications"><i class="ti ti-bell"></i><span class="vdot" id="bellDot" hidden></span></button>
@@ -1222,6 +1227,16 @@ body.booting>header{visibility:hidden}
     <button class="sr-tab" type="button" data-sr="posts">Publications</button>
    </div>
    <div id="srResults"></div>
+  </div>
+
+  <div id="trendsPage" class="hidden">
+   <div class="pf-top">
+    <button class="pf-icon" type="button" onclick="showPage('discover')" aria-label="Retour"><i class="ti ti-arrow-left"></i></button>
+    <span class="pf-title">Tendances</span>
+    <button class="pf-icon" type="button" onclick="loadTrendsPage()" aria-label="Actualiser"><i class="ti ti-refresh"></i></button>
+   </div>
+   <p class="small" style="padding:0 14px">Les publications qui suscitent le plus d’interactions récemment.</p>
+   <div id="trendsList" class="tiles"></div>
   </div>
 
   <div id="profilePage" class="hidden">
@@ -2053,7 +2068,7 @@ function showPage(page){
  $("spectator").classList.remove("hidden");
  $("creator").classList.add("hidden");
  $("admin").classList.add("hidden");
- const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage",search:"searchPage"};
+ const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage",search:"searchPage",trends:"trendsPage"};
  if(!pages[page])return;
  Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
  $(pages[page]).classList.remove("hidden");
@@ -2072,6 +2087,7 @@ function showPage(page){
  if(page==="application")loadApplication();
  if(page==="notifs"){if(window.afroLoadMessagesPage)window.afroLoadMessagesPage();else loadNotifications();}
  if(page==="search")focusSearch();
+ if(page==="trends")loadTrendsPage();
 }
 
 function openMenuSheet(){
@@ -2393,6 +2409,49 @@ async function loadHomeFeed(){
  box.innerHTML=feedData.map(vitemHTML).join("");
  box.scrollTop=hadFeed?previousScroll:0;
  observeHomeVideos();
+}
+async function loadTrendsPage(){
+ const box=$("trendsList");
+ if(!box)return;
+ box.innerHTML="<p class='empty'>Chargement des tendances...</p>";
+ const since=new Date(Date.now()-30*24*60*60*1000).toISOString();
+ const {data:posts,error}=await db.from("posts").select("id,kind,media_path,caption,creator_id,created_at").gte("created_at",since).order("created_at",{ascending:false}).limit(80);
+ if(error){box.innerHTML="<p class='empty'>Impossible de charger les tendances : "+escapeHTML(error.message)+"</p>";return}
+ if(!posts?.length){box.innerHTML="<p class='empty'>Pas encore assez de publications récentes pour afficher les tendances.</p>";return}
+ let blocked=new Set();
+ if(currentUser?.id){
+  const {data:blocks}=await db.from("user_blocks").select("blocked_id").eq("blocker_id",currentUser.id);
+  blocked=new Set((blocks||[]).map(x=>x.blocked_id));
+ }
+ const visible=posts.filter(p=>!blocked.has(p.creator_id));
+ if(!visible.length){box.innerHTML="<p class='empty'>Aucune publication disponible pour le moment.</p>";return}
+ const ids=visible.map(p=>p.id),creatorIds=[...new Set(visible.map(p=>p.creator_id))];
+ const [likesRes,commentsRes,repostsRes,profilesRes]=await Promise.all([
+  db.from("post_likes").select("post_id,user_id").in("post_id",ids),
+  db.from("post_comments").select("post_id").in("post_id",ids),
+  db.from("post_reposts").select("post_id,user_id").in("post_id",ids),
+  db.from("profiles").select("id,username,display_name,avatar_url").in("id",creatorIds)
+ ]);
+ if(profilesRes.error){box.innerHTML="<p class='empty'>Impossible de charger les profils des créateurs.</p>";return}
+ const profiles={};(profilesRes.data||[]).forEach(p=>profiles[p.id]=p);
+ const likeCounts={},commentCounts={},repostCounts={},likedMine=new Set(),repostedMine=new Set();
+ (likesRes.data||[]).forEach(x=>{likeCounts[x.post_id]=(likeCounts[x.post_id]||0)+1;if(x.user_id===currentUser?.id)likedMine.add(x.post_id)});
+ (commentsRes.data||[]).forEach(x=>commentCounts[x.post_id]=(commentCounts[x.post_id]||0)+1);
+ (repostsRes.data||[]).forEach(x=>{repostCounts[x.post_id]=(repostCounts[x.post_id]||0)+1;if(x.user_id===currentUser?.id)repostedMine.add(x.post_id)});
+ const ranked=visible.filter(p=>profiles[p.creator_id]).map(p=>{
+  const profile=profiles[p.creator_id],likes=likeCounts[p.id]||0,comments=commentCounts[p.id]||0,reposts=repostCounts[p.id]||0;
+  const ageHours=Math.max(0,(Date.now()-new Date(p.created_at).getTime())/3600000);
+  return {...p,username:profile.username||"",display_name:profile.display_name||"",avatar_url:profile.avatar_url||null,
+   like_count:likes,comment_count:comments,repost_count:reposts,liked:likedMine.has(p.id),reposted:repostedMine.has(p.id),
+   trend_score:(likes+comments*2+reposts*3)/(1+ageHours/72)};
+ }).sort((a,b)=>b.trend_score-a.trend_score||new Date(b.created_at)-new Date(a.created_at));
+ if(!ranked.length){box.innerHTML="<p class='empty'>Aucune tendance disponible pour le moment.</p>";return}
+ feedSources.trends=ranked;
+ box.innerHTML=ranked.map((p,i)=>`<button class="tile trend-tile" type="button" onclick="openFeedFrom('trends',${i})" aria-label="Ouvrir la tendance numéro ${i+1}">
+  ${thumbHTML(p)}<span class="trend-rank">#${i+1}</span>
+  <span class="trend-owner">@${escapeHTML(p.username)}</span>
+  <span class="trend-stats"><i class="ti ti-heart-filled"></i> ${fmtCount(p.like_count)} · <i class="ti ti-message-circle"></i> ${fmtCount(p.comment_count)} · <i class="ti ti-repeat"></i> ${fmtCount(p.repost_count)}</span>
+ </button>`).join("");
 }
 function vitemHTML(p){
  const prof={id:p.creator_id,username:p.username,display_name:p.display_name,avatar_url:p.avatar_url};
