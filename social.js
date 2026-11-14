@@ -140,10 +140,44 @@ function addTestSpectatorButton(){
  });
  host.prepend(b);
 }
+function addDemoPostsImport(){
+ if(typeof currentProfile==="undefined"||currentProfile?.role!=="admin")return;
+ const host=el("admin");
+ if(!host||el("afroImportDemoPosts"))return;
+ const b=document.createElement("button");
+ b.id="afroImportDemoPosts";b.type="button";b.className="soft";
+ b.style.cssText="width:100%;margin:10px 0;border:1px solid #ff8a32";
+ b.textContent="Importer le pack de contenu · 53 créateurs";
+ const input=document.createElement("input");
+ input.type="file";input.accept=".zip,application/zip";input.hidden=true;
+ input.id="afroImportDemoPostsFile";
+ input.addEventListener("change",async()=>{
+  const file=input.files?.[0];if(!file)return;
+  if(!file.name.toLowerCase().endsWith(".zip")){say("Choisis le fichier ZIP du pack.");input.value="";return}
+  if(!confirm("Importer les photos et clips du pack, puis compléter chaque créateur jusqu’à 10 publications minimum ? Les publications existantes seront conservées.")){input.value="";return}
+  b.disabled=true;b.textContent="Importation des médias et publications…";
+  const old=el("afroDemoPostsImportResult");if(old)old.remove();
+  try{
+   const body=new FormData();body.append("archive",file,file.name);
+   const {data,error}=await db.functions.invoke("import-demo-posts",{body});
+   if(error)throw error;
+   const result=document.createElement("div");result.id="afroDemoPostsImportResult";result.className="notice";
+   result.textContent="Créateurs : "+Number(data?.creators||0)
+    +" · Médias importés : "+Number(data?.media_uploaded||0)
+    +" · Publications ajoutées : "+Number(data?.posts_created||0)
+    +" · Minimum : "+Number(data?.minimum_posts_per_creator||0)+" par créateur.";
+   host.prepend(result);say("Importation terminée.",true);
+  }catch(err){say("Importation impossible : "+(err?.message||String(err)))}
+  finally{b.disabled=false;b.textContent="Importer le pack de contenu · 53 créateurs";input.value=""}
+ });
+ b.addEventListener("click",()=>input.click());
+ host.prepend(input);host.prepend(b);
+}
 function addAdminModeration(){
  if(typeof currentProfile==="undefined"||currentProfile?.role!=="admin")return;
  addTestCreatorButton();
  addTestSpectatorButton();
+ addDemoPostsImport();
  const host=el("admin");
  if(!host||el("afroOpenReports"))return;
  const b=document.createElement("button");
