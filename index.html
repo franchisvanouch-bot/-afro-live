@@ -543,8 +543,8 @@ button{transition:transform .18s ease,filter .18s ease,background .18s ease,box-
 button:active{transform:scale(.94);filter:brightness(1.12)}
 button:focus-visible{outline:2px solid var(--af-gold);outline-offset:3px}
 #discoverPage.homefeed{background:#050505}
-.vfeed{scroll-behavior:auto;scroll-snap-type:y proximity;-webkit-overflow-scrolling:touch;touch-action:pan-y}
-.vitem{scroll-snap-stop:normal}
+.vfeed{scroll-behavior:smooth;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.vitem{scroll-snap-align:start;scroll-snap-stop:always}
 .vitem{background:#050505;contain:layout paint style}
 .vmedia{will-change:transform;transition:filter .35s ease}
 .vitem::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.36),transparent 19%,transparent 54%,rgba(0,0,0,.16) 72%,rgba(0,0,0,.66));}
@@ -4431,13 +4431,22 @@ if(homeFeedSwipe&&!homeFeedSwipe.__afroTouchSwipe){
  homeFeedSwipe.addEventListener("touchstart",e=>{
   if(e.touches.length!==1||e.target.closest("button,a,input,textarea,[contenteditable='true']")){swipeStart=null;return;}
   const card=e.target.closest(".vitem[data-creator]");
-  swipeStart=card?{x:e.touches[0].clientX,y:e.touches[0].clientY,id:card.dataset.creator}:null;
+  swipeStart=card?{x:e.touches[0].clientX,y:e.touches[0].clientY,id:card.dataset.creator,el:card}:null;
  },{passive:true});
  homeFeedSwipe.addEventListener("touchend",e=>{
   if(!swipeStart)return;
   const dx=e.changedTouches[0].clientX-swipeStart.x;
   const dy=e.changedTouches[0].clientY-swipeStart.y;
+  const current=swipeStart.el;
   const id=swipeStart.id;swipeStart=null;
+  if(Math.abs(dy)>=30&&Math.abs(dy)>Math.abs(dx)*1.15){
+   const target=dy<0?current.nextElementSibling:current.previousElementSibling;
+   if(target&&target.classList.contains("vitem")){
+    e.preventDefault();
+    homeFeedSwipe.scrollTo({top:target.offsetTop,behavior:"smooth"});
+   }
+   return;
+  }
   if(dx < -65&&Math.abs(dx)>Math.abs(dy)*1.25&&id){e.preventDefault();openProfile(id);}
  },{passive:false});
  homeFeedSwipe.addEventListener("touchcancel",()=>{swipeStart=null;},{passive:true});
