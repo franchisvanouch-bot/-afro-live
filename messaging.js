@@ -286,7 +286,15 @@ function closePage(){if($("mxPg"))$("mxPg").hidden=true}
 function ensureList(){
  css();
  const host=$("notifsList");
- if(!host||$("mxRows"))return;
+ if(!host)return;
+ // Le conteneur est partagé avec les notifications classiques : si son contenu
+ // a été remplacé, on réaffiche la cloche sans reconstruire la messagerie.
+ if($("mxRows")){
+  if(!host.querySelector("#enablePushNotifications")&&window.afroPushSetupMarkup){
+   host.insertAdjacentHTML("afterbegin",window.afroPushSetupMarkup());
+  }
+  return;
+ }
  host.innerHTML=`<div class="mx-page">
   ${window.afroPushSetupMarkup?window.afroPushSetupMarkup():""}
   <div class="mx-top">Messages</div>
