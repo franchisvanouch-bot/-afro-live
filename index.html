@@ -1574,6 +1574,58 @@ if(pendingDeepLink){history.replaceState(null,"",location.pathname)}
 const $=id=>document.getElementById(id);
 const cap=s=>s[0].toUpperCase()+s.slice(1);
 const liveSinceIso=()=>new Date(Date.now()-LIVE_MAX_AGE_MS).toISOString();
+const AFRO_VAPID_PUBLIC_KEY="BMbNcVQH-rZDx4P9gv3p6KXqO98i3-bJ5qlAjg8owRxooiRHVAXx9WILfqCPbyJuVg119SZS-1vN48aoIXpURew";
+function afroBase64UrlToBytes(value){
+ const padded=value+"=".repeat((4-value.length%4)%4);
+ const raw=atob(padded.replace(/-/g,"+").replace(/_/g,"/"));
+ return Uint8Array.from(raw,c=>c.charCodeAt(0));
+}
+async function enablePushNotifications(){
+ if(!currentUser)return message("Connecte-toi pour activer les notifications.");
+ if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
+  return message("Les notifications Push ne sont pas prises en charge par ce navigateur.");
+ }
+ try{
+  const permission=await Notification.requestPermission();
+  if(permission!=="granted")return message("Autorise les notifications dans les réglages de ton iPhone.");
+  let registration=await navigator.serviceWorker.getRegistration("/");
+  if(!registration)registration=await navigator.serviceWorker.register("/sw.js",{scope:"/"});
+  await navigator.serviceWorker.ready;
+  let subscription=await registration.pushManager.getSubscription();
+  if(!subscription){
+   subscription=await registration.pushManager.subscribe({
+    userVisibleOnly:true,
+    applicationServerKey:afroBase64UrlToBytes(AFRO_VAPID_PUBLIC_KEY)
+   });
+  }
+  const keys=subscription.toJSON().keys||{};
+  if(!keys.p256dh||!keys.auth)throw new Error("La clé de cet appareil est incomplète. Réessaie.");
+  const {error}=await db.from("push_subscriptions").upsert({
+   user_id:currentUser.id,
+   endpoint:subscription.endpoint,
+   p256dh:keys.p256dh,
+   auth:keys.auth,
+   updated_at:new Date().toISOString()
+  },{onConflict:"user_id,endpoint"});
+  if(error)throw error;
+  const button=$("enablePushNotifications");
+  if(button)button.textContent="Notifications activées sur cet appareil";
+  message("Notifications de messages activées sur cet appareil.",true);
+ }catch(error){
+  console.error("AFRO LIVE push subscription error",error);
+  message("Activation impossible : "+(error?.message||"réessaie plus tard."));
+ }
+}
+function pushSetupMarkup(){
+ const supported=("serviceWorker" in navigator)&&("PushManager" in window)&&("Notification" in window);
+ const permission=("Notification" in window)?Notification.permission:"unsupported";
+ const label=permission==="granted"?"Activer les notifications sur cet appareil":permission==="denied"?"Notifications bloquées : vérifie les réglages iPhone":"Activer les notifications de messages";
+ return `<div style="padding:12px 14px 14px;border-bottom:1px solid #262629">
+  <button class="ami-btn primary" id="enablePushNotifications" type="button" ${supported?"":"disabled"}>${label}</button>
+  <div class="small" style="margin-top:7px;color:var(--muted)">Reçois le nom et le contenu des nouveaux messages, même quand AFRO LIVE est fermé.</div>
+ </div>`;
+}
+
 
 /* UTILITAIRES */
 function message(text,success=false){
@@ -2167,15 +2219,15 @@ async function refreshUnread(){
 }
 async function loadNotifications(){
  const box=$("notifsList");
- box.innerHTML="<p>Chargement...</p>";
+ box.innerHTML=pushSetupMarkup()+"<p>Chargement...</p>";
  const {data,error}=await db.from("notifications").select("id,creator_id,kind,created_at,read,live_session_id").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50);
- if(error){box.innerHTML=`<div class="notice">${escapeHTML(error.message)}</div>`;return}
- if(!data.length){box.innerHTML="<p class='empty'>Aucune notification pour le moment.</p>";return}
+ if(error){box.innerHTML=pushSetupMarkup()+`<div class="notice">${escapeHTML(error.message)}</div>`;return}
+ if(!data.length){box.innerHTML=pushSetupMarkup()+"<p class='empty'>Aucune notification pour le moment.</p>";return}
  const ids=[...new Set(data.map(n=>n.creator_id))];
  const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
  const txt={post:"a publié une nouvelle publication",status:"a publié un statut",live:"est en direct"};
- box.innerHTML=data.map(n=>{
+ box.innerHTML=pushSetupMarkup()+data.map(n=>{
   const p=map[n.creator_id]||{id:n.creator_id,username:"créateur"};
   return `<button class="notif${n.read?"":" unread"}" data-notif-creator="${escapeHTML(n.creator_id)}" data-notif-kind="${escapeHTML(n.kind)}" data-notif-live="${escapeHTML(n.live_session_id||"")}">
    ${avatarHTML(p)}
@@ -4347,6 +4399,8 @@ $("svPrev").addEventListener("click",prevStatus);
 $("svNext").addEventListener("click",nextStatus);
 $("bellBtn").addEventListener("click",()=>showPage("notifs"));
 $("notifsList").addEventListener("click",e=>{
+ const pushButton=e.target.closest("#enablePushNotifications");
+ if(pushButton){e.preventDefault();e.stopPropagation();enablePushNotifications();return}
  const b=e.target.closest(".notif");if(!b)return;
  if(b.dataset.notifKind==="live")showPage("lives");
  else openProfile(b.dataset.notifCreator);
