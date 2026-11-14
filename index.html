@@ -90,10 +90,11 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 .vtab.active{color:#fff;box-shadow:inset 0 -2px 0 #fff}
 .vbell{position:absolute;top:max(10px,env(safe-area-inset-top));right:12px;z-index:6;background:rgba(0,0,0,.35);width:40px;height:40px;border-radius:50%;padding:0;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center}
 .vdot{position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:50%;background:var(--red);border:1.5px solid #000}
-.vside{position:absolute;right:10px;bottom:112px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:13px}
-.vside .vbtn{min-width:48px}
-.vside .vbtn i{font-size:30px}
-.vside .vbtn .vcount{font-size:10px;line-height:1.1;max-width:54px;text-align:center}
+.vside{position:absolute;right:10px;bottom:80px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:11px}
+.vside .vbtn{min-width:44px;gap:2px}
+.vside .vbtn i{font-size:28px}
+.vside .vbtn .vcount{font-size:10px;line-height:1.1;max-width:48px;text-align:center}
+.vside .vbtn .vlabel{display:none!important}
 .vmeta{bottom:106px}
 .v-soundline{display:flex;align-items:center;gap:6px;margin-top:9px;font-size:12px;color:#fff;max-width:75vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .v-soundline i{font-size:15px}
@@ -2369,13 +2370,16 @@ async function loadHomeFeed(){
  }
  feedData.sort((a,b)=>new Date(b.is_repost?b.reposted_at:b.created_at)-new Date(a.is_repost?a.reposted_at:a.created_at));
  const postIds=[...new Set(feedData.map(p=>p.id))];
- const [{data:commentRows},{data:repostMine}]=await Promise.all([
+ const [{data:commentRows},{data:repostMine},{data:repostRows}]=await Promise.all([
   db.from("post_comments").select("post_id").in("post_id",postIds),
-  currentUser?db.from("post_reposts").select("post_id").eq("user_id",currentUser.id).in("post_id",postIds):Promise.resolve({data:[]})
+  currentUser?db.from("post_reposts").select("post_id").eq("user_id",currentUser.id).in("post_id",postIds):Promise.resolve({data:[]}),
+  db.from("post_reposts").select("post_id").in("post_id",postIds)
  ]);
- const commentCounts={};(commentRows||[]).forEach(row=>commentCounts[row.post_id]=(commentCounts[row.post_id]||0)+1);
+ const commentCounts={},repostCounts={};
+ (commentRows||[]).forEach(row=>commentCounts[row.post_id]=(commentCounts[row.post_id]||0)+1);
+ (repostRows||[]).forEach(row=>repostCounts[row.post_id]=(repostCounts[row.post_id]||0)+1);
  const mine=new Set((repostMine||[]).map(r=>r.post_id));
- feedData.forEach(p=>{p.comment_count=commentCounts[p.id]||0;p.reposted=mine.has(p.id)});
+ feedData.forEach(p=>{p.comment_count=commentCounts[p.id]||0;p.repost_count=repostCounts[p.id]||0;p.reposted=mine.has(p.id)});
  box.innerHTML=feedData.map(vitemHTML).join("");
  box.scrollTop=hadFeed?previousScroll:0;
  observeHomeVideos();
@@ -2402,8 +2406,8 @@ function vitemHTML(p){
    </button>
    <button class="vbtn vcomments" data-action="comments" data-post="${escapeHTML(p.id)}" aria-label="Commentaires"><i class="ti ti-message-circle" aria-hidden="true"></i><span class="vcount">${fmtCount(Number(p.comment_count)||0)}</span></button>
    
-   <button class="vbtn${p.reposted?" on":""}" data-action="repost" data-post="${escapeHTML(p.id)}" data-reposted="${p.reposted?1:0}" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">${p.reposted?"Republié":"Republier"}</span></button>
-   <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}<span class="vcount">Son</span></button>
+   <button class="vbtn${p.reposted?" on":""}" data-action="repost" data-post="${escapeHTML(p.id)}" data-reposted="${p.reposted?1:0}" data-creator="${escapeHTML(p.creator_id)}" data-username="${escapeHTML(p.username||"")}" data-caption="${escapeHTML(p.caption||"")}" aria-label="Recommander"><i class="ti ti-repeat" aria-hidden="true"></i><span class="vcount">${fmtCount(Number(p.repost_count)||0)}</span></button>
+   <button class="vbtn" data-action="sound" aria-label="Son">${homeMuted?'<i class="ti ti-volume-off" aria-hidden="true"></i>':'<i class="ti ti-volume" aria-hidden="true"></i>'}</button>
   </div>
   ${p.kind==="video"?`<div class="vplayback" data-playback><button class="vplay-toggle" type="button" data-action="playpause" aria-label="Pause"><i class="ti ti-player-pause-filled" aria-hidden="true"></i></button><input class="vseek" type="range" min="0" max="100" step="0.1" value="0" aria-label="Position de la vidéo"></div>`:""}
   <div class="vmeta">
@@ -2423,7 +2427,7 @@ async function toggleRepost(btn){
  const {error}=await req;
  if(error){message("Republication impossible : "+error.message);btn.disabled=false;delete btn.dataset.busy;return}
  btn.dataset.reposted=was?"0":"1";btn.classList.toggle("on",!was);
- const label=btn.querySelector(".vcount");if(label)label.textContent=was?"Republier":"Republié";
+ const label=btn.querySelector(".vcount");if(label){const next=Math.max(0,(Number(label.dataset.n)||0)+(was?-1:1));label.dataset.n=String(next);label.textContent=fmtCount(next);}
  btn.setAttribute("aria-label",was?"Republier":"Déjà republié");
  btn.disabled=false;delete btn.dataset.busy;
  message(was?"Republication annulée.":"Publication republiée dans ton fil.",true);
