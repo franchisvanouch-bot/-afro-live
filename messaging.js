@@ -1139,16 +1139,22 @@ function reset(){
 /* ---------- PUBLICATION : OUVRIR SUR LE COMPTE DU CRÉATEUR ---------- */
 async function openSharedPost(postId,creatorId){
  closeChat();
- if(!creatorId){
-  const {data}=await db.from("posts").select("creator_id").eq("id",postId).maybeSingle();
-  creatorId=data?.creator_id||null;
- }
- if(!creatorId)return say("Cette publication n'est plus disponible.");
- await openProfile(creatorId);
- const list=(typeof feedSources!=="undefined"&&feedSources.profile)||[];
- const idx=list.findIndex(p=>p.id===postId);
- if(idx>=0&&typeof openFeedFrom==="function")openFeedFrom("profile",idx);
- else say("Publication introuvable sur ce compte.");
+ // Récupère d'abord la publication exacte partagée dans la conversation.
+ const {data:post,error}=await db.from("posts")
+  .select("id,kind,media_path,caption,creator_id,created_at")
+  .eq("id",postId).maybeSingle();
+ if(error||!post)return say("Cette publication n'est plus disponible.");
+ const ownerId=post.creator_id||creatorId;
+ if(!ownerId)return say("Cette publication n'est plus disponible.");
+ // Le profil reste derrière la vidéo : fermer la vidéo ramène donc au profil.
+ await openProfile(ownerId);
+ const profilePosts=(typeof feedSources!=="undefined"&&feedSources.profile)||[];
+ const selected=profilePosts.find(p=>p.id===postId);
+ if(!selected)return say("La vidéo partagée est introuvable sur ce profil.");
+ if(typeof openFeedFrom!=="function")return say("Impossible d'ouvrir cette vidéo pour le moment.");
+ // N'affiche que la publication partagée, pas toute la grille du créateur.
+ feedSources.sharedMessage=[selected];
+ openFeedFrom("sharedMessage",0);
 }
 
 /* ---------- ENVOYER UNE PUBLICATION DANS UNE CONVERSATION ---------- */
