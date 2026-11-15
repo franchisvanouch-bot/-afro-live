@@ -4294,14 +4294,18 @@ function creatorPage(page){
  if(page==="earnings")loadCreatorEarnings();
 }
 async function loadCreator(){
+ const user=currentUser,profile=currentProfile;
+ if(!user||!profile||profile.id!==user.id||profile.role!=="creator")return;
  if(liveMode!=="creator"){
-  await db.from("live_sessions").update({status:"ended",ended_at:new Date().toISOString()}).eq("creator_id",currentUser.id).eq("status","live");
-  liveCreatorIds.delete(currentUser.id);
+  await db.from("live_sessions").update({status:"ended",ended_at:new Date().toISOString()}).eq("creator_id",user.id).eq("status","live");
+  if(currentUser?.id!==user.id||currentProfile?.id!==user.id)return;
+  liveCreatorIds.delete(user.id);
  }
  const [{data:price,error:pe},{data:stats}]=await Promise.all([
-  db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",currentUser.id).maybeSingle(),
-  db.rpc("public_profile",{p_id:currentUser.id})
+  db.from("creator_settings").select("daily_price_fcfa,weekly_price_fcfa,monthly_price_fcfa,is_accepting_subscriptions").eq("creator_id",user.id).maybeSingle(),
+  db.rpc("public_profile",{p_id:user.id})
  ]);
+ if(currentUser?.id!==user.id||currentProfile?.id!==user.id)return;
  if(pe)message("Tarifs non chargés : "+pe.message);
  if(price){
   $("creatorDailyPrice").value=price.daily_price_fcfa??"";
@@ -4310,9 +4314,11 @@ async function loadCreator(){
   $("acceptSubscriptions").checked=price.is_accepting_subscriptions===true;
  }
  await loadCreatorEarnings();
+ if(currentUser?.id!==user.id||currentProfile?.id!==user.id)return;
  const s=stats?.[0]||{follower_count:0,video_count:0,photo_count:0};
  await loadStatuses();
- const name=currentProfile.display_name||currentProfile.username;
+ if(currentUser?.id!==user.id||currentProfile?.id!==user.id)return;
+ const name=profile.display_name||profile.username;
  $("creatorHeader").innerHTML=`
   <div class="c-head">
    ${avatarHTML(currentProfile)}
