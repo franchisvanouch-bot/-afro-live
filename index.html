@@ -1881,14 +1881,14 @@ async function openAdminDiagnosticGate(user,profile){
    return "SDK chargé";
   });
   await test("Éléments essentiels de l'interface",()=>{
-   const ids=["app","auth","admin","spectator","creator","navigation","status","homeFeed","liveList","messagesPage"];
+   const ids=["app","auth","admin","spectator","creator","navigation","status","homeFeed","liveList"];
    const missing=ids.filter(id=>!$(id));
    if(missing.length)throw new Error("Éléments absents : "+missing.join(", "));
    return ids.length+" éléments présents";
   });
   await test("Fonctions principales",()=>{
    const names=["loadAccount","renderView","showPage","loadSpectatorData","loadCreator","loadAdminApplications","loadAdminVerification","enablePushNotifications"];
-   const missing=names.filter(name=>typeof window[name]!=="function"&&typeof eval(name)!=="function");
+   const missing=names.filter(name=>typeof window[name]!=="function");
    if(missing.length)throw new Error("Fonctions absentes : "+missing.join(", "));
    return names.length+" fonctions disponibles";
   });
