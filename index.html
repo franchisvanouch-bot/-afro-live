@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
-<meta name="afro-build" content="20261115-3">
+<meta name="afro-build" content="20261115-4">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AFRO LIVE</title>
@@ -1838,37 +1838,96 @@ async function copyAfroDiagnostic(){
  catch{prompt("Copie ce rapport de diagnostic :",report)}
 }
 let adminDiagnosticResolver=null;
+async function afroDiagWithTimeout(promise,ms=9000){
+ let timer;
+ try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error("Délai dépassé après "+ms+" ms")),ms)})])}
+ finally{clearTimeout(timer)}
+}
 async function openAdminDiagnosticGate(user,profile){
  hideAppSplash();
  $("auth").classList.add("hidden");
  $("app").classList.add("hidden");
  $("adminDiagnosticGate").classList.remove("hidden");
- $("adminDiagResult").textContent="Vérification de ton compte administrateur et des erreurs détectées…";
- $("adminDiagDetails").textContent="Contrôles en cours…";
+ $("adminDiagResult").textContent="Diagnostic approfondi en cours…";
+ $("adminDiagDetails").textContent="Analyse des fonctions, services et connexions…";
  $("adminDiagContinue").disabled=true;
- $("adminDiagContinue").textContent="Vérification en cours…";
+ $("adminDiagContinue").textContent="Diagnostic en cours…";
  const checks=[];
- const runtimeAtStart=afroRuntimeErrors.length;
+ const add=(name,ok,detail)=>checks.push({name,ok:!!ok,detail:String(detail||"")});
+ const test=async(name,fn)=>{
+  try{const detail=await afroDiagWithTimeout(Promise.resolve().then(fn));add(name,true,detail||"Test réussi")}
+  catch(error){add(name,false,error?.message||String(error))}
+ };
  try{
-  checks.push({name:"Connexion Internet",ok:navigator.onLine,detail:navigator.onLine?"Appareil en ligne":"Appareil hors ligne"});
-  const {data,error}=await db.auth.getSession();
-  const sameUser=!error&&data?.session?.user?.id===user.id;
-  checks.push({name:"Session sécurisée",ok:sameUser,detail:sameUser?"Session confirmée":error?.message||"Session non confirmée"});
-  const {data:verifiedProfile,error:profileError}=await db.from("profiles").select("id,role").eq("id",user.id).maybeSingle();
-  const profileOk=!profileError&&verifiedProfile?.id===user.id&&verifiedProfile?.role==="admin"&&profile.role==="admin";
-  checks.push({name:"Compte administrateur",ok:profileOk,detail:profileOk?"Compte administrateur confirmé":profileError?.message||"Le rôle administrateur n’a pas pu être confirmé"});
+  add("Connexion Internet",navigator.onLine,navigator.onLine?"Appareil en ligne":"Appareil hors ligne");
+  await test("Session sécurisée",async()=>{
+   const {data,error}=await db.auth.getSession();
+   if(error)throw error;
+   if(data?.session?.user?.id!==user.id)throw new Error("La session ne correspond pas au compte");
+   return "Session confirmée";
+  });
+  await test("Compte administrateur",async()=>{
+   const {data,error}=await db.from("profiles").select("id,role").eq("id",user.id).maybeSingle();
+   if(error)throw error;
+   if(data?.id!==user.id||data?.role!=="admin"||profile.role!=="admin")throw new Error("Rôle administrateur non confirmé");
+   return "Compte administrateur confirmé";
+  });
+  await test("Bibliothèque Supabase",()=>{
+   if(!window.supabase?.createClient||!db?.from)throw new Error("Client Supabase indisponible");
+   return "Client chargé";
+  });
+  await test("Bibliothèque LiveKit",()=>{
+   if(!window.LivekitClient&&!window.LiveKitClient)throw new Error("SDK LiveKit indisponible");
+   return "SDK chargé";
+  });
+  await test("Éléments essentiels de l'interface",()=>{
+   const ids=["app","auth","admin","spectator","creator","navigation","status","homeFeed","liveList","messagesPage"];
+   const missing=ids.filter(id=>!$(id));
+   if(missing.length)throw new Error("Éléments absents : "+missing.join(", "));
+   return ids.length+" éléments présents";
+  });
+  await test("Fonctions principales",()=>{
+   const names=["loadAccount","renderView","showPage","loadSpectatorData","loadCreator","loadAdminApplications","loadAdminVerification","enablePushNotifications"];
+   const missing=names.filter(name=>typeof window[name]!=="function"&&typeof eval(name)!=="function");
+   if(missing.length)throw new Error("Fonctions absentes : "+missing.join(", "));
+   return names.length+" fonctions disponibles";
+  });
+  const tables=["profiles","posts","follows","post_likes","post_comments","notifications","live_sessions","creator_applications"];
+  for(const table of tables){
+   await test("Base de données · "+table,async()=>{
+    const {error}=await db.from(table).select("*",{head:true,count:"exact"}).limit(0);
+    if(error)throw error;
+    return "Table accessible en lecture (sans lire de contenu)";
+   });
+  }
+  await test("Stockage des médias",async()=>{
+   const {error}=await db.storage.from("creator-media").list("",{limit:1});
+   if(error)throw error;
+   return "Bucket creator-media accessible";
+  });
+  await test("Caméra et microphone",()=>{
+   if(!navigator.mediaDevices?.getUserMedia)throw new Error("API caméra/micro non disponible dans ce navigateur");
+   return "API disponible (aucune caméra activée)";
+  });
+  await test("Service worker",async()=>{
+   if(!("serviceWorker" in navigator))throw new Error("Service worker non pris en charge");
+   const reg=await navigator.serviceWorker.getRegistration("/");
+   if(!reg)throw new Error("Aucun service worker enregistré");
+   return reg.active?"Service worker actif":"Service worker enregistré, activation en cours";
+  });
   const runtimeErrors=afroRuntimeErrors.slice(0);
-  checks.push({name:"Erreurs JavaScript",ok:runtimeErrors.length===0,detail:runtimeErrors.length?runtimeErrors.length+" erreur(s) détectée(s)":"Aucune erreur JavaScript détectée depuis le chargement"});
+  add("Erreurs JavaScript et asynchrones",runtimeErrors.length===0,runtimeErrors.length?runtimeErrors.length+" erreur(s) depuis le chargement":"Aucune erreur capturée depuis le chargement");
   const passed=checks.filter(x=>x.ok).length;
-  const allOk=passed===checks.length;
-  $("adminDiagResult").textContent=(allOk?"✓ Contrôle terminé : aucun problème détecté.":"⚠ Contrôle terminé : "+(checks.length-passed)+" point(s) à vérifier.")+"\n"+passed+"/"+checks.length+" contrôles réussis.";
+  const failed=checks.length-passed;
+  $("adminDiagResult").textContent=(failed===0?"✓ Diagnostic terminé : aucun problème détecté dans les tests effectués.":"⚠ Diagnostic terminé : "+failed+" point(s) à examiner.")+"\n"+passed+"/"+checks.length+" tests réussis.";
   $("adminDiagDetails").textContent=checks.map(x=>(x.ok?"✓ ":"⚠ ")+x.name+" — "+x.detail).join("\n")+
-   (runtimeErrors.length?"\n\nDétails des erreurs :\n"+runtimeErrors.map(x=>x.time+" — "+x.type+" : "+x.detail).join("\n"):"")+
-   "\n\nVersion : "+(document.querySelector('meta[name="afro-build"]')?.content||"inconnue");
-  afroDiag("Contrôle administrateur terminé",passed+"/"+checks.length+" vérifications réussies");
+   (runtimeErrors.length?"\n\nDétails des erreurs capturées :\n"+runtimeErrors.map(x=>x.time+" — "+x.type+" : "+x.detail).join("\n"):"")+
+   "\n\nVersion : "+(document.querySelector('meta[name="afro-build"]')?.content||"inconnue")+
+   "\nNavigateur : "+navigator.userAgent;
+  afroDiag("Diagnostic administrateur terminé",passed+"/"+checks.length+" tests réussis");
  }catch(error){
-  afroDiag("Échec du contrôle administrateur",error?.message||String(error));
-  $("adminDiagResult").textContent="⚠ Le contrôle n’a pas pu être terminé normalement. Tu peux copier le rapport avant de continuer.";
+  afroDiag("Échec du diagnostic administrateur",error?.message||String(error));
+  $("adminDiagResult").textContent="⚠ Le diagnostic n’a pas pu se terminer normalement. Copie le rapport pour examiner l’erreur.";
   $("adminDiagDetails").textContent=String(error?.message||error);
  }
  $("adminDiagContinue").disabled=false;
