@@ -4926,7 +4926,7 @@ async function toggleCreatorVerification(userId,verified){
  await loadAdminVerification();
 }
 
-function loadAdminApplications(){
+async function loadAdminApplications(){
  if(!currentUser||currentProfile?.role!=="admin")return message("Accès administrateur nécessaire.");
  const box=$("adminApplications");
  box.innerHTML="<p>Chargement des candidatures...</p>";
