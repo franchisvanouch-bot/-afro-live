@@ -1397,6 +1397,11 @@ body.booting>header{visibility:hidden}
   </div>
   <div class="admin-actions"><button id="refreshAdmin">Actualiser les demandes</button></div>
   <div id="adminApplications"><p>Chargement des candidatures...</p></div>
+  <div class="card">
+   <h3><i class="ti ti-badge-check"></i> Vérification des créateurs</h3>
+   <p class="small">Attribue ou retire le badge officiel aux comptes créateurs.</p>
+   <div id="adminVerificationList"><p>Chargement des créateurs...</p></div>
+  </div>
   <div class="card" id="afroGptCard">
    <h3><i class="ti ti-sparkles"></i> Assistant GPT AFRO LIVE</h3>
    <p class="small">Pose tes questions sur les bugs, les textes et les améliorations de l’application.</p>
@@ -1860,7 +1865,7 @@ function avatarHTML(p,live=false){
  const initial=escapeHTML(((p.display_name||p.username||"?")[0]||"?").toUpperCase());
  const img=safeHttpUrl(p.avatar_url);
  const ring=statusByCreator.has(p.id);
- return `<span class="avatar-wrap${ring?" ring":""}">${img?`<img class="avatar" src="${escapeHTML(img)}" alt="" loading="lazy" decoding="async">`:`<span class="avatar">${initial}</span>`}${live?'<span class="dot-live" title="En direct"></span>':""}</span>`;
+ return `<span class="avatar-wrap${ring?" ring":""}">${img?`<img class="avatar" src="${escapeHTML(img)}" alt="" loading="lazy" decoding="async">`:`<span class="avatar">${initial}</span>`}${p.is_verified?'<span class="af-verified" title="Créateur vérifié" aria-label="Créateur vérifié"><i class="ti ti-check"></i></span>':""}${live?'<span class="dot-live" title="En direct"></span>':""}</span>`;
 }
 function fileInfo(file){
  if(!file)return null;
@@ -2018,6 +2023,7 @@ function renderView(){
   nav.className="pills";nav.innerHTML='<button class="active">Administration</button>';
   $("admin").classList.remove("hidden");
   loadAdminApplications();
+  loadAdminVerification();
   return;
  }
  if(mode==="creator"){
@@ -2756,7 +2762,7 @@ function creatorCard(c,followers){
 }
 async function loadCreatorsPage(){
  const box=$("creators");box.innerHTML="<p>Chargement...</p>";
- const {data,error}=await db.from("profiles").select("id,username,display_name,bio,avatar_url").eq("role","creator").limit(30);
+ const {data,error}=await db.from("profiles").select("id,username,display_name,bio,avatar_url,is_verified").eq("role","creator").limit(30);
  if(error)box.innerHTML="<p>Impossible de charger les créateurs : "+escapeHTML(error.message)+"</p>";
  else if(!data.length)box.innerHTML="<p>Aucun créateur pour le moment. Reviens bientôt !</p>";
  else{
@@ -2941,6 +2947,10 @@ async function openProfile(id){
  if(!profile.innerHTML.trim()){profile.innerHTML="<div class='ig-top'><span class='ig-user'>AFRO LIVE</span></div><div class='pf-head'><div class='avatar' style='width:96px;height:96px;border-radius:50%;background:#202126'></div><div class='pf-stats'><span> </span><span> </span><span> </span></div></div><div class='pf-info'><div style='height:14px;width:42%;border-radius:8px;background:#202126'></div><div style='height:10px;width:68%;margin-top:10px;border-radius:8px;background:#18181b'></div></div><div class='tiles ig-grid'><div class='tile' style='background:#151518'></div><div class='tile' style='background:#151518'></div><div class='tile' style='background:#151518'></div><div class='tile' style='background:#151518'></div><div class='tile' style='background:#151518'></div><div class='tile' style='background:#151518'></div></div>";}
  const {data,error}=await db.rpc("public_profile",{p_id:id});
  const p=data?.[0];
+ if(p){
+  const {data:verification}=await db.from("profiles").select("is_verified").eq("id",id).maybeSingle();
+  p.is_verified=verification?.is_verified===true;
+ }
  if(error||!p){
   profile.innerHTML="<div class='ig-top'><button class='ig-icon' type='button' onclick='closeProfile()' aria-label='Retour'><i class='ti ti-arrow-left'></i></button><span class='ig-user'>Profil</span><span></span></div><p class='empty'>Profil introuvable.</p>";
   return;
@@ -2998,7 +3008,7 @@ async function openProfile(id){
    </div>
   </section>
   <section class="ig-bio">
-   <b class="ig-name">${escapeHTML(name)}${p.is_live?' <span class="tag-live">EN DIRECT</span>':""}</b>
+   <b class="ig-name">${escapeHTML(name)}${p.is_verified?' <span class="af-verified-name" title="Créateur vérifié"><i class="ti ti-check"></i> Vérifié</span>':""}${p.is_live?' <span class="tag-live">EN DIRECT</span>':""}</b>
    ${p.bio? `<p>${escapeHTML(p.bio)}</p>` : (isMe?'<p class="ig-muted">Ajoute une bio pour te présenter.</p>':"")}
    ${hasStatus?'<p class="ig-status">Statut actif · touche la photo pour le voir</p>':""}
    ${p.status_text?`<p class="ig-status">${escapeHTML(p.status_text)}</p>`:""}
@@ -4742,7 +4752,31 @@ async function loadCreatorFollowers(){
 }
 
 /* ADMIN */
-async function loadAdminApplications(){
+async 
+async function loadAdminVerification(){
+ if(!currentUser||currentProfile?.role!=="admin")return;
+ const box=$("adminVerificationList");if(!box)return;
+ box.innerHTML="<p>Chargement des créateurs...</p>";
+ const {data,error}=await db.from("profiles").select("id,username,display_name,avatar_url,is_verified").eq("role","creator").order("username").limit(500);
+ if(error){box.innerHTML='<p class="notice">Chargement impossible : '+escapeHTML(error.message)+'</p>';return}
+ if(!data?.length){box.innerHTML="<p class='empty'>Aucun créateur à vérifier.</p>";return}
+ box.innerHTML=data.map(p=>`<div class="af-verify-row">
+  <div class="af-verify-person">${avatarHTML(p)}<div><b>${escapeHTML(p.display_name||p.username)}</b><small>@${escapeHTML(p.username)}</small></div></div>
+  <button type="button" class="${p.is_verified?"soft":"primary"}" onclick="toggleCreatorVerification('${p.id}',${p.is_verified?"false":"true"})">${p.is_verified?"Retirer le badge":"Vérifier"}</button>
+ </div>`).join("");
+}
+async function toggleCreatorVerification(userId,verified){
+ if(!currentUser||currentProfile?.role!=="admin")return message("Action réservée à l'administrateur.");
+ if(typeof verified!=="boolean")return;
+ const label=verified?"attribuer le badge vérifié":"retirer le badge vérifié";
+ if(!confirm("Confirmer : "+label+" pour ce créateur ?"))return;
+ const {data,error}=await db.from("profiles").update({is_verified:verified}).eq("id",userId).eq("role","creator").select("id").maybeSingle();
+ if(error||!data)return message("Modification refusée : "+(error?.message||"créateur introuvable"));
+ message(verified?"Badge vérifié attribué.":"Badge vérifié retiré.",true);
+ await loadAdminVerification();
+}
+
+function loadAdminApplications(){
  if(!currentUser||currentProfile?.role!=="admin")return message("Accès administrateur nécessaire.");
  const box=$("adminApplications");
  box.innerHTML="<p>Chargement des candidatures...</p>";
@@ -5199,5 +5233,14 @@ body:has(#publicProfile:not(.hidden)) #publicProfile{
 .af-poll-footer{margin-top:7px;font-weight:600;letter-spacing:0}
 .af-poll-close{border:0;border-radius:8px;padding:5px 9px;background:#b53a3a;color:#fff;font-size:11px;font-weight:800}
 .live-ic-poll{min-width:32px}
+
+
+.af-verified{position:absolute;right:-2px;bottom:-2px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;background:#238be6;color:#fff;border:2px solid #111;font-size:10px;z-index:3}
+.af-verified-name{display:inline-flex;align-items:center;gap:3px;vertical-align:middle;padding:2px 6px;border-radius:99px;background:rgba(35,139,230,.15);color:#65b8ff;font-size:10px;font-weight:800}
+.af-verify-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.af-verify-person{display:flex;align-items:center;gap:10px;min-width:0}
+.af-verify-person>div{display:grid;min-width:0}
+.af-verify-person small{color:var(--muted)}
+.af-verify-row button{flex-shrink:0}
 
 </style>
