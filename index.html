@@ -3035,7 +3035,7 @@ async function openProfile(id){
  if(highlightsBox){
   highlightsBox.innerHTML=groupedHighlights.map(h=>{
    const cover=escapeHTML(mediaUrl(h.items[0].media_path));
-   return `<button class="ig-highlight" type="button" onclick="openHighlightViewer('${h.id}')"><span class="ig-highlight-cover"><img src="${cover}" alt="" loading="lazy"></span><span>${escapeHTML(h.title)}</span></button>`;
+   return `<div class="ig-highlight-wrap"><button class="ig-highlight" type="button" onclick="openHighlightViewer('${h.id}')"><span class="ig-highlight-cover"><img src="${cover}" alt="" loading="lazy"></span><span>${escapeHTML(h.title)}</span></button>${isMe&&currentProfile?.role==="creator"?`<button class="ig-highlight-remove" type="button" aria-label="Supprimer ${escapeHTML(h.title)}" onclick="deleteStoryHighlight('${h.id}')">×</button>`:""}</div>`;
   }).join("");
   highlightsBox.hidden=!groupedHighlights.length;
  }
@@ -4763,6 +4763,23 @@ async function saveStatusToHighlight(statusId){
   message("Impossible d'ajouter la story : "+(error.message||error));
  }
 }
+async function deleteStoryHighlight(highlightId){
+ if(currentProfile?.role!=="creator"||currentUser?.id==null)return;
+ if(!confirm("Supprimer cette story à la une et tous ses médias ?"))return;
+ const {data:collection,error:ce}=await db.from("story_highlights").select("id").eq("id",highlightId).eq("creator_id",currentUser.id).maybeSingle();
+ if(ce||!collection)return message("Suppression impossible : collection introuvable.");
+ const {data:items,error:ie}=await db.from("story_highlight_items").select("media_path").eq("highlight_id",highlightId).eq("creator_id",currentUser.id);
+ if(ie)return message("Impossible de récupérer les médias : "+ie.message);
+ const paths=(items||[]).map(x=>x.media_path);
+ if(paths.length){
+  const {error:se}=await db.storage.from("creator-media").remove(paths);
+  if(se)return message("Les médias n'ont pas pu être supprimés : "+se.message);
+ }
+ const {error}=await db.from("story_highlights").delete().eq("id",highlightId).eq("creator_id",currentUser.id);
+ if(error)return message("Suppression impossible : "+error.message);
+ message("Story à la une supprimée.",true);
+ await openProfile(currentUser.id);
+}
 async function openHighlightViewer(highlightId){
  const {data:collection,error}=await db.from("story_highlights").select("id,creator_id,title").eq("id",highlightId).maybeSingle();
  if(error||!collection)return message("Cette story à la une n'est plus disponible.");
@@ -5271,6 +5288,8 @@ body:has(#publicProfile:not(.hidden)) #publicProfile{
 .ig-highlight{flex:0 0 68px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0;background:none;color:#eee;font-size:11px;font-weight:600;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ig-highlight-cover{width:64px;height:64px;border-radius:50%;padding:3px;background:linear-gradient(45deg,#ff6a00,#e0262b,#ffb24d);display:block}
 .ig-highlight-cover img{width:100%;height:100%;border:3px solid #000;border-radius:50%;object-fit:cover;background:#222}
+.ig-highlight-wrap{position:relative;flex:0 0 68px;display:flex;justify-content:center}
+.ig-highlight-remove{position:absolute;top:-3px;right:-2px;width:21px;height:21px;padding:0;border:2px solid #000;border-radius:50%;background:#b52b35;color:#fff;font-size:15px;line-height:17px}
 #myStatusList .row-item{gap:7px;flex-wrap:wrap}
 #myStatusList .row-item .row-text{flex:1;min-width:100px}
 #myStatusList .row-item button{padding:8px 9px;font-size:12px}
