@@ -4684,7 +4684,7 @@ async function csStartStream(){
  const video=$("csVideo");
  try{
   try{
-   csStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:csFacing,width:{ideal:1080},height:{ideal:1920}},audio:true});
+   csStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:csFacing},aspectRatio:{ideal:9/16},width:{ideal:720},height:{ideal:1280}},audio:true});
   }catch{
    csStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:csFacing},audio:false});
   }
