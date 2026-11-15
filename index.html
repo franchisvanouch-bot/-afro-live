@@ -1971,9 +1971,22 @@ async function signUp(){
 }
 async function signIn(){
  const email=$("loginEmail").value.trim(),password=$("loginPassword").value;
- const {error}=await db.auth.signInWithPassword({email,password});
- if(error)return authMessage(error.message);
- await loadAccount();
+ const btn=$("login");
+ if(!email||!password)return authMessage("Entre ton e-mail et ton mot de passe.");
+ if(btn){btn.disabled=true;btn.dataset.oldText=btn.textContent;btn.textContent="Connexion en cours...";}
+ $("authMessage").classList.add("hidden");
+ try{
+  const {data,error}=await db.auth.signInWithPassword({email,password});
+  if(error){authMessage(error.message==="Invalid login credentials"?"E-mail ou mot de passe incorrect. Vérifie tes identifiants.":error.message);return;}
+  if(!data?.session){authMessage("La connexion n'a pas créé de session. Vérifie ton e-mail si une confirmation est demandée.");return;}
+  await loadAccount();
+  if(!currentUser)authMessage("Connexion réussie, mais ton profil n'a pas pu être chargé. Réessaie.");
+ }catch(error){
+  console.error("AFRO LIVE sign-in error:",error);
+  authMessage("Erreur de connexion réseau : "+(error?.message||"Impossible de joindre le serveur. Vérifie Internet et réessaie."));
+ }finally{
+  if(btn){btn.disabled=false;btn.textContent=btn.dataset.oldText||"Se connecter";delete btn.dataset.oldText;}
+ }
 }
 async function signOut(){
  stopAllPreviews();
