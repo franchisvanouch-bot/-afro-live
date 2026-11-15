@@ -1693,7 +1693,7 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const LIVE_MAX_AGE_MS=12*3600*1000;
 let currentUser=null,currentProfile=null,liveRoom=null,currentLiveSessionId=null,liveMode=null,viewMode=null;
-let myFollows=new Set(),myNotify=new Set(),followsReady=false,facingMode="user",accountLoading=false,applicationFilled=false;
+let myFollows=new Set(),myNotify=new Set(),followsReady=false,facingMode="user",accountLoading=false,accountLoadPromise=null,applicationFilled=false;
 let liveCreatorIds=new Set();
 let statusByCreator=new Map();
 const feedSources={};
@@ -1979,8 +1979,8 @@ async function signIn(){
   const {data,error}=await db.auth.signInWithPassword({email,password});
   if(error){authMessage(error.message==="Invalid login credentials"?"E-mail ou mot de passe incorrect. Vérifie tes identifiants.":error.message);return;}
   if(!data?.session){authMessage("La connexion n'a pas créé de session. Vérifie ton e-mail si une confirmation est demandée.");return;}
-  await loadAccount();
-  if(!currentUser)authMessage("Connexion réussie, mais ton profil n'a pas pu être chargé. Réessaie.");
+  const loaded=await loadAccount(data.session);
+  if(!loaded)authMessage("Connexion effectuée, mais le profil n'a pas pu s'ouvrir. Réessaie.");
  }catch(error){
   console.error("AFRO LIVE sign-in error:",error);
   authMessage("Erreur de connexion réseau : "+(error?.message||"Impossible de joindre le serveur. Vérifie Internet et réessaie."));
@@ -2005,22 +2005,36 @@ function resetSession(){
  $("publicProfile").classList.add("hidden");
  $("navigation").className="pills";$("navigation").innerHTML="";
 }
-async function loadAccount(){
- if(accountLoading)return;
+async function loadAccount(sessionOverride=null){
+ if(accountLoadPromise)return accountLoadPromise;
  accountLoading=true;
- try{
-  const {data:{session},error:ue}=await db.auth.getSession();
-  const user=session?.user;
-  if(ue||!user)return;
-  const {data:profile,error}=await db.from("profiles")
-   .select("id,username,display_name,role,bio,avatar_url").eq("id",user.id).maybeSingle();
-  if(error){authMessage("Impossible de charger ton profil : "+error.message);return}
-  if(!profile){authMessage("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");return}
-  currentUser=user;currentProfile=profile;
-  $("auth").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");
-  $("myProfile").textContent=(profile.display_name||profile.username)+" · @"+profile.username+" · "+user.email;
-  renderView();
- }finally{accountLoading=false}
+ accountLoadPromise=(async()=>{
+  try{
+   let session=sessionOverride;
+   if(!session){
+    const {data,error:ue}=await db.auth.getSession();
+    if(ue)throw ue;
+    session=data?.session;
+   }
+   const user=session?.user;
+   if(!user)throw new Error("Aucune session active. Reconnecte-toi.");
+   const {data:profile,error}=await db.from("profiles")
+    .select("id,username,display_name,role,bio,avatar_url").eq("id",user.id).maybeSingle();
+   if(error)throw new Error("Impossible de charger ton profil : "+error.message);
+   if(!profile)throw new Error("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");
+   currentUser=user;currentProfile=profile;
+   $("auth").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");
+   $("myProfile").textContent=(profile.display_name||profile.username)+" · @"+profile.username+" · "+user.email;
+   renderView();
+   return true;
+  }catch(error){
+   console.error("AFRO LIVE account loading error:",error);
+   authMessage(error?.message||"Impossible de charger ton compte. Réessaie.");
+   return false;
+  }
+ })();
+ try{return await accountLoadPromise}
+ finally{accountLoading=false;accountLoadPromise=null}
 }
 
 /* AFFICHAGE SELON LE RÔLE */
