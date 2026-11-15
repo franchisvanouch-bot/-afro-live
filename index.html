@@ -1182,6 +1182,11 @@ body.booting>header{visibility:hidden}
    <button id="login" type="submit" style="width:100%">Se connecter</button>
   </form></div>
  <div id="authMessage" class="notice hidden"></div>
+  <div id="afroDiagPanel" class="notice hidden" style="margin-top:12px;border:1px solid #ff922b;background:#17130f;color:#f5e8d8;text-align:left">
+   <b style="color:#ff922b">Diagnostic de connexion</b>
+   <div id="afroDiagText" style="white-space:pre-wrap;font-size:13px;line-height:1.55;margin-top:8px"></div>
+   <button type="button" onclick="copyAfroDiagnostic()" style="margin-top:10px;background:#29231d;color:#fff;border:1px solid #6b4a2a;border-radius:9px;padding:9px 12px">Copier le diagnostic</button>
+  </div>
 </section>
 
 <section id="app" class="hidden">
@@ -1781,7 +1786,23 @@ function message(text,success=false){
  clearTimeout(box._t);
  box._t=setTimeout(()=>{box.textContent="";box.className=""},3500);
 }
-function authMessage(text){$("authMessage").textContent=text;$("authMessage").classList.remove("hidden")}
+const afroDiagnostic=[];
+function afroDiag(stage,detail=""){
+ const time=new Date().toLocaleTimeString();
+ const safe=String(detail||"").replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi,"[email masqué]").slice(0,240);
+ afroDiagnostic.push(time+" — "+stage+(safe?" : "+safe:""));
+ if(afroDiagnostic.length>12)afroDiagnostic.shift();
+ const panel=$("afroDiagPanel"),box=$("afroDiagText");
+ if(panel&&box){box.textContent=afroDiagnostic.join("\\n");panel.classList.remove("hidden")}
+}
+async function copyAfroDiagnostic(){
+ const report=["AFRO LIVE diagnostic","Version: "+(document.querySelector('meta[name="afro-build"]')?.content||"inconnue"),"URL: "+location.origin,"En ligne: "+navigator.onLine,...afroDiagnostic].join("\\n");
+ try{await navigator.clipboard.writeText(report);message("Diagnostic copié. Tu peux le coller ici.",true)}
+ catch{prompt("Copie ce diagnostic :",report)}
+}
+window.addEventListener("error",e=>afroDiag("Erreur JavaScript",e.message||"Erreur inconnue"));
+window.addEventListener("unhandledrejection",e=>afroDiag("Erreur asynchrone",e.reason?.message||String(e.reason||"Erreur inconnue")));
+function authMessage(text){$("authMessage").textContent=text;$("authMessage").classList.remove("hidden");afroDiag("Message affiché",text)}
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function safeHttpUrl(value){try{const u=new URL(value);return["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}}
 function mediaUrl(path){return db.storage.from("creator-media").getPublicUrl(path).data.publicUrl}
@@ -1986,7 +2007,7 @@ async function signIn(){
  try{
   const {data,error}=await db.auth.signInWithPassword({email,password});
   if(error){authMessage(error.message==="Invalid login credentials"?"E-mail ou mot de passe incorrect. Vérifie tes identifiants.":error.message);return;}
-  if(!data?.session){authMessage("La connexion n'a pas créé de session. Vérifie ton e-mail si une confirmation est demandée.");return;}
+  if(!data?.session){afroDiag("Aucune session reçue");authMessage("La connexion n'a pas créé de session. Vérifie ton e-mail si une confirmation est demandée.");return;}
   const loaded=await loadAccount(data.session);
   if(!loaded)authMessage("Connexion effectuée, mais le profil n'a pas pu s'ouvrir. Réessaie.");
  }catch(error){
@@ -2025,10 +2046,10 @@ async function loadAccount(sessionOverride=null){
     session=data?.session;
    }
    const user=session?.user;
-   if(!user)throw new Error("Aucune session active. Reconnecte-toi.");
+   if(!user)throw new Error("Aucune session active. Reconnecte-toi.");\n    afroDiag("Session utilisateur confirmée");
    const {data:profile,error}=await db.from("profiles")
     .select("id,username,display_name,role,bio,avatar_url").eq("id",user.id).maybeSingle();
-   if(error)throw new Error("Impossible de charger ton profil : "+error.message);
+   if(error)throw new Error("Impossible de charger ton profil : "+error.message);\n    afroDiag("Lecture du profil terminée",profile?"profil trouvé":"profil absent");
    if(!profile)throw new Error("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");
    currentUser=user;currentProfile=profile;
    $("auth").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");
