@@ -4902,7 +4902,6 @@ async function loadCreatorFollowers(){
 }
 
 /* ADMIN */
-async 
 async function loadAdminVerification(){
  if(!currentUser||currentProfile?.role!=="admin")return;
  const box=$("adminVerificationList");if(!box)return;
