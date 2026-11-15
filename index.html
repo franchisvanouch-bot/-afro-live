@@ -3040,7 +3040,7 @@ async function openProfile(id){
  }
  let likesCount=0;
  if(list.length){
-  const {count}=await db.from("post_likes").select("id",{count:"exact",head:true}).in("post_id",list.map(x=>x.id));
+  const {count}=await db.from("post_likes").select("post_id",{count:"exact",head:true}).in("post_id",list.map(x=>x.id));
   likesCount=Number(count)||0;
  }
  feedSources.profile=list;
