@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
-<meta name="afro-build" content="20261115-2">
+<meta name="afro-build" content="20261115-3">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AFRO LIVE</title>
@@ -1165,6 +1165,21 @@ body.booting>header{visibility:hidden}
 <script>window.__afroSplashFailsafe=setTimeout(()=>{document.body.classList.remove("booting");document.getElementById("appSplash")?.remove()},8000);</script>
 <main>
 
+<section id="adminDiagnosticGate" class="hidden" style="max-width:620px;margin:24px auto;padding:16px">
+ <div class="card" style="border:1px solid #ff922b">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+   <i class="ti ti-shield-check" style="font-size:26px;color:#ff922b" aria-hidden="true"></i>
+   <div><h2 style="margin:0">Contrôle avant accès</h2><p class="small" style="margin:3px 0 0">Vérification réservée au compte administrateur.</p></div>
+  </div>
+  <div id="adminDiagResult" class="notice" style="white-space:pre-wrap;line-height:1.6">Vérification en cours…</div>
+  <pre id="adminDiagDetails" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:38vh;overflow:auto;background:#101012;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:12px;line-height:1.55">Analyse en cours…</pre>
+  <div class="card-actions">
+   <button type="button" class="soft" onclick="copyAfroDiagnostic()"><i class="ti ti-copy" aria-hidden="true"></i> Copier le rapport</button>
+   <button type="button" id="adminDiagContinue" onclick="continueAfterAdminDiagnostic()" disabled>Vérification en cours…</button>
+  </div>
+ </div>
+</section>
+
 <section id="auth">
  <h1>Bienvenue sur <span style="color:var(--orange)">AFRO LIVE</span></h1>
  <p>La plateforme qui rapproche les créateurs et leur public grâce aux vidéos et aux directs.</p>
@@ -1264,28 +1279,8 @@ body.booting>header{visibility:hidden}
      <button class="soft" onclick="installApp()"><i class="ti ti-download" aria-hidden="true"></i> Ajouter à l'écran d'accueil</button>
      <button class="soft" onclick="showPage('subscriptions')">Mes abonnements</button>
      <button class="soft" onclick="showPage('application')">Devenir créateur</button>
-     <button class="soft" onclick="showPage('diagnostics')"><i class="ti ti-activity" aria-hidden="true"></i> Diagnostic AFRO LIVE</button>
      <button class="soft hidden" id="backCreatorBtn" onclick="setViewMode('creator')">Espace créateur</button>
      <button class="danger" id="logoutProfile">Déconnexion</button>
-    </div>
-   </div>
-  </div>
-
-  <div id="diagnosticsPage" class="hidden">
-   <div class="pf-top">
-    <button class="pf-icon" type="button" onclick="showPage('profile')" aria-label="Retour au profil"><i class="ti ti-arrow-left"></i></button>
-    <span class="pf-title">Diagnostic AFRO LIVE</span>
-    <button class="pf-icon" type="button" onclick="refreshAfroDiagnostics()" aria-label="Actualiser"><i class="ti ti-refresh"></i></button>
-   </div>
-   <div class="card">
-    <p class="small">Vérifie l’état de l’application et consulte les dernières erreurs détectées sur cet appareil.</p>
-    <div id="afroDiagSummary" class="notice" style="white-space:pre-wrap;line-height:1.6"></div>
-    <h3>Journal des événements</h3>
-    <pre id="afroDiagFullText" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:42vh;overflow:auto;background:#101012;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:12px;line-height:1.55">Aucun événement enregistré.</pre>
-    <div class="card-actions">
-     <button type="button" onclick="refreshAfroDiagnostics()"><i class="ti ti-refresh" aria-hidden="true"></i> Actualiser</button>
-     <button type="button" class="soft" onclick="copyAfroDiagnostic()"><i class="ti ti-copy" aria-hidden="true"></i> Copier le rapport</button>
-     <button type="button" class="soft" onclick="clearAfroDiagnostic()"><i class="ti ti-trash" aria-hidden="true"></i> Effacer le journal</button>
     </div>
    </div>
   </div>
@@ -1813,7 +1808,7 @@ function afroDiag(stage,detail=""){
  afroDiagnostic.push(time+" — "+stage+(safe?" : "+safe:""));
  if(afroDiagnostic.length>40)afroDiagnostic.shift();
  const panel=$("afroDiagPanel"),box=$("afroDiagText");
- if(panel&&box){box.textContent=afroDiagnostic.slice(-12).join("\n");panel.classList.remove("hidden")}
+ if(panel&&box){box.textContent=afroDiagnostic.slice(-12).join("\n")}
  const full=$("afroDiagFullText");
  if(full)full.textContent=afroDiagnostic.join("\n")||"Aucun événement enregistré.";
 }
@@ -1842,11 +1837,61 @@ async function copyAfroDiagnostic(){
  try{await navigator.clipboard.writeText(report);message("Rapport copié. Tu peux me le coller ici.",true)}
  catch{prompt("Copie ce rapport de diagnostic :",report)}
 }
+let adminDiagnosticResolver=null;
+async function openAdminDiagnosticGate(user,profile){
+ $("auth").classList.add("hidden");
+ $("app").classList.add("hidden");
+ $("adminDiagnosticGate").classList.remove("hidden");
+ $("adminDiagResult").textContent="Vérification de ton compte administrateur et des erreurs détectées…";
+ $("adminDiagDetails").textContent="Contrôles en cours…";
+ $("adminDiagContinue").disabled=true;
+ $("adminDiagContinue").textContent="Vérification en cours…";
+ const checks=[];
+ const runtimeAtStart=afroRuntimeErrors.length;
+ try{
+  checks.push({name:"Connexion Internet",ok:navigator.onLine,detail:navigator.onLine?"Appareil en ligne":"Appareil hors ligne"});
+  const {data,error}=await db.auth.getSession();
+  const sameUser=!error&&data?.session?.user?.id===user.id;
+  checks.push({name:"Session sécurisée",ok:sameUser,detail:sameUser?"Session confirmée":error?.message||"Session non confirmée"});
+  const {data:verifiedProfile,error:profileError}=await db.from("profiles").select("id,role").eq("id",user.id).maybeSingle();
+  const profileOk=!profileError&&verifiedProfile?.id===user.id&&verifiedProfile?.role==="admin"&&profile.role==="admin";
+  checks.push({name:"Compte administrateur",ok:profileOk,detail:profileOk?"Compte administrateur confirmé":profileError?.message||"Le rôle administrateur n’a pas pu être confirmé"});
+  const runtimeErrors=afroRuntimeErrors.slice(0);
+  checks.push({name:"Erreurs JavaScript",ok:runtimeErrors.length===0,detail:runtimeErrors.length?runtimeErrors.length+" erreur(s) détectée(s)":"Aucune erreur JavaScript détectée depuis le chargement"});
+  const passed=checks.filter(x=>x.ok).length;
+  const allOk=passed===checks.length;
+  $("adminDiagResult").textContent=(allOk?"✓ Contrôle terminé : aucun problème détecté.":"⚠ Contrôle terminé : "+(checks.length-passed)+" point(s) à vérifier.")+"\n"+passed+"/"+checks.length+" contrôles réussis.";
+  $("adminDiagDetails").textContent=checks.map(x=>(x.ok?"✓ ":"⚠ ")+x.name+" — "+x.detail).join("\n")+
+   (runtimeErrors.length?"\n\nDétails des erreurs :\n"+runtimeErrors.map(x=>x.time+" — "+x.type+" : "+x.detail).join("\n"):"")+
+   "\n\nVersion : "+(document.querySelector('meta[name="afro-build"]')?.content||"inconnue");
+  afroDiag("Contrôle administrateur terminé",passed+"/"+checks.length+" vérifications réussies");
+ }catch(error){
+  afroDiag("Échec du contrôle administrateur",error?.message||String(error));
+  $("adminDiagResult").textContent="⚠ Le contrôle n’a pas pu être terminé normalement. Tu peux copier le rapport avant de continuer.";
+  $("adminDiagDetails").textContent=String(error?.message||error);
+ }
+ $("adminDiagContinue").disabled=false;
+ $("adminDiagContinue").textContent="Accéder à mon compte";
+ await new Promise(resolve=>{adminDiagnosticResolver=resolve});
+ $("adminDiagnosticGate").classList.add("hidden");
+}
+function continueAfterAdminDiagnostic(){
+ if(adminDiagnosticResolver){const resolve=adminDiagnosticResolver;adminDiagnosticResolver=null;resolve();}
+}
+const afroRuntimeErrors=[];
 window.addEventListener("error",e=>{
  const source=e.filename?e.filename.split("?")[0].split("/").slice(-2).join("/"):"source inconnue";
- afroDiag("Erreur JavaScript",(e.message||"Erreur inconnue")+" · "+source+(e.lineno?":"+e.lineno:"")+(e.colno?":"+e.colno:""));
+ const detail=(e.message||"Erreur inconnue")+" · "+source+(e.lineno?":"+e.lineno:"")+(e.colno?":"+e.colno:"");
+ afroRuntimeErrors.push({type:"JavaScript",detail,time:new Date().toLocaleTimeString("fr-FR")});
+ if(afroRuntimeErrors.length>30)afroRuntimeErrors.shift();
+ afroDiag("Erreur JavaScript",detail);
 });
-window.addEventListener("unhandledrejection",e=>afroDiag("Erreur asynchrone",e.reason?.message||String(e.reason||"Erreur inconnue")));
+window.addEventListener("unhandledrejection",e=>{
+ const detail=e.reason?.message||String(e.reason||"Erreur inconnue");
+ afroRuntimeErrors.push({type:"Asynchrone",detail,time:new Date().toLocaleTimeString("fr-FR")});
+ if(afroRuntimeErrors.length>30)afroRuntimeErrors.shift();
+ afroDiag("Erreur asynchrone",detail);
+});
 window.addEventListener("online",()=>afroDiag("Réseau","Connexion Internet rétablie."));
 window.addEventListener("offline",()=>afroDiag("Réseau","Appareil hors ligne."));
 function authMessage(text){$("authMessage").textContent=text;$("authMessage").classList.remove("hidden");afroDiag("Message affiché",text)}
@@ -2108,6 +2153,7 @@ async function loadAccount(sessionOverride=null){
     afroDiag("Lecture du profil terminée",profile?"profil trouvé":"profil absent");
    if(!profile)throw new Error("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");
    currentUser=user;currentProfile=profile;
+   if(profile.role==="admin")await openAdminDiagnosticGate(user,profile);
    $("auth").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");
    $("myProfile").textContent=(profile.display_name||profile.username)+" · @"+profile.username+" · "+user.email;
    renderView();
@@ -2210,7 +2256,7 @@ function showPage(page){
  $("spectator").classList.remove("hidden");
  $("creator").classList.add("hidden");
  $("admin").classList.add("hidden");
- const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",subscriptions:"subscriptionsPage",application:"applicationPage",diagnostics:"diagnosticsPage",notifs:"notifsPage",search:"searchPage",trends:"trendsPage"};
+ const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage",search:"searchPage",trends:"trendsPage"};
  if(!pages[page])return;
  Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
  $(pages[page]).classList.remove("hidden");
@@ -2230,7 +2276,6 @@ function showPage(page){
  if(page==="notifs"){if(window.afroLoadMessagesPage)window.afroLoadMessagesPage();else loadNotifications();}
  if(page==="search")focusSearch();
  if(page==="trends")loadTrendsPage();
- if(page==="diagnostics")refreshAfroDiagnostics();
 }
 
 function openMenuSheet(){
