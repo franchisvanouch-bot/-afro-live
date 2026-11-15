@@ -1892,14 +1892,33 @@ async function openAdminDiagnosticGate(user,profile){
    if(missing.length)throw new Error("Fonctions absentes : "+missing.join(", "));
    return names.length+" fonctions disponibles";
   });
-  const tables=["profiles","posts","follows","post_likes","post_comments","notifications","live_sessions","creator_applications"];
-  for(const table of tables){
-   await test("Base de données · "+table,async()=>{
+  const tables=["profiles","posts","follows","post_likes","post_comments","notifications","live_sessions","creator_applications","statuses","post_reposts","subscriptions","user_blocks","social_reports","withdrawal_requests","creator_ledger","coin_wallets","creator_payout_accounts","creator_settings","push_subscriptions","live_polls","live_poll_votes","story_highlights","story_highlight_items"];
+  for(let i=0;i<tables.length;i+=6){
+   await Promise.all(tables.slice(i,i+6).map(table=>test("Base de données · "+table,async()=>{
     const {error}=await db.from(table).select("*",{head:true,count:"exact"}).limit(0);
     if(error)throw error;
     return "Table accessible en lecture (sans lire de contenu)";
-   });
+   })));
   }
+  await test("Moteur du fil d’actualité",async()=>{
+   const {data,error}=await db.rpc("feed_posts",{p_only_follows:false,p_limit:1});
+   if(error)throw error;
+   return "Fonction feed_posts répond correctement ("+(data?.length||0)+" publication(s) retournée(s))";
+  });
+  await test("Lecture de la file des candidatures admin",async()=>{
+   const {data,error}=await db.from("creator_applications")
+    .select("id,user_id,channel_name,bio,category,country,social_link,status,admin_note,created_at")
+    .order("created_at",{ascending:false}).limit(5);
+   if(error)throw error;
+   return (data?.length||0)+" candidature(s) lisible(s), sans modification";
+  });
+  await test("Lecture de la liste des créateurs à vérifier",async()=>{
+   const {data,error}=await db.from("profiles")
+    .select("id,username,display_name,avatar_url,is_verified")
+    .eq("role","creator").order("username").limit(5);
+   if(error)throw error;
+   return (data?.length||0)+" créateur(s) lisible(s), sans modification";
+  });
   await test("Stockage des médias",async()=>{
    const {error}=await db.storage.from("creator-media").list("",{limit:1});
    if(error)throw error;
@@ -1919,8 +1938,10 @@ async function openAdminDiagnosticGate(user,profile){
   add("Erreurs JavaScript et asynchrones",runtimeErrors.length===0,runtimeErrors.length?runtimeErrors.length+" erreur(s) depuis le chargement":"Aucune erreur capturée depuis le chargement");
   const passed=checks.filter(x=>x.ok).length;
   const failed=checks.length-passed;
-  $("adminDiagResult").textContent=(failed===0?"✓ Diagnostic terminé : aucun problème détecté dans les tests effectués.":"⚠ Diagnostic terminé : "+failed+" point(s) à examiner.")+"\n"+passed+"/"+checks.length+" tests réussis.";
+  const notCovered=["Connexion complète avec un compte spectateur et un compte créateur","Publication, commentaire, like, partage et message réels","Démarrage/arrêt d’un direct et qualité audio/vidéo réelle","Approbation/refus d’une candidature et changement de badge","Paiements, retraits et versements (aucune transaction lancée)","Permissions RLS des comptes spectateur et créateur (ce diagnostic utilise le compte admin)"];
+  $("adminDiagResult").textContent=(failed===0?"✓ Diagnostic terminé : aucun problème détecté dans les tests effectués.":"⚠ Diagnostic terminé : "+failed+" point(s) à examiner.")+"\n"+passed+"/"+checks.length+" tests réussis.\n"+notCovered.length+" contrôles fonctionnels restent à faire manuellement.";
   $("adminDiagDetails").textContent=checks.map(x=>(x.ok?"✓ ":"⚠ ")+x.name+" — "+x.detail).join("\n")+
+   "\n\nCONTRÔLES NON EXÉCUTÉS (actions réelles ou autres rôles nécessaires) :\n"+notCovered.map(x=>"• "+x).join("\n")+
    (runtimeErrors.length?"\n\nDétails des erreurs capturées :\n"+runtimeErrors.map(x=>x.time+" — "+x.type+" : "+x.detail).join("\n"):"")+
    "\n\nVersion : "+(document.querySelector('meta[name="afro-build"]')?.content||"inconnue")+
    "\nNavigateur : "+navigator.userAgent;
