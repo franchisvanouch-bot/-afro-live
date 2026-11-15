@@ -1789,7 +1789,7 @@ function message(text,success=false){
 const afroDiagnostic=[];
 function afroDiag(stage,detail=""){
  const time=new Date().toLocaleTimeString();
- const safe=String(detail||"").replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi,"[email masqué]").slice(0,240);
+ const safe=String(detail||"").replace(/[^\s@]+@[^\s@]+\.[^\s@]+/g,"[email masqué]").slice(0,240);
  afroDiagnostic.push(time+" — "+stage+(safe?" : "+safe:""));
  if(afroDiagnostic.length>12)afroDiagnostic.shift();
  const panel=$("afroDiagPanel"),box=$("afroDiagText");
