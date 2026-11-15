@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AFRO LIVE - Caméra</title>
+<style>
+  :root {
+    --accent: #f5b94a;
+    --accent-2: #ff7a00;
+    --txt: #ffffff;
+    --txt-dim: rgba(255,255,255,.55);
+    --glass: rgba(40,40,40,.55);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%; background: #000; color: var(--txt);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    overflow: hidden;
+  }
+  .cam {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Aperçu caméra : occupe la moitié haute, comme sur l'écran de référence */
+  .preview-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-top: 56px;
+    overflow: hidden;
+    background: #000;
+  }
+  video, canvas.snap {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: scaleX(-1); /* miroir pour la caméra avant */
+  }
+  .preview-wrap.no-mirror video { transform: none; }
+  .msg {
+    position: absolute; inset: 0; display: none;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 24px; color: var(--txt-dim); font-size: 15px;
+  }
+  .msg.show { display: flex; }
+
+  /* Barre du haut */
+  .top {
+    position: absolute; top: env(safe-area-inset-top, 0px); left: 0; right: 0;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px;
+    z-index: 5;
+  }
+  .round-btn {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,.25);
+    background: rgba(0,0,0,.35);
+    color: #fff; font-size: 22px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .sound-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 999px;
+    border: 1.5px solid rgba(255,255,255,.25);
+    background: rgba(0,0,0,.35);
+    font-size: 15px; font-weight: 600; color: #fff;
+    cursor: pointer; white-space: nowrap;
+  }
+
+  /* Colonne d'icônes à droite */
+  .side {
+    position: absolute; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 120px);
+    display: flex; flex-direction: column; gap: 18px;
+    z-index: 5;
+  }
+  .side button {
+    width: 46px; height: 46px; border-radius: 50%;
+    border: none; background: var(--glass);
+    color: #fff; font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .side button.on { background: var(--accent); color: #111; }
+
+  /* Sélecteur de mode */
+  .modes {
+    display: flex; justify-content: center; align-items: center; gap: 22px;
+    height: 46px; margin-top: 12px;
+    font-size: 15px; font-weight: 700; color: var(--txt-dim);
+  }
+  .modes span { cursor: pointer; padding: 8px 14px; border-radius: 999px; }
+  .modes span.active {
+    background: linear-gradient(135deg, #ffe08a, var(--accent));
+    color: #111;
+  }
+
+  /* Zone du bouton déclencheur */
+  .controls {
+    position: relative;
+    height: 150px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gallery {
+    position: absolute; left: 36px;
+    width: 60px; height: 60px; border-radius: 14px;
+    border: 2px solid #fff; background: #111;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; cursor: pointer; overflow: hidden;
+  }
+  .gallery img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .shutter {
+    width: 84px; height: 84px; border-radius: 50%;
+    border: 4px solid var(--accent);
+    background: transparent;
+    padding: 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .shutter .inner {
+    width: 68px; height: 68px; border-radius: 50%;
+    background: #fff; border: 4px solid #000;
+    transition: transform .15s;
+  }
+  .shutter:active .inner { transform: scale(.9); }
+  .shutter.recording .inner { border-radius: 14px; width: 34px; height: 34px; background: #ff3b30; }
+
+  /* Onglets du bas */
+  .tabs {
+    height: 56px; display: flex; justify-content: center; align-items: center; gap: 36px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    font-size: 15px; font-weight: 700; color: var(--txt-dim);
+  }
+  .tabs span { cursor: pointer; padding-bottom: 6px; }
+  .tabs span.active { color: #fff; border-bottom: 3px solid var(--accent); }
+
+  /* Photo prise : aperçu avant fermeture */
+  .toast {
+    position: absolute; bottom: 220px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,.75); color: #fff; padding: 10px 16px;
+    border-radius: 12px; font-size: 14px; display: none; z-index: 9;
+  }
+  .toast.show { display: block; }
+</style>
+</head>
+<body>
+<div class="cam">
+
+  <div class="preview-wrap" id="previewWrap">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas class="snap" id="snap" style="display:none"></canvas>
+    <div class="msg" id="msg">Autorise l'accès à la caméra pour utiliser AFRO LIVE.</div>
+
+    <div class="top">
+      <button class="round-btn" id="closeBtn" aria-label="Fermer">&#10005;</button>
+      <button class="sound-pill" id="soundBtn">&#9835; Ajouter un son</button>
+      <span style="width:42px"></span>
+    </div>
+
+    <div class="side">
+      <button id="flipBtn" aria-label="Retourner la caméra">&#8635;</button>
+      <button id="flashBtn" aria-label="Flash">&#9889;</button>
+      <button id="timerBtn" aria-label="Minuteur">&#9201;</button>
+      <button id="gridBtn" aria-label="Grille">&#9638;</button>
+      <button id="effectBtn" aria-label="Effets">&#10022;</button>
+      <button id="textBtn" aria-label="Texte">&#8220;</button>
+      <button id="moreBtn" aria-label="Plus">&#8964;</button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <div class="modes" id="modes">
+    <span data-mode="15">15 s</span>
+    <span data-mode="60">60 s</span>
+    <span data-mode="180">3 min</span>
+    <span data-mode="photo" class="active">PHOTO</span>
+  </div>
+
+  <div class="controls">
+    <div class="gallery" id="galleryBtn" aria-label="Galerie">
+      <span>&#9635;</span>
+      <img id="lastShot" alt="">
+    </div>
+    <button class="shutter" id="shutter" aria-label="Capturer"><span class="inner"></span></button>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <span class="active">CAMÉRA</span>
+    <span>CRÉER</span>
+    <span>LIVE</span>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  var video = document.getElementById('video');
+  var canvas = document.getElementById('snap');
+  var msg = document.getElementById('msg');
+  var toast = document.getElementById('toast');
+  var previewWrap = document.getElementById('previewWrap');
+  var shutter = document.getElementById('shutter');
+  var lastShot = document.getElementById('lastShot');
+  var stream = null;
+  var facing = 'user';
+  var mode = 'photo';
+  var recorder = null;
+  var chunks = [];
+
+  function showToast(text) {
+    toast.textContent = text;
+    toast.classList.add('show');
+    setTimeout(function () { toast.classList.remove('show'); }, 1800);
+  }
+
+  // Démarre la caméra. Ne rien utiliser en dehors d'une fonction async ici.
+  async function startCamera() {
+    if (stream) {
+      stream.getTracks().forEach(function (t) { t.stop(); });
+      stream = null;
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facing, width: { ideal: 1080 }, height: { ideal: 1920 } },
+        audio: mode !== 'photo'
+      });
+      video.srcObject = stream;
+      previewWrap.classList.toggle('no-mirror', facing !== 'user');
+      msg.classList.remove('show');
+    } catch (err) {
+      msg.classList.add('show');
+      msg.textContent = 'Caméra indisponible. Vérifie les autorisations de ton navigateur.';
+      console.error(err);
+    }
+  }
+
+  // Bouton retourner
+  document.getElementById('flipBtn').addEventListener('click', function () {
+    facing = facing === 'user' ? 'environment' : 'user';
+    startCamera();
+  });
+
+  // Sélecteur de mode
+  document.querySelectorAll('#modes span').forEach(function (el) {
+    el.addEventListener('click', function () {
+      document.querySelectorAll('#modes span').forEach(function (s) { s.classList.remove('active'); });
+      el.classList.add('active');
+      mode = el.getAttribute('data-mode');
+      shutter.classList.remove('recording');
+      startCamera();
+    });
+  });
+
+  // Onglets du bas
+  document.querySelectorAll('#tabs span').forEach(function (el) {
+    el.addEventListener('click', function () {
+      document.querySelectorAll('#tabs span').forEach(function (s) { s.classList.remove('active'); });
+      el.classList.add('active');
+    });
+  });
+
+  // Capture photo
+  function takePhoto() {
+    if (!video.videoWidth) { showToast('Caméra pas encore prête'); return; }
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    var ctx = canvas.getContext('2d');
+    if (facing === 'user') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(function (blob) {
+      if (!blob) return;
+      var url = URL.createObjectURL(blob);
+      lastShot.src = url;
+      lastShot.style.display = 'block';
+      showToast('Photo enregistrée');
+    }, 'image/jpeg', 0.92);
+  }
+
+  // Enregistrement vidéo
+  function startVideo(maxSeconds) {
+    if (!stream) return;
+    chunks = [];
+    recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
+    recorder.onstop = function () {
+      var blob = new Blob(chunks, { type: 'video/webm' });
+      lastShot.src = URL.createObjectURL(blob);
+      lastShot.style.display = 'block';
+      showToast('Vidéo enregistrée');
+    };
+    recorder.start();
+    shutter.classList.add('recording');
+    setTimeout(stopVideo, maxSeconds * 1000);
+  }
+
+  function stopVideo() {
+    if (recorder && recorder.state !== 'inactive') recorder.stop();
+    recorder = null;
+    shutter.classList.remove('recording');
+  }
+
+  shutter.addEventListener('click', function () {
+    if (mode === 'photo') {
+      takePhoto();
+    } else if (recorder) {
+      stopVideo();
+    } else {
+      startVideo(Number(mode));
+    }
+  });
+
+  // Boutons sans fonction pour l'instant
+  ['flashBtn', 'timerBtn', 'gridBtn', 'effectBtn', 'textBtn', 'moreBtn', 'soundBtn'].forEach(function (id) {
+    document.getElementById(id).addEventListener('click', function () {
+      showToast('Bientôt disponible');
+    });
+  });
+
+  document.getElementById('closeBtn').addEventListener('click', function () {
+    if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+    showToast('Fermé');
+  });
+
+  document.getElementById('galleryBtn').addEventListener('click', function () {
+    if (lastShot.src) window.open(lastShot.src, '_blank');
+  });
+
+  startCamera();
+})();
+</script>
+</body>
+</html>
