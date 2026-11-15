@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
-<meta name="afro-build" content="20261114-1">
+<meta name="afro-build" content="20261115-2">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AFRO LIVE</title>
@@ -1264,8 +1264,28 @@ body.booting>header{visibility:hidden}
      <button class="soft" onclick="installApp()"><i class="ti ti-download" aria-hidden="true"></i> Ajouter à l'écran d'accueil</button>
      <button class="soft" onclick="showPage('subscriptions')">Mes abonnements</button>
      <button class="soft" onclick="showPage('application')">Devenir créateur</button>
+     <button class="soft" onclick="showPage('diagnostics')"><i class="ti ti-activity" aria-hidden="true"></i> Diagnostic AFRO LIVE</button>
      <button class="soft hidden" id="backCreatorBtn" onclick="setViewMode('creator')">Espace créateur</button>
      <button class="danger" id="logoutProfile">Déconnexion</button>
+    </div>
+   </div>
+  </div>
+
+  <div id="diagnosticsPage" class="hidden">
+   <div class="pf-top">
+    <button class="pf-icon" type="button" onclick="showPage('profile')" aria-label="Retour au profil"><i class="ti ti-arrow-left"></i></button>
+    <span class="pf-title">Diagnostic AFRO LIVE</span>
+    <button class="pf-icon" type="button" onclick="refreshAfroDiagnostics()" aria-label="Actualiser"><i class="ti ti-refresh"></i></button>
+   </div>
+   <div class="card">
+    <p class="small">Vérifie l’état de l’application et consulte les dernières erreurs détectées sur cet appareil.</p>
+    <div id="afroDiagSummary" class="notice" style="white-space:pre-wrap;line-height:1.6"></div>
+    <h3>Journal des événements</h3>
+    <pre id="afroDiagFullText" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:42vh;overflow:auto;background:#101012;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:12px;line-height:1.55">Aucun événement enregistré.</pre>
+    <div class="card-actions">
+     <button type="button" onclick="refreshAfroDiagnostics()"><i class="ti ti-refresh" aria-hidden="true"></i> Actualiser</button>
+     <button type="button" class="soft" onclick="copyAfroDiagnostic()"><i class="ti ti-copy" aria-hidden="true"></i> Copier le rapport</button>
+     <button type="button" class="soft" onclick="clearAfroDiagnostic()"><i class="ti ti-trash" aria-hidden="true"></i> Effacer le journal</button>
     </div>
    </div>
   </div>
@@ -1788,20 +1808,47 @@ function message(text,success=false){
 }
 const afroDiagnostic=[];
 function afroDiag(stage,detail=""){
- const time=new Date().toLocaleTimeString();
- const safe=String(detail||"").replace(/[^\s@]+@[^\s@]+\.[^\s@]+/g,"[email masqué]").slice(0,240);
+ const time=new Date().toLocaleTimeString("fr-FR");
+ const safe=String(detail||"").replace(/[\\w.+-]+@[\\w.-]+\\.[A-Za-z]{2,}/g,"[email masqué]").slice(0,320);
  afroDiagnostic.push(time+" — "+stage+(safe?" : "+safe:""));
- if(afroDiagnostic.length>12)afroDiagnostic.shift();
+ if(afroDiagnostic.length>40)afroDiagnostic.shift();
  const panel=$("afroDiagPanel"),box=$("afroDiagText");
- if(panel&&box){box.textContent=afroDiagnostic.join("\n");panel.classList.remove("hidden")}
+ if(panel&&box){box.textContent=afroDiagnostic.slice(-12).join("\n");panel.classList.remove("hidden")}
+ const full=$("afroDiagFullText");
+ if(full)full.textContent=afroDiagnostic.join("\n")||"Aucun événement enregistré.";
+}
+function afroDiagBuildReport(){
+ const version=document.querySelector('meta[name="afro-build"]')?.content||"inconnue";
+ const session=typeof currentUser!=="undefined"&&currentUser?.id?"Connectée":"Non connectée";
+ const profile=typeof currentProfile!=="undefined"&&currentProfile?"Chargé":"Non chargé";
+ return ["AFRO LIVE — rapport de diagnostic","Version : "+version,"Adresse : "+location.origin,"Internet : "+(navigator.onLine?"En ligne":"Hors ligne"),"Session : "+session,"Profil : "+profile,"Navigateur : "+navigator.userAgent,"Service worker : "+("serviceWorker" in navigator?"Disponible":"Non disponible"),"","Événements :",...(afroDiagnostic.length?afroDiagnostic:["Aucune erreur enregistrée."])].join("\n");
+}
+function refreshAfroDiagnostics(){
+ const summary=$("afroDiagSummary"),full=$("afroDiagFullText");
+ if(!summary||!full)return;
+ const version=document.querySelector('meta[name="afro-build"]')?.content||"inconnue";
+ const session=typeof currentUser!=="undefined"&&currentUser?.id?"Connectée":"Non connectée";
+ const profile=typeof currentProfile!=="undefined"&&currentProfile?"Chargé":"Non chargé";
+ summary.textContent="Version : "+version+"\nInternet : "+(navigator.onLine?"En ligne":"Hors ligne")+"\nSession : "+session+"\nProfil : "+profile+"\nNavigateur : "+( /iPhone|iPad|iPod/.test(navigator.userAgent)?"Apple iOS":/Android/.test(navigator.userAgent)?"Android":"Autre navigateur");
+ full.textContent=afroDiagnostic.join("\n")||"Aucun événement enregistré pour le moment.";
+}
+function clearAfroDiagnostic(){
+ afroDiagnostic.length=0;
+ afroDiag("Journal effacé","Le suivi reprend à partir de maintenant.");
+ refreshAfroDiagnostics();
 }
 async function copyAfroDiagnostic(){
- const report=["AFRO LIVE diagnostic","Version: "+(document.querySelector('meta[name="afro-build"]')?.content||"inconnue"),"URL: "+location.origin,"En ligne: "+navigator.onLine,...afroDiagnostic].join("\n");
- try{await navigator.clipboard.writeText(report);message("Diagnostic copié. Tu peux le coller ici.",true)}
- catch{prompt("Copie ce diagnostic :",report)}
+ const report=afroDiagBuildReport();
+ try{await navigator.clipboard.writeText(report);message("Rapport copié. Tu peux me le coller ici.",true)}
+ catch{prompt("Copie ce rapport de diagnostic :",report)}
 }
-window.addEventListener("error",e=>afroDiag("Erreur JavaScript",e.message||"Erreur inconnue"));
+window.addEventListener("error",e=>{
+ const source=e.filename?e.filename.split("?")[0].split("/").slice(-2).join("/"):"source inconnue";
+ afroDiag("Erreur JavaScript",(e.message||"Erreur inconnue")+" · "+source+(e.lineno?":"+e.lineno:"")+(e.colno?":"+e.colno:""));
+});
 window.addEventListener("unhandledrejection",e=>afroDiag("Erreur asynchrone",e.reason?.message||String(e.reason||"Erreur inconnue")));
+window.addEventListener("online",()=>afroDiag("Réseau","Connexion Internet rétablie."));
+window.addEventListener("offline",()=>afroDiag("Réseau","Appareil hors ligne."));
 function authMessage(text){$("authMessage").textContent=text;$("authMessage").classList.remove("hidden");afroDiag("Message affiché",text)}
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function safeHttpUrl(value){try{const u=new URL(value);return["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}}
@@ -2163,7 +2210,7 @@ function showPage(page){
  $("spectator").classList.remove("hidden");
  $("creator").classList.add("hidden");
  $("admin").classList.add("hidden");
- const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",subscriptions:"subscriptionsPage",application:"applicationPage",notifs:"notifsPage",search:"searchPage",trends:"trendsPage"};
+ const pages={discover:"discoverPage",creators:"creatorsPage",lives:"livesPage",follows:"followsPage",subscriptions:"subscriptionsPage",application:"applicationPage",diagnostics:"diagnosticsPage",notifs:"notifsPage",search:"searchPage",trends:"trendsPage"};
  if(!pages[page])return;
  Object.values(pages).forEach(id=>$(id).classList.add("hidden"));
  $(pages[page]).classList.remove("hidden");
@@ -2183,6 +2230,7 @@ function showPage(page){
  if(page==="notifs"){if(window.afroLoadMessagesPage)window.afroLoadMessagesPage();else loadNotifications();}
  if(page==="search")focusSearch();
  if(page==="trends")loadTrendsPage();
+ if(page==="diagnostics")refreshAfroDiagnostics();
 }
 
 function openMenuSheet(){
