@@ -1905,9 +1905,9 @@ async function installApp(){
 if("serviceWorker" in navigator){
  let afroSwRegistration=null,afroUpdateCheckBusy=false;
  navigator.serviceWorker.addEventListener("controllerchange",()=>{
-  if(sessionStorage.getItem("afro-sw-reloaded")==="1")return;
-  sessionStorage.setItem("afro-sw-reloaded","1");
-  window.location.reload();
+  // Ne recharge jamais la page pendant une connexion ou une saisie.
+  // Le nouveau service worker prendra le contrôle sans interrompre la session.
+  console.info("AFRO LIVE : nouveau service worker actif, rechargement différé.");
  });
  async function afroCheckAppUpdate(){
   if(afroUpdateCheckBusy||!navigator.onLine)return;
@@ -1921,7 +1921,6 @@ if("serviceWorker" in navigator){
   finally{afroUpdateCheckBusy=false}
  }
  window.addEventListener("load",()=>{
-  setTimeout(()=>sessionStorage.removeItem("afro-sw-reloaded"),4000);
   afroCheckAppUpdate();
  });
  window.addEventListener("pageshow",afroCheckAppUpdate);
