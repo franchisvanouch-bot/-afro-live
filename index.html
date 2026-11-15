@@ -1966,7 +1966,10 @@ async function signUp(){
  if(!$("signupAge").checked)return authMessage("Tu dois avoir 18 ans ou plus pour utiliser AFRO LIVE.");
  if(!name||!username||!email||password.length<6)return authMessage("Remplis tous les champs. Le mot de passe doit contenir au moins 6 caractères.");
  if(!/^[a-z0-9_]{3,30}$/.test(username))return authMessage("Le nom d'utilisateur doit contenir 3 à 30 caractères : lettres, chiffres ou _.");
- const {data,error}=await db.auth.signUp({email,password,options:{data:{display_name:name,username}}});
+ const {data,error}=await db.auth.signUp({email,password,options:{
+  data:{display_name:name,username},
+  emailRedirectTo:window.location.origin+"/"
+ }});
  if(error)return authMessage(error.message);
  if(!data.session)authMessage("Compte créé. Vérifie ton e-mail pour confirmer ton inscription, puis connecte-toi.");
  else{authMessage("Compte créé avec succès.");await loadAccount()}
@@ -5186,6 +5189,10 @@ db.auth.getSession().then(async ({data})=>{
  hideAppSplash();
 }).catch(hideAppSplash);
 db.auth.onAuthStateChange((event,session)=>{
+ if(session&&["INITIAL_SESSION","SIGNED_IN","TOKEN_REFRESHED"].includes(event)&&!currentUser){
+  // Laisse Supabase terminer son callback avant les requêtes du profil.
+  setTimeout(()=>{if(!currentUser)loadAccount(session)},0);
+ }
  if(!session&&currentUser){
   stopAllPreviews();
   if(liveRoom){const r=liveRoom;liveRoom=null;r.disconnect().catch(()=>{})}
