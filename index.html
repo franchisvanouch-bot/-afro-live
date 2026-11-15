@@ -1793,10 +1793,10 @@ function afroDiag(stage,detail=""){
  afroDiagnostic.push(time+" — "+stage+(safe?" : "+safe:""));
  if(afroDiagnostic.length>12)afroDiagnostic.shift();
  const panel=$("afroDiagPanel"),box=$("afroDiagText");
- if(panel&&box){box.textContent=afroDiagnostic.join("\\n");panel.classList.remove("hidden")}
+ if(panel&&box){box.textContent=afroDiagnostic.join("\n");panel.classList.remove("hidden")}
 }
 async function copyAfroDiagnostic(){
- const report=["AFRO LIVE diagnostic","Version: "+(document.querySelector('meta[name="afro-build"]')?.content||"inconnue"),"URL: "+location.origin,"En ligne: "+navigator.onLine,...afroDiagnostic].join("\\n");
+ const report=["AFRO LIVE diagnostic","Version: "+(document.querySelector('meta[name="afro-build"]')?.content||"inconnue"),"URL: "+location.origin,"En ligne: "+navigator.onLine,...afroDiagnostic].join("\n");
  try{await navigator.clipboard.writeText(report);message("Diagnostic copié. Tu peux le coller ici.",true)}
  catch{prompt("Copie ce diagnostic :",report)}
 }
@@ -1995,6 +1995,7 @@ async function signUp(){
  else{authMessage("Compte créé avec succès.");await loadAccount()}
 }
 async function signIn(){
+ afroDiag("Clic sur Se connecter");
  const email=$("loginEmail").value.trim().toLowerCase(),password=$("loginPassword").value;
  const btn=$("login");
  if(!email||!password)return authMessage("Entre ton adresse e-mail complète et ton mot de passe.");
@@ -2005,13 +2006,17 @@ async function signIn(){
  if(btn){btn.disabled=true;btn.dataset.oldText=btn.textContent;btn.textContent="Connexion en cours...";}
  $("authMessage").classList.add("hidden");
  try{
+  afroDiag("Demande envoyée à Supabase");
   const {data,error}=await db.auth.signInWithPassword({email,password});
-  if(error){authMessage(error.message==="Invalid login credentials"?"E-mail ou mot de passe incorrect. Vérifie tes identifiants.":error.message);return;}
+  if(error){afroDiag("Supabase a refusé la connexion",error.message);authMessage(error.message==="Invalid login credentials"?"E-mail ou mot de passe incorrect. Vérifie tes identifiants.":error.message);return;}
   if(!data?.session){afroDiag("Aucune session reçue");authMessage("La connexion n'a pas créé de session. Vérifie ton e-mail si une confirmation est demandée.");return;}
+  afroDiag("Session reçue", "identifiant utilisateur présent");
   const loaded=await loadAccount(data.session);
+  if(loaded)afroDiag("Profil chargé avec succès");
   if(!loaded)authMessage("Connexion effectuée, mais le profil n'a pas pu s'ouvrir. Réessaie.");
  }catch(error){
   console.error("AFRO LIVE sign-in error:",error);
+  afroDiag("Exception pendant la connexion",error?.message||String(error));
   authMessage("Erreur de connexion réseau : "+(error?.message||"Impossible de joindre le serveur. Vérifie Internet et réessaie."));
  }finally{
   if(btn){btn.disabled=false;btn.textContent=btn.dataset.oldText||"Se connecter";delete btn.dataset.oldText;}
@@ -2035,6 +2040,7 @@ function resetSession(){
  $("navigation").className="pills";$("navigation").innerHTML="";
 }
 async function loadAccount(sessionOverride=null){
+ afroDiag("Chargement du profil commencé");
  if(accountLoadPromise)return accountLoadPromise;
  accountLoading=true;
  accountLoadPromise=(async()=>{
@@ -2046,10 +2052,13 @@ async function loadAccount(sessionOverride=null){
     session=data?.session;
    }
    const user=session?.user;
-   if(!user)throw new Error("Aucune session active. Reconnecte-toi.");\n    afroDiag("Session utilisateur confirmée");
+   if(!user)throw new Error("Aucune session active. Reconnecte-toi.");
+    afroDiag("Session utilisateur confirmée");
    const {data:profile,error}=await db.from("profiles")
     .select("id,username,display_name,role,bio,avatar_url").eq("id",user.id).maybeSingle();
-   if(error)throw new Error("Impossible de charger ton profil : "+error.message);\n    afroDiag("Lecture du profil terminée",profile?"profil trouvé":"profil absent");
+   if(error)throw new Error("Impossible de charger ton profil : "+error.message);
+   afroDiag("Lecture du profil terminée",profile?"profil trouvé":"profil absent");
+    afroDiag("Lecture du profil terminée",profile?"profil trouvé":"profil absent");
    if(!profile)throw new Error("Ton profil n'est pas encore disponible. Réessaie dans quelques instants.");
    currentUser=user;currentProfile=profile;
    $("auth").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");
@@ -2058,6 +2067,7 @@ async function loadAccount(sessionOverride=null){
    return true;
   }catch(error){
    console.error("AFRO LIVE account loading error:",error);
+   afroDiag("Échec du chargement du profil",error?.message||String(error));
    authMessage(error?.message||"Impossible de charger ton compte. Réessaie.");
    return false;
   }
@@ -5203,12 +5213,16 @@ function hideAppSplash(){
  const splash=$("appSplash");
  if(splash)splash.remove();
 }
-db.auth.getSession().then(async ({data})=>{
+afroDiag("Démarrage de l’application");
+db.auth.getSession().then(async ({data,error})=>{
+ if(error)afroDiag("Lecture de session échouée",error.message);
+ else afroDiag("Lecture de session terminée",data?.session?"session existante":"aucune session");
  if(data?.session)await loadAccount();
  else if(pendingDeepLink)await openDeepLink();
  hideAppSplash();
-}).catch(hideAppSplash);
+}).catch(error=>{afroDiag("Erreur au démarrage",error?.message||String(error));authMessage("Le démarrage a rencontré une erreur. Copie le diagnostic ci-dessous.");hideAppSplash()});
 db.auth.onAuthStateChange((event,session)=>{
+ afroDiag("Événement Supabase",event+" · session "+(session?"présente":"absente"));
  if(session&&["INITIAL_SESSION","SIGNED_IN","TOKEN_REFRESHED"].includes(event)&&!currentUser){
   // Laisse Supabase terminer son callback avant les requêtes du profil.
   setTimeout(()=>{if(!currentUser)loadAccount(session)},0);
