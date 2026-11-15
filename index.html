@@ -614,6 +614,17 @@ button:focus-visible{outline:2px solid var(--af-gold);outline-offset:3px}
 .cs-shutter.video{background:linear-gradient(135deg,#ff315b,#e91e50)!important}
 .cs-tabs{background:rgba(5,5,5,.94);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,.1)}
 .cs-tabs button.active{box-shadow:inset 0 -2px 0 var(--af-gold)!important}
+
+/* Outils caméra : icônes seules par défaut, libellés sur demande */
+.cs-side{gap:clamp(10px,1.7vh,16px)!important}
+.cs-side button:not(.cs-tools-toggle){width:44px;height:44px;justify-content:center;gap:0;padding:7px!important;border-radius:50%!important;background:rgba(0,0,0,.34)!important}
+.cs-side button:not(.cs-tools-toggle) span{display:none}
+.cs-side button:not(.cs-tools-toggle) i{font-size:27px}
+.cs-page.cs-tools-expanded .cs-side button:not(.cs-tools-toggle){width:auto;height:40px;justify-content:flex-end;gap:9px;padding:7px 11px!important;border-radius:12px!important}
+.cs-page.cs-tools-expanded .cs-side button:not(.cs-tools-toggle) span{display:inline}
+.cs-side .cs-tools-toggle{width:40px;height:34px;justify-content:center;padding:2px!important;border-radius:999px;background:rgba(0,0,0,.28)!important}
+.cs-side .cs-tools-toggle i{font-size:25px;transition:transform .2s ease}
+.cs-page.cs-tools-expanded .cs-side .cs-tools-toggle i{transform:rotate(180deg)}
 .lv{background:#000}
 .lv-stage{background:#000;isolation:isolate}
 .lv-stage .live-video{object-fit:cover!important}
@@ -1510,6 +1521,7 @@ body.booting>header{visibility:hidden}
    <button type="button" onclick="csCycleFilter()"><span id="csFilterLabel">Retouche · Normal</span><i class="ti ti-sparkles"></i></button>
    <button type="button" onclick="csTogglePrompter()"><span>Téléprompteur</span><i class="ti ti-blockquote"></i></button>
    <button type="button" onclick="csCycleFit()"><span id="csFitLabel">Cadrage · entier</span><i class="ti ti-arrows-diagonal-minimize-2"></i></button>
+   <button type="button" class="cs-tools-toggle" id="csToolsToggle" onclick="csToggleTools()" aria-label="Afficher les noms des outils" aria-expanded="false"><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
   </div>
   <div id="csGrid" class="cs-grid-ov hidden"></div>
   <div id="csPrompter" class="cs-prompter hidden"><div id="csPrompterText"></div></div>
@@ -4749,6 +4761,12 @@ function csApplyVideoStyle(){
 }
 function csCycleFilter(){csFilterIdx=(csFilterIdx+1)%CS_FILTERS.length;$("csFilterLabel").textContent="Retouche · "+CS_FILTER_NAMES[csFilterIdx];csApplyVideoStyle()}
 function csCycleFit(){csFitIdx=(csFitIdx+1)%CS_FITS.length;$("csFitLabel").textContent="Cadrage · "+(csFitIdx===0?"rempli":"entier");csApplyVideoStyle()}
+ function csToggleTools(){
+  const page=$("csPageCamera"),btn=$("csToolsToggle");
+  const expanded=page.classList.toggle("cs-tools-expanded");
+  btn.setAttribute("aria-expanded",String(expanded));
+  btn.setAttribute("aria-label",expanded?"Masquer les noms des outils":"Afficher les noms des outils");
+ }
 function csToggleGrid(){csGridOn=!csGridOn;$("csGrid").classList.toggle("hidden",!csGridOn)}
 function csCycleTimer(){const a=[0,3,10];csTimerSec=a[(a.indexOf(csTimerSec)+1)%a.length];$("csTimerLabel").textContent="Minuterie · "+(csTimerSec?csTimerSec+" s":"off")}
 function csTogglePrompter(){
