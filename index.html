@@ -2965,6 +2965,12 @@ async function openProfile(id){
   return;
  }
  const list=(posts||[]).map(x=>({...x,username:p.username,creator_id:id}));
+ const {data:highlightRows}=await db.from("story_highlights").select("id,title,sort_order,created_at").eq("creator_id",id).order("sort_order",{ascending:true}).order("created_at",{ascending:true});
+ let highlightItems=[];
+ if(highlightRows?.length){
+  const {data:items}=await db.from("story_highlight_items").select("id,highlight_id,kind,media_path,caption,original_created_at,created_at,sort_order").in("highlight_id",highlightRows.map(h=>h.id)).order("sort_order",{ascending:true}).order("created_at",{ascending:true});
+  highlightItems=items||[];
+ }
  let likesCount=0;
  if(list.length){
   const {count}=await db.from("post_likes").select("id",{count:"exact",head:true}).in("post_id",list.map(x=>x.id));
@@ -3015,6 +3021,7 @@ async function openProfile(id){
   </section>
   <div class="ig-actions" id="pfActions"></div>
   <div class="ig-pay" id="pfPay"></div>
+  <section class="ig-highlights" id="pfHighlights" aria-label="Stories à la une"></section>
   <nav class="ig-tabs" aria-label="Publications du profil">
    <button class="ig-tab active" type="button" data-ptab="all" aria-label="Publications"><i class="ti ti-layout-grid"></i></button>
    <button class="ig-tab" type="button" data-ptab="video" aria-label="Vidéos"><i class="ti ti-player-play"></i></button>
@@ -3023,6 +3030,15 @@ async function openProfile(id){
   <div class="tiles ig-grid" id="pfTiles">${list.length?list.map((x,i)=>
    `<button class="tile" type="button" data-kind="${x.kind}" onclick="openFeedFrom('profile',${i})" aria-label="Ouvrir ${x.kind==="video"?"la vidéo":"la photo"}">${profileThumb(x)}${x.kind==="video"?'<span class="tile-icon"><i class="ti ti-player-play"></i></span>':""}</button>`
   ).join(""):`<p class="empty pf-empty" style="grid-column:1/-1">${isMe?"Tu n'as encore rien publié. Appuie sur + pour commencer.":"Aucune publication."}</p>`}</div>`;
+ const highlightsBox=$("pfHighlights");
+ const groupedHighlights=(highlightRows||[]).map(h=>({...h,items:highlightItems.filter(x=>x.highlight_id===h.id)})).filter(h=>h.items.length);
+ if(highlightsBox){
+  highlightsBox.innerHTML=groupedHighlights.map(h=>{
+   const cover=escapeHTML(mediaUrl(h.items[0].media_path));
+   return `<button class="ig-highlight" type="button" onclick="openHighlightViewer('${h.id}')"><span class="ig-highlight-cover"><img src="${cover}" alt="" loading="lazy"></span><span>${escapeHTML(h.title)}</span></button>`;
+  }).join("");
+  highlightsBox.hidden=!groupedHighlights.length;
+ }
  const actions=$("pfActions");
  const mk=(cls,html,fn)=>{
   const b=document.createElement("button");
@@ -4707,8 +4723,58 @@ async function loadMyStatuses(){
   <div class="row-item">
    <div class="row-thumb">${thumbHTML(s)}</div>
    <div class="row-text">${escapeHTML(s.caption||"Sans légende")}<br><span class="small">Publié le ${new Date(s.created_at).toLocaleString("fr-FR")}</span></div>
+   <button class="soft" onclick="saveStatusToHighlight('${s.id}')">À la une</button>
    <button class="danger" onclick="deleteStatus('${s.id}','${s.media_path}')">Supprimer</button>
   </div>`).join("");
+}
+async function saveStatusToHighlight(statusId){
+ if(currentProfile?.role!=="creator")return message("Réservé aux créateurs.");
+ const {data:status,error:statusError}=await db.from("statuses").select("id,kind,media_path,caption,created_at").eq("id",statusId).eq("creator_id",currentUser.id).gt("expires_at",new Date().toISOString()).maybeSingle();
+ if(statusError||!status)return message("Ce statut n'est plus disponible.");
+ const title=(prompt("Nom de la story à la une (ex. Voyage, Musique, Moments) :")||"").trim().slice(0,30);
+ if(!title)return;
+ let collection=null;
+ const {data:existing,error:findError}=await db.from("story_highlights").select("id").eq("creator_id",currentUser.id).eq("title",title).limit(1).maybeSingle();
+ if(findError)return message("Impossible de vérifier les stories à la une : "+findError.message);
+ collection=existing;
+ let createdCollection=false;
+ if(!collection){
+  const {data:created,error:createError}=await db.from("story_highlights").insert({creator_id:currentUser.id,title}).select("id").single();
+  if(createError)return message("Création impossible : "+createError.message);
+  collection=created;createdCollection=true;
+ }
+ message("Conservation de la story...");
+ let copiedPath=null;
+ try{
+  const {data:blob,error:downloadError}=await db.storage.from("creator-media").download(status.media_path);
+  if(downloadError||!blob)throw new Error(downloadError?.message||"Média introuvable.");
+  const ext=(status.media_path.split(".").pop()||(status.kind==="video"?"mp4":"jpg")).replace(/[^a-z0-9]/gi,"").slice(0,8);
+  copiedPath=`${currentUser.id}/highlights/${crypto.randomUUID()}.${ext}`;
+  const {error:uploadError}=await db.storage.from("creator-media").upload(copiedPath,blob,{contentType:blob.type||(status.kind==="video"?"video/mp4":"image/jpeg")});
+  if(uploadError)throw uploadError;
+  const {error:insertError}=await db.from("story_highlight_items").insert({highlight_id:collection.id,creator_id:currentUser.id,kind:status.kind,media_path:copiedPath,caption:status.caption,original_created_at:status.created_at});
+  if(insertError)throw insertError;
+  message("Story ajoutée à la une. Elle restera sur ton profil après 24 h.",true);
+  await loadMyStatuses();
+  if(!$("publicProfile").classList.contains("hidden"))await openProfile(currentUser.id);
+ }catch(error){
+  if(copiedPath)await db.storage.from("creator-media").remove([copiedPath]);
+  if(createdCollection)await db.from("story_highlights").delete().eq("id",collection.id).eq("creator_id",currentUser.id);
+  message("Impossible d'ajouter la story : "+(error.message||error));
+ }
+}
+async function openHighlightViewer(highlightId){
+ const {data:collection,error}=await db.from("story_highlights").select("id,creator_id,title").eq("id",highlightId).maybeSingle();
+ if(error||!collection)return message("Cette story à la une n'est plus disponible.");
+ const [{data:items,error:itemsError},{data:profile}]=await Promise.all([
+  db.from("story_highlight_items").select("id,kind,media_path,caption,original_created_at,created_at").eq("highlight_id",highlightId).order("sort_order",{ascending:true}).order("created_at",{ascending:true}),
+  db.from("profiles").select("id,username,display_name,avatar_url,is_verified").eq("id",collection.creator_id).maybeSingle()
+ ]);
+ if(itemsError||!items?.length)return message("Cette story à la une ne contient aucun média.");
+ const owner=profile||{id:collection.creator_id,username:"créateur"};
+ sv={group:{profile:owner,items:items.map(item=>({...item,created_at:item.original_created_at||item.created_at}))},index:0,timer:null};
+ $("statusViewer").classList.remove("hidden");
+ showStatusItem();
 }
 async function deleteStatus(id,path){
  if(!confirm("Supprimer ce statut ?"))return;
@@ -5198,6 +5264,17 @@ body:has(#publicProfile:not(.hidden)) #publicProfile{
 </style>
 <script src="/social.js?v=20261113-messaging-v3-dm-route"></script>
 <script src="/messaging.js?v=20261114-v9"></script>
+<style id="afro-story-highlights">
+.ig-highlights{display:flex;gap:15px;overflow-x:auto;padding:12px 16px 14px;scrollbar-width:none}
+.ig-highlights::-webkit-scrollbar{display:none}
+.ig-highlights[hidden]{display:none!important}
+.ig-highlight{flex:0 0 68px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0;background:none;color:#eee;font-size:11px;font-weight:600;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ig-highlight-cover{width:64px;height:64px;border-radius:50%;padding:3px;background:linear-gradient(45deg,#ff6a00,#e0262b,#ffb24d);display:block}
+.ig-highlight-cover img{width:100%;height:100%;border:3px solid #000;border-radius:50%;object-fit:cover;background:#222}
+#myStatusList .row-item{gap:7px;flex-wrap:wrap}
+#myStatusList .row-item .row-text{flex:1;min-width:100px}
+#myStatusList .row-item button{padding:8px 9px;font-size:12px}
+</style>
 </body>
 </html>
 
