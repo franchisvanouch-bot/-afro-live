@@ -1839,6 +1839,7 @@ async function copyAfroDiagnostic(){
 }
 let adminDiagnosticResolver=null;
 async function openAdminDiagnosticGate(user,profile){
+ hideAppSplash();
  $("auth").classList.add("hidden");
  $("app").classList.add("hidden");
  $("adminDiagnosticGate").classList.remove("hidden");
