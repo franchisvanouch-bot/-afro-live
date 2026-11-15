@@ -1176,9 +1176,11 @@ body.booting>header{visibility:hidden}
   <label style="display:flex;gap:10px;align-items:center;margin:4px 0 12px;color:#ddd"><input id="signupAge" type="checkbox"> J'ai 18 ans ou plus</label>
   <button id="signup" style="width:100%">Créer mon compte</button></div>
  <div class="card"><h2>J'ai déjà un compte</h2>
-  <label for="loginEmail">E-mail</label><input id="loginEmail" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="exemple@email.com">
-  <label for="loginPassword">Mot de passe</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Ton mot de passe">
-  <button id="login" style="width:100%">Se connecter</button></div>
+  <form id="loginForm" novalidate>
+   <label for="loginEmail">E-mail</label><input id="loginEmail" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="exemple@email.com" required>
+   <label for="loginPassword">Mot de passe</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Ton mot de passe" required>
+   <button id="login" type="submit" style="width:100%">Se connecter</button>
+  </form></div>
  <div id="authMessage" class="notice hidden"></div>
 </section>
 
@@ -4964,7 +4966,7 @@ async function reviewApplication(applicationId,userId,decision){
 
 /* ÉVÉNEMENTS */
 $("signup").addEventListener("click",signUp);
-$("login").addEventListener("click",signIn);
+$("loginForm").addEventListener("submit",event=>{event.preventDefault();signIn()});
 $("logout").addEventListener("click",signOut);
 $("logoutProfile").addEventListener("click",signOut);
 $("savePrice").addEventListener("click",savePrice);
