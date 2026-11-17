@@ -1438,9 +1438,14 @@ body.booting>header{visibility:hidden}
   <div class="admin-actions"><button id="refreshAdmin">Actualiser les demandes</button></div>
   <div id="adminApplications"><p>Chargement des candidatures...</p></div>
   <div class="card">
-   <h3><i class="ti ti-badge-check"></i> Vérification des créateurs</h3>
-   <p class="small">Attribue ou retire le badge officiel aux comptes créateurs.</p>
-   <div id="adminVerificationList"><p>Chargement des créateurs...</p></div>
+   <h3><i class="ti ti-inbox"></i> Demandes de certification</h3>
+   <p class="small">Examine les profils et les liens publics, puis accepte ou refuse chaque demande.</p>
+   <div id="adminVerificationRequests"><p>Chargement des demandes...</p></div>
+  </div>
+  <div class="card">
+   <h3><i class="ti ti-badge-check"></i> Gestion des badges vérifiés</h3>
+   <p class="small">Attribue ou retire le badge officiel à tous les comptes AFRO LIVE.</p>
+   <div id="adminVerificationList"><p>Chargement des comptes...</p></div>
   </div>
   <div class="card" id="afroGptCard">
    <h3><i class="ti ti-sparkles"></i> Assistant GPT AFRO LIVE</h3>
@@ -2283,6 +2288,7 @@ function renderView(){
   $("admin").classList.remove("hidden");
   loadAdminApplications();
   loadAdminVerification();
+  loadAdminVerificationRequests();
   return;
  }
  if(mode==="creator"){
@@ -3385,6 +3391,18 @@ function openProfileEditor(){
    <label class="profile-edit-field"><span>Bio</span><textarea id="editBio" maxlength="300" rows="3" placeholder="Présente-toi">${escapeHTML(bio)}</textarea></label>
    <button class="profile-edit-row" type="button" data-edit-extra="pronouns"><span><b>Pronoms</b><small>Ajouter des pronoms</small></span><i class="ti ti-chevron-right"></i></button>
    <button class="profile-edit-row" type="button" data-edit-extra="links"><span><b>Liens</b><small>Ajouter des liens</small></span><i class="ti ti-chevron-right"></i></button>
+   <div class="card" style="margin:18px 0;padding:16px">
+    <h3><i class="ti ti-badge-check"></i> Demander la certification</h3>
+    <p class="small">Explique pourquoi ton compte mérite le badge bleu et ajoute des liens publics qui permettent de vérifier ton activité. N'envoie pas de pièce d'identité ni de document sensible.</p>
+    <div id="myVerificationRequestStatus" class="small">Vérification de tes demandes...</div>
+    <form id="verificationRequestForm" onsubmit="submitVerificationRequest(event)">
+     <label for="verificationReason">Pourquoi souhaites-tu être certifié ?</label>
+     <textarea id="verificationReason" maxlength="1200" minlength="20" rows="4" required placeholder="Présente ton activité, ton travail ou ta notoriété..."></textarea>
+     <label for="verificationLinks">Liens publics (facultatif)</label>
+     <textarea id="verificationLinks" maxlength="1500" rows="2" placeholder="Site officiel, réseaux sociaux, articles..."></textarea>
+     <button id="submitVerificationRequest" type="submit" style="width:100%">Envoyer la demande</button>
+    </form>
+   </div>
    <div class="profile-edit-section">Autres</div>
    <button class="profile-edit-row" type="button" data-edit-extra="fundraiser"><span><b>Collecte de fonds</b><small>Ajouter une collecte de fonds</small></span><i class="ti ti-chevron-right"></i></button>
    <button class="profile-edit-row" type="button" data-edit-extra="ai"><span><b>AI Self</b><small>Ajoute un AI Self</small></span><i class="ti ti-chevron-right"></i></button>
@@ -3403,6 +3421,7 @@ function openProfileEditor(){
   const names={pronouns:"Les pronoms",links:"Les liens",fundraiser:"La collecte de fonds",ai:"AI Self"};
   message(names[b.dataset.editExtra]+" : cette option sera ajoutée dans une prochaine mise à jour.");
  });
+ loadMyVerificationRequest();
 }
 async function saveProfileEditor(){
  if(!currentUser||!currentProfile)return;
@@ -5117,24 +5136,83 @@ async function loadCreatorFollowers(){
 async function loadAdminVerification(){
  if(!currentUser||currentProfile?.role!=="admin")return;
  const box=$("adminVerificationList");if(!box)return;
- box.innerHTML="<p>Chargement des créateurs...</p>";
- const {data,error}=await db.from("profiles").select("id,username,display_name,avatar_url,is_verified").eq("role","creator").order("username").limit(500);
+ box.innerHTML="<p>Chargement des comptes...</p>";
+ const {data,error}=await db.from("profiles").select("id,username,display_name,avatar_url,role,is_verified").order("username").limit(500);
  if(error){box.innerHTML='<p class="notice">Chargement impossible : '+escapeHTML(error.message)+'</p>';return}
- if(!data?.length){box.innerHTML="<p class='empty'>Aucun créateur à vérifier.</p>";return}
+ if(!data?.length){box.innerHTML="<p class='empty'>Aucun compte trouvé.</p>";return}
  box.innerHTML=data.map(p=>`<div class="af-verify-row">
-  <div class="af-verify-person">${avatarHTML(p)}<div><b>${escapeHTML(p.display_name||p.username)}</b><small>@${escapeHTML(p.username)}</small></div></div>
-  <button type="button" class="${p.is_verified?"soft":"primary"}" onclick="toggleCreatorVerification('${p.id}',${p.is_verified?"false":"true"})">${p.is_verified?"Retirer le badge":"Vérifier"}</button>
+  <div class="af-verify-person">${avatarHTML(p)}<div><b>${escapeHTML(p.display_name||p.username)}</b><small>@${escapeHTML(p.username)} · ${escapeHTML(p.role)}</small></div></div>
+  <button type="button" class="${p.is_verified?"soft":"primary"}" onclick="toggleCreatorVerification('${p.id}',${p.is_verified?"false":"true"})">${p.is_verified?"Retirer le badge":"Certifier"}</button>
  </div>`).join("");
 }
 async function toggleCreatorVerification(userId,verified){
  if(!currentUser||currentProfile?.role!=="admin")return message("Action réservée à l'administrateur.");
  if(typeof verified!=="boolean")return;
  const label=verified?"attribuer le badge vérifié":"retirer le badge vérifié";
- if(!confirm("Confirmer : "+label+" pour ce créateur ?"))return;
- const {data,error}=await db.from("profiles").update({is_verified:verified}).eq("id",userId).eq("role","creator").select("id").maybeSingle();
- if(error||!data)return message("Modification refusée : "+(error?.message||"créateur introuvable"));
+ if(!confirm("Confirmer : "+label+" pour ce compte ?"))return;
+ const {data,error}=await db.from("profiles").update({is_verified:verified}).eq("id",userId).select("id").maybeSingle();
+ if(error||!data)return message("Modification refusée : "+(error?.message||"compte introuvable"));
  message(verified?"Badge vérifié attribué.":"Badge vérifié retiré.",true);
  await loadAdminVerification();
+}
+async function loadMyVerificationRequest(){
+ if(!currentUser)return;
+ const status=$("myVerificationRequestStatus"),form=$("verificationRequestForm"),button=$("submitVerificationRequest");
+ if(!status||!form||!button)return;
+ const {data,error}=await db.from("verification_requests").select("status,admin_note,created_at").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
+ if(error){status.textContent="Impossible de charger tes demandes : "+error.message;return}
+ if(!data){status.textContent="Aucune demande envoyée pour le moment.";return}
+ if(data.status==="pending"){status.textContent="⏳ Ta demande est en attente d'examen.";button.disabled=true;button.textContent="Demande en attente";}
+ else if(data.status==="approved"){status.textContent="✅ Ta demande a été acceptée. Ton badge est attribué.";button.disabled=true;button.textContent="Demande acceptée";}
+ else{status.textContent="❌ Ta dernière demande a été refusée."+(data.admin_note?" Motif : "+data.admin_note:"")+" Tu peux envoyer une nouvelle demande.";button.disabled=false;}
+}
+async function submitVerificationRequest(event){
+ event.preventDefault();
+ if(!currentUser)return message("Connecte-toi pour envoyer une demande.");
+ const reason=$("verificationReason").value.trim(),links=$("verificationLinks").value.trim();
+ if(reason.length<20)return message("Explique ta demande en au moins 20 caractères.");
+ const button=$("submitVerificationRequest");button.disabled=true;
+ const {error}=await db.from("verification_requests").insert({user_id:currentUser.id,reason,public_links:links,status:"pending"});
+ if(error){button.disabled=false;return message("Envoi impossible : "+error.message)}
+ message("Ta demande de certification a été envoyée.",true);
+ await loadMyVerificationRequest();
+}
+async function loadAdminVerificationRequests(){
+ if(!currentUser||currentProfile?.role!=="admin")return;
+ const box=$("adminVerificationRequests");if(!box)return;
+ box.innerHTML="<p>Chargement des demandes...</p>";
+ const {data,error}=await db.from("verification_requests").select("id,user_id,reason,public_links,status,admin_note,created_at").order("created_at",{ascending:false}).limit(300);
+ if(error){box.innerHTML='<p class="notice">Demandes indisponibles : '+escapeHTML(error.message)+'</p>';return}
+ if(!data?.length){box.innerHTML="<p class='empty'>Aucune demande de certification pour le moment.</p>";return}
+ const ids=[...new Set(data.map(r=>r.user_id))];
+ const {data:profiles,error:pe}=await db.from("profiles").select("id,username,display_name,avatar_url,role,is_verified").in("id",ids);
+ if(pe){box.innerHTML='<p class="notice">Profils indisponibles : '+escapeHTML(pe.message)+'</p>';return}
+ const byId={};(profiles||[]).forEach(p=>byId[p.id]=p);
+ box.innerHTML=data.map(r=>{
+  const p=byId[r.user_id]||{};
+  const pending=r.status==="pending";
+  return `<article class="card" style="margin:10px 0;padding:14px">
+   <div class="af-verify-person">${avatarHTML(p)}<div><b>${escapeHTML(p.display_name||p.username||"Compte inconnu")}</b><small>@${escapeHTML(p.username||"inconnu")} · ${escapeHTML(p.role||"")}</small></div></div>
+   <p><b>Motif :</b> ${escapeHTML(r.reason)}</p>
+   ${r.public_links?'<p><b>Liens publics :</b><br>'+escapeHTML(r.public_links).replace(/\n/g,"<br>")+'</p>':""}
+   <p class="small">Reçue le ${new Date(r.created_at).toLocaleString("fr-FR")} · ${pending?"En attente":r.status==="approved"?"Acceptée":"Refusée"}</p>
+   ${pending?`<div class="admin-actions"><button type="button" onclick="reviewVerificationRequest('${r.id}','${r.user_id}','approved')">Accepter et certifier</button><button type="button" class="soft" onclick="reviewVerificationRequest('${r.id}','${r.user_id}','rejected')">Refuser</button></div>`:(r.admin_note?'<p class="small">Note : '+escapeHTML(r.admin_note)+'</p>':"")}
+  </article>`;
+ }).join("");
+}
+async function reviewVerificationRequest(requestId,userId,status){
+ if(!currentUser||currentProfile?.role!=="admin")return message("Action réservée à l'administrateur.");
+ if(!["approved","rejected"].includes(status))return;
+ const action=status==="approved"?"accepter et certifier ce compte":"refuser cette demande";
+ if(!confirm("Confirmer : "+action+" ?"))return;
+ if(status==="approved"){
+  const {data:profile,error:profileError}=await db.from("profiles").update({is_verified:true}).eq("id",userId).select("id").maybeSingle();
+  if(profileError||!profile)return message("Impossible d'attribuer le badge : "+(profileError?.message||"profil introuvable"));
+ }
+ const {error}=await db.from("verification_requests").update({status,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq("id",requestId).eq("status","pending");
+ if(error)return message("Impossible d'enregistrer la décision : "+error.message);
+ message(status==="approved"?"Demande acceptée et badge attribué.":"Demande refusée.",true);
+ await Promise.all([loadAdminVerificationRequests(),loadAdminVerification()]);
 }
 
 async function loadAdminApplications(){
