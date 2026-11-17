@@ -5159,6 +5159,7 @@ async function loadMyVerificationRequest(){
  if(!currentUser)return;
  const status=$("myVerificationRequestStatus"),form=$("verificationRequestForm"),button=$("submitVerificationRequest");
  if(!status||!form||!button)return;
+ if(currentProfile?.is_verified){status.textContent="✅ Ton compte possède déjà le badge officiel AFRO LIVE.";button.disabled=true;button.textContent="Compte déjà certifié";return}
  const {data,error}=await db.from("verification_requests").select("status,admin_note,created_at").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
  if(error){status.textContent="Impossible de charger tes demandes : "+error.message;return}
  if(!data){status.textContent="Aucune demande envoyée pour le moment.";return}
