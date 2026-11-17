@@ -2781,7 +2781,7 @@ function vitemHTML(p){
   ${p.kind==="video"?`<div class="vplayback" data-playback><button class="vplay-toggle" type="button" data-action="playpause" aria-label="Pause"><i class="ti ti-player-pause-filled" aria-hidden="true"></i></button><input class="vseek" type="range" min="0" max="100" step="0.1" value="0" aria-label="Position de la vidéo"></div>`:""}
   <div class="vmeta">
    ${p.is_repost?`<div class="v-repost-note"><i class="ti ti-repeat"></i> ${escapeHTML(p.reposted_by_name||"")} a republié</div>`:""}
-   <b>@${escapeHTML(p.username||"")}${p.is_verified?\x27 <span class="feed-verified" title="Compte certifié AFRO LIVE" aria-label="Compte certifié AFRO LIVE"><i class="ti ti-check"></i></span>\x27:""}</b>${live?' <span class="tag-live">EN DIRECT</span>':""}
+   <b>@${escapeHTML(p.username||"")}${p.is_verified?' <span class="feed-verified" title="Compte certifié AFRO LIVE" aria-label="Compte certifié AFRO LIVE"><i class="ti ti-check"></i></span>':""}</b>${live?' <span class="tag-live">EN DIRECT</span>':""}
    ${p.caption?`<p>${escapeHTML(p.caption)}</p>`:""}
   </div>
  </section>`;
