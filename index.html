@@ -1087,6 +1087,14 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 #liveViewer #lvStage{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
 #liveViewer #lvStage video.live-video{object-fit:cover!important}
  #liveViewer #lvStage video.live-guest-video,#creatorLiveStage video.live-guest-video{inset:auto!important;left:auto!important;right:14px!important;bottom:calc(96px + env(safe-area-inset-bottom))!important;width:min(34vw,150px)!important;height:min(26vh,190px)!important;max-width:38vw!important;max-height:26vh!important;object-fit:cover!important;z-index:8!important;border:2px solid #fff!important;border-radius:14px!important;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+/* AFRO LIVE — co-animation : deux vidéos de même taille */
+#liveViewer #lvStage.live-split-view video.live-video,#creatorLiveStage.live-split-view video.live-video{position:absolute!important;top:0!important;bottom:0!important;width:50%!important;height:100%!important;min-width:0!important;min-height:100%!important;max-width:50%!important;max-height:none!important;object-fit:cover!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+#liveViewer #lvStage.live-split-view video.live-video:not(.live-guest-video),#creatorLiveStage.live-split-view video.live-video:not(.live-guest-video){left:0!important;right:auto!important;inset:0 auto 0 0!important}
+#liveViewer #lvStage.live-split-view video.live-guest-video,#creatorLiveStage.live-split-view video.live-guest-video{left:50%!important;right:auto!important;top:0!important;bottom:0!important;width:50%!important;height:100%!important;max-width:50%!important;max-height:none!important;z-index:2!important}
+.live-split-labels{position:absolute!important;inset:0!important;z-index:12!important;pointer-events:none!important}
+.live-split-name{position:absolute!important;bottom:calc(104px + env(safe-area-inset-bottom))!important;max-width:46%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;padding:6px 9px!important;border-radius:8px!important;background:rgba(0,0,0,.48)!important;color:#fff!important;font-size:12px!important;font-weight:800!important;text-shadow:0 1px 3px #000!important}
+.live-split-name.primary{left:10px!important}.live-split-name.guest{left:calc(50% + 10px)!important}
+
  #creatorLiveStage video.live-video{object-fit:cover}
  @media(orientation:landscape){#liveViewer .live-tools{padding-right:70px}#liveViewer .live-chat-messages{max-height:40dvh}}
 
@@ -3656,12 +3664,25 @@ function addLiveDiagnostic(status,message){
  if(lines[lines.length-1]!==line)lines.push(line);
  status.textContent=lines.slice(-12).join("\n");
 }
+function syncLiveSplitLayout(container){
+ if(!container)return;
+ const videos=[...container.querySelectorAll("video.live-video")].filter(v=>v.isConnected);
+ const split=videos.length>=2;container.classList.toggle("live-split-view",split);
+ let labels=container.querySelector(".live-split-labels");
+ if(!split){if(labels)labels.remove();return}
+ if(!labels){labels=document.createElement("div");labels.className="live-split-labels";container.appendChild(labels)}
+ labels.innerHTML="";
+ const primary=videos.find(v=>!v.classList.contains("live-guest-video"))||videos[0];
+ const guest=videos.find(v=>v.classList.contains("live-guest-video"))||videos[1];
+ [[primary,"primary"],[guest,"guest"]].forEach(([video,side])=>{const tag=document.createElement("span");tag.className="live-split-name "+side;tag.textContent=video.dataset.liveLabel||(side==="primary"?"Créateur":"Invité");labels.appendChild(tag)});
+}
 function attachLiveTrack(track,container,status=null,participant=null,primaryParticipantId=null){
  if(!track||!container)return;
  if(track.kind===LivekitClient.Track.Kind.Video){
   let video=track.attachedElements?.find(el=>el instanceof HTMLVideoElement);
   if(!video)video=track.attach();
   video.classList.add("live-video");
+  video.dataset.liveLabel=participant?.name||participant?.identity||"Participant";
   if(participant?.identity&&primaryParticipantId&&participant.identity!==primaryParticipantId)video.classList.add("live-guest-video");
   video.autoplay=true;video.playsInline=true;video.muted=true;
   video.setAttribute("muted","");video.setAttribute("playsinline","");video.setAttribute("autoplay","");
@@ -3679,6 +3700,7 @@ function attachLiveTrack(track,container,status=null,participant=null,primaryPar
   video.style.background="transparent";
   video.style.transform="translateZ(0)";
   if(video.parentElement!==container)container.prepend(video);
+  syncLiveSplitLayout(container);
   let renderReported=false;
   const report=()=>{
    if(video.videoWidth>0&&video.videoHeight>0){
@@ -4348,7 +4370,7 @@ async function joinLive(sessionId,knownCreatorId=null,asGuest=false){
    await enableLiveCamera(room);
    const localPub=[...room.localParticipant.videoTrackPublications.values()].find(p=>p.track);
    if(!localPub)throw new Error("La caméra du co-animateur n’a pas pu démarrer.");
-   const localVideo=localPub.track.attach();localVideo.classList.add("live-video","live-guest-video");localVideo.autoplay=true;localVideo.playsInline=true;localVideo.muted=true;localVideo.style.position="absolute";localVideo.style.inset="auto";localVideo.style.right="14px";localVideo.style.bottom="calc(96px + env(safe-area-inset-bottom))";localVideo.style.width="min(34vw,150px)";localVideo.style.height="min(26vh,190px)";localVideo.style.objectFit="cover";localVideo.style.zIndex="9";localVideo.style.border="2px solid #fff";localVideo.style.borderRadius="14px";stage.appendChild(localVideo);
+   const localVideo=localPub.track.attach();localVideo.classList.add("live-video","live-guest-video");localVideo.dataset.liveLabel=currentProfile?.display_name||currentProfile?.username||"Invité";localVideo.autoplay=true;localVideo.playsInline=true;localVideo.muted=true;localVideo.style.position="absolute";localVideo.style.inset="auto";localVideo.style.right="14px";localVideo.style.bottom="calc(96px + env(safe-area-inset-bottom))";localVideo.style.width="min(34vw,150px)";localVideo.style.height="min(26vh,190px)";localVideo.style.objectFit="cover";localVideo.style.zIndex="9";localVideo.style.border="2px solid #fff";localVideo.style.borderRadius="14px";stage.appendChild(localVideo);syncLiveSplitLayout(stage);
   }
   installLiveInterface(stage,room,asGuest?"guest":"spectator",liveInfo.creator_id);
   clearInterval(liveStatusPollTimer);
