@@ -1087,6 +1087,35 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 #liveViewer #lvStage{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
 #liveViewer #lvStage video.live-video{object-fit:cover!important}
  #liveViewer #lvStage video.live-guest-video,#creatorLiveStage video.live-guest-video{inset:auto!important;left:auto!important;right:14px!important;bottom:calc(96px + env(safe-area-inset-bottom))!important;width:min(34vw,150px)!important;height:min(26vh,190px)!important;max-width:38vw!important;max-height:26vh!important;object-fit:cover!important;z-index:8!important;border:2px solid #fff!important;border-radius:14px!important;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+/* AFRO LIVE — dispositions dynamiques pilotées par le créateur */
+#liveViewer #lvStage.live-layout-grid,#creatorLiveStage.live-layout-grid,
+#liveViewer #lvStage.live-layout-equal,#creatorLiveStage.live-layout-equal{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ grid-auto-rows:minmax(0,1fr)!important;gap:2px!important;align-content:stretch!important;
+}
+#liveViewer #lvStage.live-layout-grid video.live-video,#creatorLiveStage.live-layout-grid video.live-video,
+#liveViewer #lvStage.live-layout-equal video.live-video,#creatorLiveStage.live-layout-equal video.live-video{
+ position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+ width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
+ grid-column:auto!important;grid-row:auto!important;object-fit:cover!important;border:0!important;border-radius:0!important;z-index:1!important;
+}
+#liveViewer #lvStage.live-layout-focus,#creatorLiveStage.live-layout-focus{
+ display:grid!important;grid-template-columns:minmax(0,2fr) minmax(90px,1fr)!important;
+ grid-template-rows:repeat(3,minmax(0,1fr))!important;gap:3px!important;
+}
+#liveViewer #lvStage.live-layout-focus video.live-featured-video,#creatorLiveStage.live-layout-focus video.live-featured-video{
+ position:relative!important;inset:auto!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+ max-width:none!important;max-height:none!important;grid-column:1!important;grid-row:1 / span 3!important;object-fit:cover!important;z-index:1!important;
+}
+#liveViewer #lvStage.live-layout-focus video.live-secondary-video,#creatorLiveStage.live-layout-focus video.live-secondary-video{
+ position:relative!important;inset:auto!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+ max-width:none!important;max-height:none!important;grid-column:2!important;grid-row:auto!important;object-fit:cover!important;z-index:1!important;
+}
+.live-layout-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:7px 10px;position:absolute;top:calc(env(safe-area-inset-top) + 54px);left:10px;z-index:95;background:rgba(0,0,0,.58);border:1px solid #ffffff25;border-radius:12px;backdrop-filter:blur(10px)}
+.live-layout-controls label{font-size:11px;color:#fff;font-weight:700}
+.live-layout-controls select{max-width:145px;min-height:32px;padding:4px 7px;border-radius:8px;background:#222;color:#fff;border:1px solid #ffffff35;font-size:12px}
+.live-split-labels{z-index:15!important}
+.live-split-name{left:auto!important;right:auto!important;bottom:10px!important;max-width:45%!important}
 /* AFRO LIVE — co-animation : deux vidéos de même taille */
 #liveViewer #lvStage.live-split-view video.live-video,#creatorLiveStage.live-split-view video.live-video{position:absolute!important;top:0!important;bottom:0!important;width:50%!important;height:100%!important;min-width:0!important;min-height:100%!important;max-width:50%!important;max-height:none!important;object-fit:cover!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 #liveViewer #lvStage.live-split-view video.live-video:not(.live-guest-video),#creatorLiveStage.live-split-view video.live-video:not(.live-guest-video){left:0!important;right:auto!important;inset:0 auto 0 0!important}
@@ -3667,14 +3696,40 @@ function addLiveDiagnostic(status,message){
 function syncLiveSplitLayout(container){
  if(!container)return;
  const videos=[...container.querySelectorAll("video.live-video")].filter(v=>v.isConnected);
- const split=videos.length>=2;container.classList.toggle("live-split-view",split);
+ const layout=container.dataset.liveLayout||"auto";
+ const featuredLabel=container.dataset.liveFeatured||"";
+ const featured=videos.find(v=>v.dataset.liveLabel===featuredLabel)||videos.find(v=>!v.classList.contains("live-guest-video"))||videos[0];
+ container.dataset.liveCount=String(videos.length);
+ container.classList.toggle("live-split-view",videos.length>=2);
+ container.classList.toggle("live-layout-focus",layout==="focus"&&videos.length>1);
+ container.classList.toggle("live-layout-grid",layout==="grid"||layout==="auto"||videos.length>2);
+ container.classList.toggle("live-layout-equal",layout==="equal");
+ videos.forEach((v,i)=>{
+  v.classList.toggle("live-featured-video",layout==="focus"&&v===featured);
+  v.classList.toggle("live-secondary-video",layout==="focus"&&v!==featured);
+  v.dataset.liveOrder=String(i);
+ });
  let labels=container.querySelector(".live-split-labels");
- if(!split){if(labels)labels.remove();return}
+ if(videos.length<2){if(labels)labels.remove();return}
  if(!labels){labels=document.createElement("div");labels.className="live-split-labels";container.appendChild(labels)}
  labels.innerHTML="";
- const primary=videos.find(v=>!v.classList.contains("live-guest-video"))||videos[0];
- const guest=videos.find(v=>v.classList.contains("live-guest-video"))||videos[1];
- [[primary,"primary"],[guest,"guest"]].forEach(([video,side])=>{const tag=document.createElement("span");tag.className="live-split-name "+side;tag.textContent=video.dataset.liveLabel||(side==="primary"?"Créateur":"Invité");labels.appendChild(tag)});
+ videos.forEach((video,i)=>{
+  const tag=document.createElement("span");tag.className="live-split-name";
+  tag.style.left="";tag.style.right="";tag.style.top="";tag.style.bottom="";
+  tag.textContent=video.dataset.liveLabel||(i===0?"Créateur":"Invité");
+  tag.style.setProperty("--live-tile-index",String(i));
+  labels.appendChild(tag);
+ });
+}
+function setLiveLayout(container,layout,featuredLabel="",broadcastRoom=null){
+ if(!container)return;
+ container.dataset.liveLayout=layout;
+ if(featuredLabel)container.dataset.liveFeatured=featuredLabel;
+ syncLiveSplitLayout(container);
+ if(broadcastRoom?.localParticipant){
+  const packet=new TextEncoder().encode(JSON.stringify({type:"afro_layout",layout,featured:featuredLabel}));
+  broadcastRoom.localParticipant.publishData(packet,{reliable:true}).catch(e=>console.warn("Disposition non transmise",e));
+ }
 }
 function attachLiveTrack(track,container,status=null,participant=null,primaryParticipantId=null){
  if(!track||!container)return;
@@ -4100,6 +4155,17 @@ function installLiveInterface(stage,room,mode,creatorId=null){
   const requestsButton=document.createElement("button");requestsButton.className="soft live-requests-toggle";requestsButton.type="button";requestsButton.textContent="Demandes";requestsButton.setAttribute("aria-label","Demandes de co-animation");
   requestsButton.addEventListener("click",()=>{requestsPanel.hidden=!requestsPanel.hidden;if(!requestsPanel.hidden)refreshLiveGuestRequests(requestsPanel,requestsButton,currentLiveSessionId)});
   bar.appendChild(requestsButton);
+   const layoutBox=document.createElement("div");layoutBox.className="live-layout-controls";
+   const layoutLabel=document.createElement("label");layoutLabel.textContent="Disposition";
+   const layoutSelect=document.createElement("select");layoutSelect.setAttribute("aria-label","Choisir la disposition du direct");
+   [["auto","Automatique"],["equal","Cases égales"],["grid","Grille"],["focus","Un grand + petits"]].forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;layoutSelect.appendChild(o)});
+   layoutSelect.value=$("creatorLiveStage").dataset.liveLayout||"auto";
+   const featuredSelect=document.createElement("select");featuredSelect.setAttribute("aria-label","Choisir la personne en grand écran");
+   const refreshFeatured=()=>{const current=featuredSelect.value;featuredSelect.innerHTML="";[...$("creatorLiveStage").querySelectorAll("video.live-video")].forEach((v,i)=>{const o=document.createElement("option");o.value=v.dataset.liveLabel||String(i);o.textContent=(v.dataset.liveLabel||("Participant "+(i+1))).slice(0,24);featuredSelect.appendChild(o)});if([...featuredSelect.options].some(o=>o.value===current))featuredSelect.value=current};
+   refreshFeatured();
+   layoutSelect.addEventListener("change",()=>setLiveLayout($("creatorLiveStage"),layoutSelect.value,featuredSelect.value,room));
+   featuredSelect.addEventListener("change",()=>setLiveLayout($("creatorLiveStage"),layoutSelect.value,featuredSelect.value,room));
+   layoutLabel.append(layoutSelect);layoutBox.append(layoutLabel,featuredSelect);tools.appendChild(layoutBox);
   const studio=document.createElement("button");studio.className="soft";studio.type="button";studio.setAttribute("aria-label","Ouvrir le Studio de diffusion");studio.innerHTML='<i class="ti ti-device-tv" aria-hidden="true"></i> Studio';studio.addEventListener("click",()=>window.open("studio.html?session_id="+encodeURIComponent(currentLiveSessionId),"_blank","noopener"));bar.appendChild(studio);
   const invite=document.createElement("button");invite.className="soft live-ic-invite";invite.type="button";invite.setAttribute("aria-label","Inviter");invite.innerHTML='<i class="ti ti-user-plus" aria-hidden="true"></i>';
   invite.addEventListener("click",()=>openInvitePanel(currentLiveSessionId));
@@ -4201,7 +4267,8 @@ function installLiveInterface(stage,room,mode,creatorId=null){
  room.on(LivekitClient.RoomEvent.DataReceived,(payload)=>{
   try{
    const data=JSON.parse(new TextDecoder().decode(payload));
-   if(data?.type==="afro_gift"){
+   if(data?.type==="afro_layout"&&mode!=="creator"){setLiveLayout(stage,String(data.layout||"auto"),String(data.featured||""));return;}
+    if(data?.type==="afro_gift"){
     showLiveGift(stage,String(data.code||""),String(data.name||"Spectateur").slice(0,35));
     playAfroGiftSound(data.code);
     return;
@@ -4483,6 +4550,7 @@ async function startCreatorLive(){
   liveRoom=room;currentLiveSessionId=sessionId;liveMode="creator";
   room.on(LivekitClient.RoomEvent.Disconnected,()=>{if(liveMode==="creator")$("creatorLiveStatus").textContent="Connexion au direct interrompue."});
   room.on(LivekitClient.RoomEvent.ParticipantConnected,updateLiveParticipantCount);
+   room.on(LivekitClient.RoomEvent.ParticipantConnected,()=>{const st=$("creatorLiveStage");setLiveLayout(st,st.dataset.liveLayout||"auto",st.dataset.liveFeatured||"",room)});
   room.on(LivekitClient.RoomEvent.ParticipantDisconnected,updateLiveParticipantCount);
   room.on(LivekitClient.RoomEvent.TrackSubscribed,(track,publication,participant)=>attachLiveTrack(track,$("creatorLiveStage"),null,participant,currentUser.id));
   room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>track.detach().forEach(el=>el.remove()));
