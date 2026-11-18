@@ -4203,12 +4203,7 @@ async function joinLive(sessionId,knownCreatorId=null,asGuest=false){
   room.on(LivekitClient.RoomEvent.TrackPublished,(publication,participant)=>{
    if(publication.kind===LivekitClient.Track.Kind.Video){diagnostic("Vidéo publiée par le créateur. Abonnement en cours…");publication.setSubscribed(true)}
   });
-  room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>{
-   if(track.kind===LivekitClient.Track.Kind.Video){
-    const currentVideo=stage.querySelector("video.live-video");
-    if(currentVideo){track.detach(currentVideo);currentVideo.srcObject=null}
-   }else{track.detach().forEach(el=>el.remove())}
-  });
+  room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>track.detach().forEach(el=>el.remove()));
   room.on(LivekitClient.RoomEvent.Disconnected,()=>{
    if(liveRoom===room){
     closeLiveViewer().then(()=>message("Le direct s'est terminé ou la connexion a été interrompue."));
