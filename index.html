@@ -3702,7 +3702,7 @@ function syncLiveSplitLayout(container){
  container.dataset.liveCount=String(videos.length);
  container.classList.toggle("live-split-view",videos.length>=2);
  container.classList.toggle("live-layout-focus",layout==="focus"&&videos.length>1);
- container.classList.toggle("live-layout-grid",layout==="grid"||layout==="grid3"||layout==="auto"||videos.length>2);
+ container.classList.toggle("live-layout-grid",videos.length>=2&&(layout==="grid"||layout==="grid3"||layout==="auto"||videos.length>2));
  const columns=layout==="grid3"?3:(layout==="grid"?2:(videos.length>=5?3:2));container.style.setProperty("--live-columns",String(columns));
  container.classList.toggle("live-layout-equal",layout==="equal");
  videos.forEach((v,i)=>{
