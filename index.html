@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
-<meta name="afro-build" content="20261117-3">
+<meta name="afro-build" content="20261118-1">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AFRO LIVE</title>
@@ -1096,6 +1096,8 @@ body.booting>header{visibility:hidden}
 #appSplash.off{display:none}
 .home-feed-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000}
 .home-feed-loading img{width:min(48vw,190px);max-height:120px;object-fit:contain;opacity:.96}
+
+.live-requests-panel{position:absolute;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:28;max-height:38vh;overflow:auto;padding:12px;border:1px solid rgba(255,255,255,.2);border-radius:14px;background:rgba(10,10,12,.88);backdrop-filter:blur(14px);color:#fff}.live-requests-panel[hidden]{display:none!important}.live-request-row{display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid #ffffff20}.live-request-row:last-child{border-bottom:0}.live-request-row>span{flex:1;min-width:0}.live-request-row b,.live-request-row small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.live-request-row small{color:#aaa;font-size:11px}.live-request-row button{padding:8px 10px;font-size:12px;white-space:nowrap}.live-requests-toggle,.live-request-join{font-size:12px!important;padding:8px 10px!important;white-space:nowrap}
 </style>
 <style id="afro-profile-final-button-fix">
 #publicProfile .ig-actions button.ig-subscriptions-entry,
@@ -3930,6 +3932,82 @@ function startLivePollUI(panel,mode){
  panel._pollTimer=setInterval(()=>refreshLivePollPanel(panel,mode),3000);
 }
 
+
+async function refreshLiveGuestRequests(panel,button,sessionId){
+ if(!currentUser||liveMode!=="creator"||currentLiveSessionId!==sessionId)return;
+ const {data:requests,error}=await db.from("live_guest_requests")
+  .select("id,requester_id,created_at").eq("session_id",sessionId)
+  .eq("creator_id",currentUser.id).eq("status","pending")
+  .order("created_at",{ascending:true}).limit(30);
+ if(error){console.warn("Demandes de co-animation non chargées :",error.message);return}
+ const rows=requests||[];
+ button.textContent=rows.length?"Demandes ("+rows.length+")":"Demandes";
+ button.setAttribute("aria-label",rows.length+" demande(s) de co-animation");
+ if(panel.hidden)return;
+ if(!rows.length){panel.innerHTML='<p class="small">Aucune demande en attente.</p>';return}
+ const ids=rows.map(x=>x.requester_id);
+ const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ panel.innerHTML=rows.map(r=>{
+  const p=map[r.requester_id]||{username:"Spectateur"};
+  return '<div class="live-request-row" data-live-request="'+escapeHTML(r.id)+'">'+
+   '<span><b>'+escapeHTML(p.display_name||p.username||"Spectateur")+'</b><small>@'+escapeHTML(p.username||"membre")+'</small></span>'+
+   '<button type="button" data-live-request-action="accept">Accepter</button>'+
+   '<button type="button" class="soft" data-live-request-action="decline">Refuser</button></div>';
+ }).join("");
+ panel.querySelectorAll("[data-live-request-action]").forEach(btn=>btn.addEventListener("click",async()=>{
+  const row=btn.closest("[data-live-request]");if(!row)return;
+  const action=btn.dataset.liveRequestAction;btn.disabled=true;
+  const {data:updated,error:updateError}=await db.from("live_guest_requests")
+   .update({status:action==="accept"?"accepted":"declined",responded_at:new Date().toISOString()})
+   .eq("id",row.dataset.liveRequest).eq("creator_id",currentUser.id).eq("status","pending")
+   .select("id").maybeSingle();
+  if(updateError||!updated){btn.disabled=false;message("Impossible de traiter cette demande : "+(updateError?.message||"demande déjà traitée."));return}
+  message(action==="accept"?"Demande acceptée. Le spectateur va rejoindre le direct.":"Demande refusée.",true);
+  await refreshLiveGuestRequests(panel,button,sessionId);
+ }));
+}
+async function requestToJoinLive(sessionId,creatorId,button,tools){
+ if(!currentUser||liveMode!=="spectator"||currentLiveSessionId!==sessionId||!liveRoom)
+  return message("Tu dois être dans ce direct pour demander à participer.");
+ button.disabled=true;button.textContent="Envoi…";
+ const {data:existing,error:readError}=await db.from("live_guest_requests")
+  .select("id,status").eq("session_id",sessionId).eq("requester_id",currentUser.id)
+  .in("status",["pending","accepted"]).maybeSingle();
+ if(readError){button.disabled=false;button.textContent="Demander à rejoindre";return message("Vérification impossible : "+readError.message)}
+ let request=existing;
+ if(!request){
+  const {data:created,error}=await db.from("live_guest_requests")
+   .insert({session_id:sessionId,creator_id:creatorId,requester_id:currentUser.id,status:"pending"})
+   .select("id,status").single();
+  if(error){button.disabled=false;button.textContent="Demander à rejoindre";return message("Demande non envoyée : "+error.message)}
+  request=created;
+ }
+ if(request.status==="accepted"){
+  message("Ta demande a déjà été acceptée. Connexion…",true);
+  await closeLiveViewer();await joinLive(sessionId,creatorId,true);return;
+ }
+ button.textContent="Demande envoyée ✓";
+ message("Demande envoyée au créateur. Attends sa réponse.",true);
+ if(tools._guestRequestTimer)clearInterval(tools._guestRequestTimer);
+ tools._guestRequestTimer=setInterval(async()=>{
+  if(liveMode!=="spectator"||currentLiveSessionId!==sessionId||!liveRoom){clearInterval(tools._guestRequestTimer);tools._guestRequestTimer=null;return}
+  const {data:state,error}=await db.from("live_guest_requests").select("status")
+   .eq("session_id",sessionId).eq("requester_id",currentUser.id)
+   .order("created_at",{ascending:false}).limit(1).maybeSingle();
+  if(error||!state)return;
+  if(state.status==="accepted"){
+   clearInterval(tools._guestRequestTimer);tools._guestRequestTimer=null;
+   message("Le créateur a accepté ! Activation de ta caméra et de ton micro…",true);
+   await closeLiveViewer();await joinLive(sessionId,creatorId,true);
+  }else if(state.status==="declined"){
+   clearInterval(tools._guestRequestTimer);tools._guestRequestTimer=null;
+   button.disabled=false;button.textContent="Demander à rejoindre";
+   message("Le créateur a refusé ta demande.");
+  }
+ },2500);
+}
+
 function installLiveInterface(stage,room,mode,creatorId=null){
  if(!stage||!room)return;
  const old=stage.querySelector(".live-overlay-tools");if(old)old.remove();
@@ -3937,6 +4015,7 @@ function installLiveInterface(stage,room,mode,creatorId=null){
  const tools=document.createElement("div");tools.className="live-overlay-tools";
  const bar=document.createElement("div");bar.className="live-tools";
  const count=document.createElement("span");count.className="count";
+ const requestsPanel=document.createElement("div");requestsPanel.className="live-requests-panel";requestsPanel.hidden=true;
 
  const full=document.createElement("button");full.className="soft live-ic-full";full.type="button";full.setAttribute("aria-label","Plein écran");full.innerHTML='<i class="ti ti-maximize" aria-hidden="true"></i>';
  full.addEventListener("click",()=>{
@@ -3947,6 +4026,9 @@ function installLiveInterface(stage,room,mode,creatorId=null){
  bar.appendChild(count);
 
  if(mode==="creator"){
+  const requestsButton=document.createElement("button");requestsButton.className="soft live-requests-toggle";requestsButton.type="button";requestsButton.textContent="Demandes";requestsButton.setAttribute("aria-label","Demandes de co-animation");
+  requestsButton.addEventListener("click",()=>{requestsPanel.hidden=!requestsPanel.hidden;if(!requestsPanel.hidden)refreshLiveGuestRequests(requestsPanel,requestsButton,currentLiveSessionId)});
+  bar.appendChild(requestsButton);
   const studio=document.createElement("button");studio.className="soft";studio.type="button";studio.setAttribute("aria-label","Ouvrir le Studio de diffusion");studio.innerHTML='<i class="ti ti-device-tv" aria-hidden="true"></i> Studio';studio.addEventListener("click",()=>window.open("studio.html?session_id="+encodeURIComponent(currentLiveSessionId),"_blank","noopener"));bar.appendChild(studio);
   const invite=document.createElement("button");invite.className="soft live-ic-invite";invite.type="button";invite.setAttribute("aria-label","Inviter");invite.innerHTML='<i class="ti ti-user-plus" aria-hidden="true"></i>';
   invite.addEventListener("click",()=>openInvitePanel(currentLiveSessionId));
@@ -3985,6 +4067,11 @@ function installLiveInterface(stage,room,mode,creatorId=null){
   bar.appendChild(end);
  }
  if(mode==="spectator"){
+  if(creatorId&&creatorId!==currentUser?.id){
+   const requestButton=document.createElement("button");requestButton.className="soft live-request-join";requestButton.type="button";requestButton.textContent="Demander à rejoindre";
+   requestButton.addEventListener("click",()=>requestToJoinLive(currentLiveSessionId,creatorId,requestButton,tools));
+   bar.appendChild(requestButton);
+  }
   const leave=document.createElement("button");leave.className="danger live-ic-leave";leave.type="button";leave.setAttribute("aria-label","Quitter le direct");leave.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';
   leave.addEventListener("click",leaveSpectatorLive);
   bar.appendChild(leave);
@@ -4014,8 +4101,13 @@ function installLiveInterface(stage,room,mode,creatorId=null){
  const send=document.createElement("button");send.type="submit";send.textContent="Envoyer";
  form.append(input,send);chat.append(title,list,form);
  const pollPanel=document.createElement("section");pollPanel.className="live-poll-panel";pollPanel.hidden=true;pollPanel.setAttribute("aria-live","polite");
- tools.append(bar,pollPanel,chat);stage.appendChild(tools);
+ tools.append(bar,pollPanel,requestsPanel,chat);stage.appendChild(tools);
  startLivePollUI(pollPanel,mode);
+ if(mode==="creator"){
+  const requestToggle=bar.querySelector(".live-requests-toggle");
+  refreshLiveGuestRequests(requestsPanel,requestToggle,currentLiveSessionId);
+  tools._guestRequestsTimer=setInterval(()=>refreshLiveGuestRequests(requestsPanel,requestToggle,currentLiveSessionId),2500);
+ }
  let controlsTimer=null;
  const wakeLiveControls=()=>{
   stage.classList.remove("controls-hidden");
@@ -4084,7 +4176,7 @@ function installLiveInterface(stage,room,mode,creatorId=null){
 function cleanLiveInterface(stage){
  if(!stage)return;
  stage.classList.remove("live-fullscreen");
- const overlay=stage.querySelector(".live-overlay-tools");if(overlay){const poll=overlay.querySelector(".live-poll-panel");if(poll?._pollTimer)clearInterval(poll._pollTimer);overlay.remove();}
+ const overlay=stage.querySelector(".live-overlay-tools");if(overlay){const poll=overlay.querySelector(".live-poll-panel");if(poll?._pollTimer)clearInterval(poll._pollTimer);if(overlay._guestRequestsTimer)clearInterval(overlay._guestRequestsTimer);if(overlay._guestRequestTimer)clearInterval(overlay._guestRequestTimer);overlay.remove();}
 }
 
 /* Retour de l'appli au premier plan : relancer la vidéo (évite l'écran noir) */
