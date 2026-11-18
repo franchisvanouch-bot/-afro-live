@@ -3695,28 +3695,31 @@ function addLiveDiagnostic(status,message){
 }
 function syncLiveSplitLayout(container){
  if(!container)return;
- const videos=[...container.querySelectorAll("video.live-video")].filter(v=>v.isConnected);
+ // Une vidéo sans image décodée ne doit jamais créer une case noire.
+ const videos=[...container.querySelectorAll("video.live-video")].filter(v=>
+  v.isConnected&&!v.ended&&v.readyState>=2&&v.videoWidth>0&&v.videoHeight>0
+ );
  const layout=container.dataset.liveLayout||"auto";
  const featuredLabel=container.dataset.liveFeatured||"";
  const featured=videos.find(v=>v.dataset.liveLabel===featuredLabel)||videos.find(v=>!v.classList.contains("live-guest-video"))||videos[0];
+ const hasGuests=videos.length>=2;
  container.dataset.liveCount=String(videos.length);
- container.classList.toggle("live-split-view",videos.length>=2);
- container.classList.toggle("live-layout-focus",layout==="focus"&&videos.length>1);
- container.classList.toggle("live-layout-grid",videos.length>=2&&(layout==="grid"||layout==="grid3"||layout==="auto"||videos.length>2));
+ container.classList.toggle("live-split-view",hasGuests&&layout==="auto");
+ container.classList.toggle("live-layout-focus",hasGuests&&layout==="focus");
+ container.classList.toggle("live-layout-grid",hasGuests&&(layout==="grid"||layout==="grid3"||layout==="auto"||videos.length>2));
  const columns=layout==="grid3"?3:(layout==="grid"?2:(videos.length>=5?3:2));container.style.setProperty("--live-columns",String(columns));
- container.classList.toggle("live-layout-equal",layout==="equal");
+ container.classList.toggle("live-layout-equal",hasGuests&&layout==="equal");
  videos.forEach((v,i)=>{
   v.classList.toggle("live-featured-video",layout==="focus"&&v===featured);
   v.classList.toggle("live-secondary-video",layout==="focus"&&v!==featured);
   v.dataset.liveOrder=String(i);
  });
  let labels=container.querySelector(".live-split-labels");
- if(videos.length<2){if(labels)labels.remove();return}
+ if(!hasGuests){if(labels)labels.remove();return}
  if(!labels){labels=document.createElement("div");labels.className="live-split-labels";container.appendChild(labels)}
  labels.innerHTML="";
  videos.forEach((video,i)=>{
   const tag=document.createElement("span");tag.className="live-split-name";
-  tag.style.left="";tag.style.right="";tag.style.top="";tag.style.bottom="";
   tag.textContent=video.dataset.liveLabel||(i===0?"Créateur":"Invité");
   tag.style.setProperty("--live-tile-index",String(i));
   labels.appendChild(tag);
@@ -3776,7 +3779,8 @@ function attachLiveTrack(track,container,status=null,participant=null,primaryPar
     addLiveDiagnostic(status,"Piste vidéo reçue, mais aucune image décodée pour le moment (readyState : "+video.readyState+").");
    }
   };
-  video.addEventListener("loadedmetadata",report);
+  video.addEventListener("loadedmetadata",()=>{report();syncLiveSplitLayout(container)});
+   video.addEventListener("playing",()=>syncLiveSplitLayout(container));
   video.addEventListener("playing",report);
   video.addEventListener("error",()=>{if(status)addLiveDiagnostic(status,"La vidéo est reçue, mais le navigateur signale une erreur de lecture.")});
   if(status)addLiveDiagnostic(status,"Vidéo reçue. Affichage plein écran en préparation…");
@@ -4562,7 +4566,7 @@ async function startCreatorLive(){
   await enableLiveCamera(room);
   const cameraPub=[...room.localParticipant.videoTrackPublications.values()].find(p=>p.track);
   if(!cameraPub)throw new Error("La caméra n'a pas pu démarrer.");
-  cameraPub.track.attach($("localLiveVideo"));
+  const creatorVideo=cameraPub.track.attach($("localLiveVideo"));creatorVideo.classList.add("live-video");creatorVideo.dataset.liveLabel=currentProfile?.display_name||currentProfile?.username||"Créateur";creatorVideo.addEventListener("loadedmetadata",()=>syncLiveSplitLayout($("creatorLiveStage")));creatorVideo.addEventListener("playing",()=>syncLiveSplitLayout($("creatorLiveStage")));
   const {data:updated,error:ue}=await db.from("live_sessions").update({status:"live",started_at:new Date().toISOString()}).eq("id",sessionId).eq("creator_id",currentUser.id).select("id").maybeSingle();
   if(ue||!updated)throw new Error(ue?.message||"Impossible de publier le direct.");
   activeLiveAccessMode=accessMode;
