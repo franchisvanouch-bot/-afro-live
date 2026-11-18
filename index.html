@@ -1086,7 +1086,9 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 #liveViewer.lv{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;overflow:hidden!important}
 #liveViewer #lvStage{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
 #liveViewer #lvStage video.live-video{object-fit:cover!important}
-@media(orientation:landscape){#liveViewer .live-tools{padding-right:70px}#liveViewer .live-chat-messages{max-height:40dvh}}
+ #liveViewer #lvStage video.live-guest-video,#creatorLiveStage video.live-guest-video{inset:auto!important;left:auto!important;right:14px!important;bottom:calc(96px + env(safe-area-inset-bottom))!important;width:min(34vw,150px)!important;height:min(26vh,190px)!important;max-width:38vw!important;max-height:26vh!important;object-fit:cover!important;z-index:8!important;border:2px solid #fff!important;border-radius:14px!important;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+ #creatorLiveStage video.live-video{object-fit:cover}
+ @media(orientation:landscape){#liveViewer .live-tools{padding-right:70px}#liveViewer .live-chat-messages{max-height:40dvh}}
 
 body.booting>header{visibility:hidden}
 #appSplash{position:fixed;inset:0;z-index:200000;background:#000;display:flex;align-items:center;justify-content:center}
@@ -3607,12 +3609,13 @@ function addLiveDiagnostic(status,message){
  if(lines[lines.length-1]!==line)lines.push(line);
  status.textContent=lines.slice(-12).join("\n");
 }
-function attachLiveTrack(track,container,status=null){
+function attachLiveTrack(track,container,status=null,participant=null,primaryParticipantId=null){
  if(!track||!container)return;
  if(track.kind===LivekitClient.Track.Kind.Video){
   let video=track.attachedElements?.find(el=>el instanceof HTMLVideoElement);
   if(!video)video=track.attach();
   video.classList.add("live-video");
+  if(participant?.identity&&primaryParticipantId&&participant.identity!==primaryParticipantId)video.classList.add("live-guest-video");
   video.autoplay=true;video.playsInline=true;video.muted=true;
   video.setAttribute("muted","");video.setAttribute("playsinline","");video.setAttribute("autoplay","");
   video.style.position="absolute";
@@ -4124,7 +4127,7 @@ async function showLiveSubscriptionOptions(creatorId,sessionId,status){
  status.appendChild(wrap);
 }
 let liveStatusPollTimer=null;
-async function joinLive(sessionId,knownCreatorId=null){
+async function joinLive(sessionId,knownCreatorId=null,asGuest=false){
  if(!currentUser)return message("Connecte-toi pour regarder ce direct.");
  if(liveRoom&&liveMode==="spectator"&&currentLiveSessionId===sessionId){$("liveViewer").classList.remove("hidden");return}
  if(liveRoom)await closeLiveViewer();
@@ -4153,12 +4156,13 @@ async function joinLive(sessionId,knownCreatorId=null){
    if(!sub){await showLiveSubscriptionOptions(liveInfo.creator_id,sessionId,status);return}
   }
   const credentials=await getLiveToken(sessionId);
+  if(asGuest&&credentials.participant_role!=="guest")throw new Error("Cette invitation ne permet pas de participer à ce direct.");
   room=createLiveRoom();
-  liveRoom=room;currentLiveSessionId=sessionId;liveMode="spectator";
+  liveRoom=room;currentLiveSessionId=sessionId;liveMode=asGuest?"guest":"spectator";
   room.on(LivekitClient.RoomEvent.ConnectionStateChanged,state=>diagnostic("État de connexion : "+String(state)));
   room.on(LivekitClient.RoomEvent.ParticipantConnected,participant=>diagnostic("Créateur connecté : "+(participant.name||participant.identity||"participant")+". Recherche de sa vidéo…"));
   room.on(LivekitClient.RoomEvent.TrackSubscribed,(track,publication,participant)=>{
-   if(track.kind===LivekitClient.Track.Kind.Video){diagnostic("Piste vidéo reçue. Préparation de l’image…");attachLiveTrack(track,stage,status)}else attachLiveTrack(track,stage,status);
+   if(track.kind===LivekitClient.Track.Kind.Video){diagnostic("Piste vidéo reçue. Préparation de l’image…");attachLiveTrack(track,stage,status,participant,liveInfo.creator_id)}else attachLiveTrack(track,stage,status,participant,liveInfo.creator_id);
   });
   room.on(LivekitClient.RoomEvent.TrackSubscriptionFailed,(trackSid,participant)=>diagnostic("Échec de réception de la piste vidéo ("+String(trackSid)+")."));
   room.on(LivekitClient.RoomEvent.TrackPublished,(publication,participant)=>{
@@ -4184,9 +4188,15 @@ async function joinLive(sessionId,knownCreatorId=null){
   for(const participant of participants)
    for(const publication of participant.trackPublications.values()){
     if(publication.kind===LivekitClient.Track.Kind.Video){diagnostic("Piste vidéo trouvée (abonnement : "+(publication.isSubscribed?"actif":"en cours")+").");if(!publication.isSubscribed)publication.setSubscribed(true)}
-    if(publication.track)attachLiveTrack(publication.track,stage,status);
+    if(publication.track)attachLiveTrack(publication.track,stage,status,participant,liveInfo.creator_id);
    }
-  installLiveInterface(stage,room,"spectator",liveInfo.creator_id);
+  if(asGuest){
+   await enableLiveCamera(room);
+   const localPub=[...room.localParticipant.videoTrackPublications.values()].find(p=>p.track);
+   if(!localPub)throw new Error("La caméra du co-animateur n’a pas pu démarrer.");
+   const localVideo=localPub.track.attach();localVideo.classList.add("live-video","live-guest-video");localVideo.autoplay=true;localVideo.playsInline=true;localVideo.muted=true;localVideo.style.position="absolute";localVideo.style.inset="auto";localVideo.style.right="14px";localVideo.style.bottom="calc(96px + env(safe-area-inset-bottom))";localVideo.style.width="min(34vw,150px)";localVideo.style.height="min(26vh,190px)";localVideo.style.objectFit="cover";localVideo.style.zIndex="9";localVideo.style.border="2px solid #fff";localVideo.style.borderRadius="14px";stage.appendChild(localVideo);
+  }
+  installLiveInterface(stage,room,asGuest?"guest":"spectator",liveInfo.creator_id);
   clearInterval(liveStatusPollTimer);
   liveStatusPollTimer=setInterval(async()=>{
    if(liveMode!=="spectator"||currentLiveSessionId!==sessionId){clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;return}
@@ -4207,6 +4217,9 @@ async function joinLive(sessionId,knownCreatorId=null){
 async function closeLiveViewer(){
  clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;
  const room=liveRoom;
+ if(liveMode==="guest"&&currentLiveSessionId&&currentUser){
+  await db.from("live_guest_invites").update({status:"ended",responded_at:new Date().toISOString()}).eq("session_id",currentLiveSessionId).eq("invited_user_id",currentUser.id).eq("status","accepted");
+ }
  try{const {error:studioStopError}=await db.functions.invoke("live-studio-egress",{body:{action:"stop_room",session_id:sessionId}});if(studioStopError)console.warn("Arrêt Egress non confirmé :",studioStopError.message)}catch(studioStopError){console.warn("Arrêt Egress non confirmé :",studioStopError)}
  liveRoom=null;currentLiveSessionId=null;liveMode=null;
  if(room)await room.disconnect().catch(()=>{});
@@ -4217,7 +4230,7 @@ async function closeLiveViewer(){
  if(currentUser&&!$("livesPage").classList.contains("hidden"))loadLives();
 }
 async function leaveSpectatorLive(){
- if(liveMode!=="spectator")return;
+ if(liveMode!=="spectator"&&liveMode!=="guest")return;
  await closeLiveViewer();
 }
 $("lvClose").addEventListener("click",()=>closeLiveViewer());
