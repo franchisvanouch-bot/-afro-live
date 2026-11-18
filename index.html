@@ -3756,12 +3756,12 @@ function addChatMessage(list,name,text,isMine=false){
 
 /* INVITATIONS DE DIRECT — envoi aux abonnés du créateur */
 async function openInvitePanel(sessionId=currentLiveSessionId){
- if(!currentUser||liveMode!=="creator"||!sessionId)return message("Tu dois être en direct pour inviter tes abonnés.");
+ if(!currentUser||liveMode!=="creator"||!sessionId)return message("Tu dois être en direct pour inviter un co-animateur.");
  const old=document.getElementById("afInviteBackdrop");if(old)old.remove();
  const backdrop=document.createElement("div");backdrop.id="afInviteBackdrop";backdrop.className="af-invite-backdrop";
  const panel=document.createElement("section");panel.className="af-invite-panel";panel.setAttribute("role","dialog");panel.setAttribute("aria-modal","true");
  const head=document.createElement("div");head.className="af-invite-head";
- const heading=document.createElement("h3");heading.textContent="Inviter des abonnés";
+ const heading=document.createElement("h3");heading.textContent="Inviter un co-animateur";
  const close=document.createElement("button");close.className="af-invite-close";close.type="button";close.textContent="×";close.setAttribute("aria-label","Fermer");close.onclick=()=>backdrop.remove();
  head.append(heading,close);
  const content=document.createElement("div");content.textContent="Chargement des abonnés…";
@@ -3771,10 +3771,10 @@ async function openInvitePanel(sessionId=currentLiveSessionId){
  if(error){content.textContent="Impossible de charger les abonnés : "+error.message;return}
  const ids=[...new Set((follows||[]).map(x=>x.spectator_id).filter(id=>id&&id!==currentUser.id))];
  if(!ids.length){content.textContent="Aucun abonné à inviter pour le moment.";return}
- const {data:profiles, error:profileError}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ const {data:profiles,error:profileError}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
  if(profileError){content.textContent="Impossible de charger les profils : "+profileError.message;return}
  content.replaceChildren();
- const intro=document.createElement("p");intro.className="small";intro.textContent="Envoie une invitation pour que tes abonnés puissent rejoindre ce direct.";content.append(intro);
+ const intro=document.createElement("p");intro.className="small";intro.textContent="La personne recevra une invitation. Si elle accepte, sa caméra et son micro pourront rejoindre ton direct.";content.append(intro);
  for(const id of ids){
   const p=(profiles||[]).find(x=>x.id===id)||{id,username:"Membre"};
   const row=document.createElement("div");row.className="af-invite-row";
@@ -3786,15 +3786,15 @@ async function openInvitePanel(sessionId=currentLiveSessionId){
   const send=document.createElement("button");send.className="af-invite-send";send.type="button";send.textContent="Inviter";
   send.addEventListener("click",async()=>{
    send.disabled=true;send.textContent="Envoi…";
-   const {error:sendError}=await db.from("notifications").insert({user_id:id,creator_id:currentUser.id,kind:"live",read:false,live_session_id:sessionId});
-   if(sendError){send.disabled=false;send.textContent="Réessayer";message("Invitation non envoyée : "+sendError.message);return}
-   send.textContent="Envoyé ✓";message("Invitation envoyée à "+(p.display_name||p.username||"cet abonné")+".",true);
+   const {error:inviteError}=await db.from("live_guest_invites").insert({session_id:sessionId,creator_id:currentUser.id,invited_user_id:id});
+   if(inviteError){send.disabled=false;send.textContent="Réessayer";message(inviteError.code==="23505"?"Un co-animateur est déjà invité ou présent sur ce direct.":"Invitation non envoyée : "+inviteError.message);return}
+   const {error:noticeError}=await db.from("notifications").insert({user_id:id,creator_id:currentUser.id,kind:"live",read:false,live_session_id:sessionId});
+   if(noticeError)console.warn("Invitation créée, notification secondaire non enregistrée :",noticeError.message);
+   send.textContent="Invité ✓";message("Invitation de co-animation envoyée à "+(p.display_name||p.username||"ce membre")+".",true);
   });
   row.append(name,send);content.append(row);
  }
 }
-
-
 /* SONDAGES EN DIRECT */
 function openLivePollComposer(){
  if(!currentUser||liveMode!=="creator"||!currentLiveSessionId)return message("Tu dois être en direct pour créer un sondage.");
