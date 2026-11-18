@@ -4376,7 +4376,8 @@ async function closeLiveViewer(){
   await db.from("live_guest_invites").update({status:"ended",responded_at:endedAt}).eq("session_id",currentLiveSessionId).eq("invited_user_id",currentUser.id).eq("status","accepted");
   await db.from("live_guest_requests").update({status:"ended",responded_at:endedAt}).eq("session_id",currentLiveSessionId).eq("requester_id",currentUser.id).eq("status","accepted");
  }
- try{const {error:studioStopError}=await db.functions.invoke("live-studio-egress",{body:{action:"stop_room",session_id:sessionId}});if(studioStopError)console.warn("Arrêt Egress non confirmé :",studioStopError.message)}catch(studioStopError){console.warn("Arrêt Egress non confirmé :",studioStopError)}
+ // Ne jamais arrêter l’Egress/la salle du créateur quand un spectateur ferme son lecteur.
+ // L’arrêt du direct appartient uniquement à endCreatorLive().
  liveRoom=null;currentLiveSessionId=null;liveMode=null;
  if(room)await room.disconnect().catch(()=>{});
  const stage=$("lvStage");
