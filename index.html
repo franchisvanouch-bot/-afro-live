@@ -136,7 +136,7 @@ body.feed-mode #status{position:fixed;left:12px;right:12px;top:calc(env(safe-are
 /* Notifications */
 .notif{display:flex;gap:12px;align-items:center;width:100%;background:var(--surface);color:var(--text);text-align:left;border-radius:14px;padding:12px;margin:8px 0;font-weight:400}
 .notif.unread{box-shadow:inset 3px 0 0 var(--red)}
-.notif-text{flex:1;font-size:14px;display:flex;flex-direction:column;gap:3px}
+.notif-text{flex:1;font-size:14px;display:flex;flex-direction:column;gap:3px}.guest-invite-actions{display:flex;gap:8px;margin-top:8px}.guest-invite-actions button{padding:7px 11px;font-size:12px;border-radius:9px}.guest-invite-actions button.soft{border:1px solid #444}
 
 /* Espace créateur */
 .c-top{display:flex;justify-content:space-between;align-items:center;margin:4px 0 14px}
@@ -4234,7 +4234,7 @@ async function joinLive(sessionId,knownCreatorId=null,asGuest=false){
   installLiveInterface(stage,room,asGuest?"guest":"spectator",liveInfo.creator_id);
   clearInterval(liveStatusPollTimer);
   liveStatusPollTimer=setInterval(async()=>{
-   if(liveMode!=="spectator"||currentLiveSessionId!==sessionId){clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;return}
+   if((liveMode!=="spectator"&&liveMode!=="guest")||currentLiveSessionId!==sessionId){clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;return}
    const {data:state,error:stateError}=await db.from("live_sessions").select("status").eq("id",sessionId).maybeSingle();
    if(!stateError&&(!state||state.status!=="live")){
     clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;
