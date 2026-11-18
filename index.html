@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
-<meta name="afro-build" content="20261118-1">
+<meta name="afro-build" content="20261118-2">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AFRO LIVE</title>
@@ -4340,7 +4340,9 @@ async function closeLiveViewer(){
  clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;
  const room=liveRoom;
  if(liveMode==="guest"&&currentLiveSessionId&&currentUser){
-  await db.from("live_guest_invites").update({status:"ended",responded_at:new Date().toISOString()}).eq("session_id",currentLiveSessionId).eq("invited_user_id",currentUser.id).eq("status","accepted");
+  const endedAt=new Date().toISOString();
+  await db.from("live_guest_invites").update({status:"ended",responded_at:endedAt}).eq("session_id",currentLiveSessionId).eq("invited_user_id",currentUser.id).eq("status","accepted");
+  await db.from("live_guest_requests").update({status:"ended",responded_at:endedAt}).eq("session_id",currentLiveSessionId).eq("requester_id",currentUser.id).eq("status","accepted");
  }
  try{const {error:studioStopError}=await db.functions.invoke("live-studio-egress",{body:{action:"stop_room",session_id:sessionId}});if(studioStopError)console.warn("Arrêt Egress non confirmé :",studioStopError.message)}catch(studioStopError){console.warn("Arrêt Egress non confirmé :",studioStopError)}
  liveRoom=null;currentLiveSessionId=null;liveMode=null;
@@ -4450,6 +4452,9 @@ async function stopCreatorLive(){
  const room=liveRoom;
  liveRoom=null;currentLiveSessionId=null;liveMode=null;
  if(room)await room.disconnect().catch(()=>{});
+ const endedAt=new Date().toISOString();
+ await db.from("live_guest_requests").update({status:"ended",responded_at:endedAt})
+  .eq("session_id",sessionId).eq("creator_id",currentUser.id).in("status",["pending","accepted"]);
  cleanLiveInterface($("creatorLiveStage"));
  liveCreatorIds.delete(currentUser.id);
  const {data,error}=await db.from("live_sessions").update({status:"ended",ended_at:new Date().toISOString()}).eq("id",sessionId).eq("creator_id",currentUser.id).select("id").maybeSingle();
