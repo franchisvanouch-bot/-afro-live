@@ -1090,7 +1090,7 @@ body.feed-mode #discoverPage:before{ text-decoration: none }
 /* AFRO LIVE — dispositions dynamiques pilotées par le créateur */
 #liveViewer #lvStage.live-layout-grid,#creatorLiveStage.live-layout-grid,
 #liveViewer #lvStage.live-layout-equal,#creatorLiveStage.live-layout-equal{
- display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ display:grid!important;grid-template-columns:repeat(var(--live-columns,2),minmax(0,1fr))!important;
  grid-auto-rows:minmax(0,1fr)!important;gap:2px!important;align-content:stretch!important;
 }
 #liveViewer #lvStage.live-layout-grid video.live-video,#creatorLiveStage.live-layout-grid video.live-video,
@@ -3702,7 +3702,8 @@ function syncLiveSplitLayout(container){
  container.dataset.liveCount=String(videos.length);
  container.classList.toggle("live-split-view",videos.length>=2);
  container.classList.toggle("live-layout-focus",layout==="focus"&&videos.length>1);
- container.classList.toggle("live-layout-grid",layout==="grid"||layout==="auto"||videos.length>2);
+ container.classList.toggle("live-layout-grid",layout==="grid"||layout==="grid3"||layout==="auto"||videos.length>2);
+ const columns=layout==="grid3"?3:(layout==="grid"?2:(videos.length>=5?3:2));container.style.setProperty("--live-columns",String(columns));
  container.classList.toggle("live-layout-equal",layout==="equal");
  videos.forEach((v,i)=>{
   v.classList.toggle("live-featured-video",layout==="focus"&&v===featured);
@@ -4158,7 +4159,7 @@ function installLiveInterface(stage,room,mode,creatorId=null){
    const layoutBox=document.createElement("div");layoutBox.className="live-layout-controls";
    const layoutLabel=document.createElement("label");layoutLabel.textContent="Disposition";
    const layoutSelect=document.createElement("select");layoutSelect.setAttribute("aria-label","Choisir la disposition du direct");
-   [["auto","Automatique"],["equal","Cases égales"],["grid","Grille"],["focus","Un grand + petits"]].forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;layoutSelect.appendChild(o)});
+   [["auto","Automatique"],["equal","Cases égales"],["grid","Grille 2 colonnes"],["grid3","Grille 3 colonnes"],["focus","Un grand + petits"]].forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;layoutSelect.appendChild(o)});
    layoutSelect.value=$("creatorLiveStage").dataset.liveLayout||"auto";
    const featuredSelect=document.createElement("select");featuredSelect.setAttribute("aria-label","Choisir la personne en grand écran");
    const refreshFeatured=()=>{const current=featuredSelect.value;featuredSelect.innerHTML="";[...$("creatorLiveStage").querySelectorAll("video.live-video")].forEach((v,i)=>{const o=document.createElement("option");o.value=v.dataset.liveLabel||String(i);o.textContent=(v.dataset.liveLabel||("Participant "+(i+1))).slice(0,24);featuredSelect.appendChild(o)});if([...featuredSelect.options].some(o=>o.value===current))featuredSelect.value=current};
