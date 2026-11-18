@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
-<meta name="afro-build" content="20261118-2">
+<meta name="afro-build" content="20261118-3">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AFRO LIVE</title>
@@ -3977,11 +3977,9 @@ async function requestToJoinLive(sessionId,creatorId,button,tools){
  if(readError){button.disabled=false;button.textContent="Demander à rejoindre";return message("Vérification impossible : "+readError.message)}
  let request=existing;
  if(!request){
-  const {data:created,error}=await db.from("live_guest_requests")
-   .insert({session_id:sessionId,creator_id:creatorId,requester_id:currentUser.id,status:"pending"})
-   .select("id,status").single();
-  if(error){button.disabled=false;button.textContent="Demander à rejoindre";return message("Demande non envoyée : "+error.message)}
-  request=created;
+  const {data:created,error}=await db.functions.invoke("livekit-token",{body:{session_id:sessionId,action:"request_guest"}});
+  if(error||!created?.request_id){button.disabled=false;button.textContent="Demander à rejoindre";return message("Demande non envoyée : "+(created?.error||error?.message||"Erreur de vérification du direct."))}
+  request={id:created.request_id,status:created.status};
  }
  if(request.status==="accepted"){
   message("Ta demande a déjà été acceptée. Connexion…",true);
