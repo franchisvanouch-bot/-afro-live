@@ -3962,6 +3962,14 @@ function installLiveInterface(stage,room,mode,creatorId=null){
   leave.addEventListener("click",leaveSpectatorLive);
   bar.appendChild(leave);
  }
+ if(mode==="guest"){
+  let guestMicOn=true,guestCamOn=true;
+  const guestMic=document.createElement("button");guestMic.className="soft";guestMic.type="button";guestMic.setAttribute("aria-label","Couper le micro");guestMic.innerHTML='<i class="ti ti-microphone" aria-hidden="true"></i>';
+  guestMic.addEventListener("click",async()=>{try{guestMicOn=!guestMicOn;await room.localParticipant.setMicrophoneEnabled(guestMicOn);guestMic.innerHTML=guestMicOn?'<i class="ti ti-microphone" aria-hidden="true"></i>':'<i class="ti ti-microphone-off" aria-hidden="true"></i>';guestMic.setAttribute("aria-label",guestMicOn?"Couper le micro":"Activer le micro")}catch(e){message("Micro indisponible : "+(e.message||"erreur"))}});bar.appendChild(guestMic);
+  const guestCam=document.createElement("button");guestCam.className="soft";guestCam.type="button";guestCam.setAttribute("aria-label","Couper la caméra");guestCam.innerHTML='<i class="ti ti-video" aria-hidden="true"></i>';
+  guestCam.addEventListener("click",async()=>{try{guestCamOn=!guestCamOn;await room.localParticipant.setCameraEnabled(guestCamOn);guestCam.innerHTML=guestCamOn?'<i class="ti ti-video" aria-hidden="true"></i>':'<i class="ti ti-video-off" aria-hidden="true"></i>';guestCam.setAttribute("aria-label",guestCamOn?"Couper la caméra":"Activer la caméra")}catch(e){message("Caméra indisponible : "+(e.message||"erreur"))}});bar.appendChild(guestCam);
+  const leave=document.createElement("button");leave.className="danger live-ic-leave";leave.type="button";leave.setAttribute("aria-label","Quitter le direct");leave.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';leave.addEventListener("click",leaveSpectatorLive);bar.appendChild(leave);
+ }
  bar.appendChild(full);
 
  const chat=document.createElement("div");chat.className="live-chat";
@@ -4149,7 +4157,7 @@ async function joinLive(sessionId,knownCreatorId=null,asGuest=false){
   const {data:loadedLiveInfo,error:liveInfoError}=await db.from("live_sessions").select("creator_id,access_mode").eq("id",sessionId).maybeSingle();
   if(loadedLiveInfo?.creator_id)liveInfo=loadedLiveInfo;
   else if(!knownCreatorId)throw new Error(liveInfoError?.message||"Ce direct est introuvable ou n’est plus disponible.");
-  if(liveInfo.access_mode==="paid"&&currentUser.id!==liveInfo.creator_id){
+  if(liveInfo.access_mode==="paid"&&currentUser.id!==liveInfo.creator_id&&!asGuest){
    const now=new Date().toISOString();
    const {data:sub,error:subError}=await db.from("subscriptions").select("id").eq("spectator_id",currentUser.id).eq("creator_id",liveInfo.creator_id).eq("status","active").lte("starts_at",now).gt("expires_at",now).limit(1).maybeSingle();
    if(subError)throw subError;
@@ -4288,7 +4296,11 @@ async function startCreatorLive(){
   room.on(LivekitClient.RoomEvent.Disconnected,()=>{if(liveMode==="creator")$("creatorLiveStatus").textContent="Connexion au direct interrompue."});
   room.on(LivekitClient.RoomEvent.ParticipantConnected,updateLiveParticipantCount);
   room.on(LivekitClient.RoomEvent.ParticipantDisconnected,updateLiveParticipantCount);
+  room.on(LivekitClient.RoomEvent.TrackSubscribed,(track,publication,participant)=>attachLiveTrack(track,$("creatorLiveStage"),null,participant,currentUser.id));
+  room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>track.detach().forEach(el=>el.remove()));
+  room.on(LivekitClient.RoomEvent.TrackPublished,publication=>{if(publication.kind===LivekitClient.Track.Kind.Video)publication.setSubscribed(true)});
   await connectLiveRoom(room,credentials,"créateur");
+  for(const participant of room.remoteParticipants.values())for(const publication of participant.trackPublications.values())if(publication.kind===LivekitClient.Track.Kind.Video)publication.setSubscribed(true);
   $("creatorLiveStatus").textContent="Activation de la caméra et du microphone...";
   await enableLiveCamera(room);
   const cameraPub=[...room.localParticipant.videoTrackPublications.values()].find(p=>p.track);
