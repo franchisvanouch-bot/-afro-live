@@ -2632,27 +2632,54 @@ async function refreshUnread(){
 async function loadNotifications(){
  const box=$("notifsList");
  box.innerHTML=pushSetupMarkup()+"<p>Chargement...</p>";
- const {data,error}=await db.from("notifications").select("id,creator_id,kind,created_at,read,live_session_id").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50);
+ const [{data,error},{data:guestInvites, error:guestError}]=await Promise.all([
+  db.from("notifications").select("id,creator_id,kind,created_at,read,live_session_id").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50),
+  db.from("live_guest_invites").select("id,creator_id,session_id,status,created_at").eq("invited_user_id",currentUser.id).in("status",["pending","accepted"]).order("created_at",{ascending:false}).limit(20)
+ ]);
  if(error){box.innerHTML=pushSetupMarkup()+`<div class="notice">${escapeHTML(error.message)}</div>`;return}
- if(!data.length){box.innerHTML=pushSetupMarkup()+"<p class='empty'>Aucune notification pour le moment.</p>";return}
- const ids=[...new Set(data.map(n=>n.creator_id))];
- const {data:profiles}=await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids);
+ if(guestError)console.warn("Invitations de co-animation non chargées :",guestError.message);
+ const invites=guestInvites||[];
+ const ids=[...new Set([...(data||[]).map(n=>n.creator_id),...invites.map(n=>n.creator_id)].filter(Boolean))];
+ const {data:profiles, error:profileError}=ids.length?await db.from("profiles").select("id,username,display_name,avatar_url").in("id",ids):{data:[],error:null};
+ if(profileError){box.innerHTML=pushSetupMarkup()+`<div class="notice">${escapeHTML(profileError.message)}</div>`;return}
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
- const txt={post:"a publié une nouvelle publication",status:"a publié un statut",live:"est en direct"};
- box.innerHTML=pushSetupMarkup()+data.map(n=>{
-  const p=map[n.creator_id]||{id:n.creator_id,username:"créateur"};
-  return `<button class="notif${n.read?"":" unread"}" data-notif-creator="${escapeHTML(n.creator_id)}" data-notif-kind="${escapeHTML(n.kind)}" data-notif-live="${escapeHTML(n.live_session_id||"")}">
-   ${avatarHTML(p)}
-   <div class="notif-text"><span><b>${escapeHTML(p.display_name||p.username)}</b> ${txt[n.kind]||""}</span>
-   <span class="small">${new Date(n.created_at).toLocaleString("fr-FR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"})}</span></div>
-  </button>`;
+ const inviteSessions=new Set(invites.map(x=>x.session_id));
+ const pendingCards=invites.map(invite=>{
+  const p=map[invite.creator_id]||{id:invite.creator_id,username:"créateur"};
+  const action=invite.status==="accepted"?"join":"accept";
+  const label=invite.status==="accepted"?"Invitation acceptée · tu peux rejoindre le direct":"t'invite à rejoindre son direct comme co-animateur";
+  return `<div class="notif unread" data-guest-invite-card="${escapeHTML(invite.id)}">${avatarHTML(p)}<div class="notif-text"><span><b>${escapeHTML(p.display_name||p.username)}</b> ${label}</span><span class="small">${new Date(invite.created_at).toLocaleString("fr-FR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"})}</span><div class="guest-invite-actions">${action==="accept"?'<button class="soft" type="button" data-guest-invite-action="decline">Refuser</button>':""}<button type="button" data-guest-invite-action="${action}">${action==="join"?"Rejoindre le LIVE":"Accepter"}</button></div></div></div>`;
  }).join("");
+ const txt={post:"a publié une nouvelle publication",status:"a publié un statut",live:"est en direct"};
+ const regular=(data||[]).filter(n=>!(n.kind==="live"&&inviteSessions.has(n.live_session_id)));
+ const regularCards=regular.map(n=>{
+  const p=map[n.creator_id]||{id:n.creator_id,username:"créateur"};
+  return `<button class="notif${n.read?"":" unread"}" data-notif-creator="${escapeHTML(n.creator_id)}" data-notif-kind="${escapeHTML(n.kind)}" data-notif-live="${escapeHTML(n.live_session_id||"")}">${avatarHTML(p)}<div class="notif-text"><span><b>${escapeHTML(p.display_name||p.username)}</b> ${txt[n.kind]||""}</span><span class="small">${new Date(n.created_at).toLocaleString("fr-FR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"})}</span></div></button>`;
+ }).join("");
+ if(!pendingCards&&!regularCards){box.innerHTML=pushSetupMarkup()+"<p class='empty'>Aucune notification pour le moment.</p>";return}
+ box.innerHTML=pushSetupMarkup()+pendingCards+regularCards;
  await db.from("notifications").update({read:true}).eq("user_id",currentUser.id).eq("read",false);
  $("bellDot").hidden=true;
- // Ne pas masquer le badge Messages ici : il affiche le nombre de messages privés non lus.
 }
-
-document.addEventListener("click",event=>{
+async function respondToLiveGuestInvite(inviteId,action){
+ if(!currentUser)return guestToAuth();
+ const {data:invite,error}=await db.from("live_guest_invites").select("id,session_id,creator_id,status").eq("id",inviteId).eq("invited_user_id",currentUser.id).maybeSingle();
+ if(error||!invite)return message("Cette invitation n'est plus disponible.");
+ if(action==="decline"){
+  const {error:updateError}=await db.from("live_guest_invites").update({status:"declined",responded_at:new Date().toISOString()}).eq("id",inviteId).eq("status","pending");
+  if(updateError)return message("Impossible de refuser l'invitation : "+updateError.message);
+  message("Invitation refusée.",true);loadNotifications();return;
+ }
+ if(action==="accept"&&invite.status==="pending"){
+  const {data:updated,error:updateError}=await db.from("live_guest_invites").update({status:"accepted",responded_at:new Date().toISOString()}).eq("id",inviteId).eq("status","pending").select("id").maybeSingle();
+  if(updateError||!updated)return message("Impossible d'accepter l'invitation : "+(updateError?.message||"elle a expiré."));
+ }else if(invite.status!=="accepted")return message("Cette invitation n'est plus valide.");
+ message("Invitation acceptée. Connexion au direct…",true);
+ await joinLive(invite.session_id,invite.creator_id,true);
+}
+document.addEventListener("click",async event=>{
+ const guestAction=event.target.closest("[data-guest-invite-action]");
+ if(guestAction){const card=guestAction.closest("[data-guest-invite-card]");if(card){guestAction.disabled=true;await respondToLiveGuestInvite(card.dataset.guestInviteCard,guestAction.dataset.guestInviteAction);guestAction.disabled=false}return}
  const card=event.target.closest(".notif");if(!card)return;
  const creatorId=card.dataset.notifCreator,kind=card.dataset.notifKind,sessionId=card.dataset.notifLive;
  if(kind==="live"&&sessionId){joinLive(sessionId,creatorId);return}
