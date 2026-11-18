@@ -4023,6 +4023,23 @@ async function refreshLiveGuestRequests(panel,button,sessionId){
  });
 }
 }
+async function handoffSpectatorToGuest(sessionId){
+ if(liveMode!=="spectator"||currentLiveSessionId!==sessionId||!liveRoom)
+  throw new Error("Le direct spectateur n'est plus connecté. Rejoins le direct avant de devenir co-animateur.");
+ clearInterval(liveStatusPollTimer);liveStatusPollTimer=null;
+ const previousRoom=liveRoom;
+ // Déconnecter l'ancien jeton sans fermer la fenêtre du direct.
+ liveRoom=null;
+ if(previousRoom)await previousRoom.disconnect().catch(()=>{});
+ const stage=$("lvStage"),status=$("lvStatus");
+ cleanLiveInterface(stage);
+ stage.replaceChildren();
+ status.hidden=false;
+ status.textContent="Acceptation confirmée. Connexion comme co-animateur…";
+ currentLiveSessionId=null;
+ liveMode=null;
+}
+
 async function requestToJoinLive(sessionId,creatorId,button,tools){
  if(!currentUser||liveMode!=="spectator"||currentLiveSessionId!==sessionId||!liveRoom)
   return message("Tu dois être dans ce direct pour demander à participer.");
@@ -4039,7 +4056,7 @@ async function requestToJoinLive(sessionId,creatorId,button,tools){
  }
  if(request.status==="accepted"){
   message("Ta demande a déjà été acceptée. Connexion…",true);
-  await closeLiveViewer();await joinLive(sessionId,creatorId,true);return;
+  await handoffSpectatorToGuest(sessionId);await joinLive(sessionId,creatorId,true);return;
  }
  button.textContent="Demande envoyée ✓";
  message("Demande envoyée au créateur. Attends sa réponse.",true);
@@ -4053,7 +4070,7 @@ async function requestToJoinLive(sessionId,creatorId,button,tools){
   if(state.status==="accepted"){
    clearInterval(tools._guestRequestTimer);tools._guestRequestTimer=null;
    message("Le créateur a accepté ! Activation de ta caméra et de ton micro…",true);
-   await closeLiveViewer();await joinLive(sessionId,creatorId,true);
+   await handoffSpectatorToGuest(sessionId);await joinLive(sessionId,creatorId,true);
   }else if(state.status==="declined"){
    clearInterval(tools._guestRequestTimer);tools._guestRequestTimer=null;
    button.disabled=false;button.textContent="Demander à rejoindre";
