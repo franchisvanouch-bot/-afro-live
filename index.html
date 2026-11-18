@@ -4164,7 +4164,7 @@ async function showLiveSubscriptionOptions(creatorId,sessionId,status){
 let liveStatusPollTimer=null;
 async function joinLive(sessionId,knownCreatorId=null,asGuest=false){
  if(!currentUser)return message("Connecte-toi pour regarder ce direct.");
- if(liveRoom&&liveMode==="spectator"&&currentLiveSessionId===sessionId){$("liveViewer").classList.remove("hidden");return}
+ if(liveRoom&&(liveMode==="spectator"||liveMode==="guest")&&currentLiveSessionId===sessionId){$("liveViewer").classList.remove("hidden");return}
  if(liveRoom)await closeLiveViewer();
  // Suspendre l'observateur : sinon il peut relancer les aperçus
  // pendant que le lecteur plein écran ouvre sa propre connexion LiveKit.
