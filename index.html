@@ -1097,7 +1097,7 @@ body.booting>header{visibility:hidden}
 .home-feed-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000}
 .home-feed-loading img{width:min(48vw,190px);max-height:120px;object-fit:contain;opacity:.96}
 
-.live-requests-panel{position:absolute;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:28;max-height:38vh;overflow:auto;padding:12px;border:1px solid rgba(255,255,255,.2);border-radius:14px;background:rgba(10,10,12,.88);backdrop-filter:blur(14px);color:#fff}.live-requests-panel[hidden]{display:none!important}.live-request-row{display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid #ffffff20}.live-request-row:last-child{border-bottom:0}.live-request-row>span{flex:1;min-width:0}.live-request-row b,.live-request-row small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.live-request-row small{color:#aaa;font-size:11px}.live-request-row button{padding:8px 10px;font-size:12px;white-space:nowrap}.live-requests-toggle,.live-request-join{font-size:12px!important;padding:8px 10px!important;white-space:nowrap}
+.live-requests-panel{position:absolute;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:28;max-height:38vh;overflow:auto;padding:12px;border:1px solid rgba(255,255,255,.2);border-radius:14px;background:rgba(10,10,12,.88);backdrop-filter:blur(14px);color:#fff}.live-requests-panel[hidden]{display:none!important}.live-request-row{display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid #ffffff20}.live-request-row:last-child{border-bottom:0}.live-request-row>span{flex:1;min-width:0}.live-request-row b,.live-request-row small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.live-request-row small{color:#aaa;font-size:11px}.live-request-row button{padding:8px 10px;font-size:12px;white-space:nowrap}.live-request-row button{position:relative;z-index:3;pointer-events:auto;touch-action:manipulation;min-height:42px;cursor:pointer}.live-requests-toggle,.live-request-join{font-size:12px!important;padding:8px 10px!important;white-space:nowrap}
 </style>
 <style id="afro-profile-final-button-fix">
 #publicProfile .ig-actions button.ig-subscriptions-entry,
@@ -3973,17 +3973,33 @@ async function refreshLiveGuestRequests(panel,button,sessionId){
    '<button type="button" data-live-request-action="accept">Accepter</button>'+
    '<button type="button" class="soft" data-live-request-action="decline">Refuser</button></div>';
  }).join("");
- panel.querySelectorAll("[data-live-request-action]").forEach(btn=>btn.addEventListener("click",async()=>{
+ if(!panel.dataset.answerHandlerInstalled){
+ panel.dataset.answerHandlerInstalled="1";
+ panel.addEventListener("click",async event=>{
+  const btn=event.target.closest("[data-live-request-action]");
+  if(!btn||!panel.contains(btn))return;
+  event.preventDefault();event.stopPropagation();
   const row=btn.closest("[data-live-request]");if(!row)return;
-  const action=btn.dataset.liveRequestAction;btn.disabled=true;
-  const {data:updated,error:updateError}=await db.from("live_guest_requests")
-   .update({status:action==="accept"?"accepted":"declined",responded_at:new Date().toISOString()})
-   .eq("id",row.dataset.liveRequest).eq("creator_id",currentUser.id).eq("status","pending")
-   .select("id").maybeSingle();
-  if(updateError||!updated){btn.disabled=false;message("Impossible de traiter cette demande : "+(updateError?.message||"demande déjà traitée."));return}
-  message(action==="accept"?"Demande acceptée. Le spectateur va rejoindre le direct.":"Demande refusée.",true);
-  await refreshLiveGuestRequests(panel,button,sessionId);
- }));
+  const action=btn.dataset.liveRequestAction;
+  const buttons=[...row.querySelectorAll("button")];
+  buttons.forEach(b=>b.disabled=true);
+  const original=btn.textContent;btn.textContent="Traitement…";
+  try{
+   const {data:updated,error:updateError}=await db.from("live_guest_requests")
+    .update({status:action==="accept"?"accepted":"declined",responded_at:new Date().toISOString()})
+    .eq("id",row.dataset.liveRequest).eq("creator_id",currentUser.id).eq("status","pending")
+    .select("id").maybeSingle();
+   if(updateError)throw updateError;
+   if(!updated)throw new Error("La demande n'est plus en attente ou tu n'as pas l'autorisation de la traiter.");
+   message(action==="accept"?"Demande acceptée. Le spectateur peut maintenant rejoindre le direct.":"Demande refusée.",true);
+   await refreshLiveGuestRequests(panel,button,sessionId);
+  }catch(error){
+   buttons.forEach(b=>b.disabled=false);btn.textContent=original;
+   message("Action impossible : "+(error?.message||"Erreur inconnue"));
+   console.error("AFRO LIVE — réponse à une demande de co-animation :",error);
+  }
+ });
+}
 }
 async function requestToJoinLive(sessionId,creatorId,button,tools){
  if(!currentUser||liveMode!=="spectator"||currentLiveSessionId!==sessionId||!liveRoom)
